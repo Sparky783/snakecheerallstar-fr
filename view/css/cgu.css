@@ -1,0 +1,15 @@
+@charset "utf-8";
+
+#cgu h1 {
+	margin: 2rem 0 2rem;
+}
+
+#cgu h3 {
+	margin-top: 20px;
+	margin-bottom: 0.2rem;
+	padding-left: 2rem;
+}
+
+#cgu p {
+	text-align: justify;
+}

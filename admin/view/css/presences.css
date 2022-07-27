@@ -1,0 +1,33 @@
+/* Bootstrap modification */
+.btn.snake:hover {
+	border: solid 1px #2f832f;
+}
+
+.btn.justify:hover {
+	border: solid 1px #bb11e6;
+}
+
+.btn.warning:hover {
+	border: solid 1px #ffc107;
+}
+
+.btn.danger:hover {
+	border: solid 1px #dc3545;
+}
+
+.card {
+	margin-bottom: 30px;
+}
+
+h1 {
+	margin: 20px 0;
+}
+
+.btn-justify {
+	background-color: #bb11e6;
+	color: white;
+}
+
+.btn-justify:hover {
+	color: white;
+}

@@ -1,0 +1,30 @@
+/* Bootstrap modification */
+.bg-snake {
+	background-color: #2f832f;
+}
+
+.border-snake {
+	border-color: #2f832f;
+}
+
+.btn-snake {
+	background-color: #2f832f;
+	color: white;
+}
+
+.btn-snake:hover {
+	text-decoration: none;
+	color: white;
+}
+
+/* Site */
+header .navbar-right {
+	position: absolute;
+    right: 0;
+}
+
+@media (max-width: 992px) {
+	header .navbar-right {
+		position: relative;
+	}
+}

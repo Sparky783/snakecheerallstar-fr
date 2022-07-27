@@ -1,0 +1,19 @@
+h1 {
+	margin: 20px 0;
+}
+
+.card {
+	margin-bottom: 30px;
+}
+
+.not_complete {
+	background-color: #febcbc;
+}
+
+.not_complete:hover {
+	background-color: #f69292 !important;
+}
+
+#tableAdherents {
+	margin-bottom: 0;
+}

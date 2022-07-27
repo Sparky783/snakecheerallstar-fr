@@ -1,0 +1,65 @@
+@charset "utf-8";
+
+/* ==== Entête ====*/
+#welcome {
+	width: 100%;
+	margin-top: -57px;
+	color: white;
+	overflow: hidden;
+}
+
+#welcome .bg {
+	background-color: #083e14;
+	margin: 0 -15px -7px;
+	z-index: 10;
+}
+#welcome .bg video {
+	width: 100%;
+	opacity: 0.4;
+}
+
+#welcome .front {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+#welcome .welcomeTitle {
+	width: 1000px;
+    margin: 20% auto 0;
+    text-align: center;
+	color: #ffffff;
+}
+
+#welcome .welcomeTitle h1 {
+	font-family: 'Poppins', sans-serif;
+	font-size: 5em;
+}
+
+#welcome .welcomeTitle p {
+	font-size: 2em;
+}
+
+/* ==== Content ==== */
+#intro {
+	background-color: #ffffff;
+	padding: 50px 0;
+}
+
+#presentation {
+	background-color: #999999;
+	padding: 50px 0;
+}
+
+#informations {
+	background-color: #2f832f;
+	padding: 50px 0;
+	color: #ffffff;
+}
+
+#partenariats {
+	background-color: #ffffff;
+	padding: 50px 0;
+}

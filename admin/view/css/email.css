@@ -1,0 +1,27 @@
+h1 {
+	margin: 20px 0;
+}
+
+#addAttachement {
+	margin-right: 10px;
+}
+
+.btn-attachement {
+	background-color: #aaaaaa;
+	padding: 4px 15px;
+	margin-right: 7px;
+	border-style: none;
+	border-radius: 50px;
+	vertical-align: middle;
+    color: white;
+}
+
+.btn-attachement:hover {
+	background-color: red;
+	padding: 4px 15px;
+	margin-right: 7px;
+	border-style: none;
+	border-radius: 50px;
+	vertical-align: middle;
+    color: white;
+}

@@ -1,0 +1,8 @@
+/* Bootstrap modification */
+.card {
+	overflow: hidden;
+}
+
+h1 {
+	margin: 20px 0;
+}

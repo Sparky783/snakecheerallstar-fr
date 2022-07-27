@@ -1,0 +1,51 @@
+@charset "utf-8";
+
+h1 {
+	padding: 40px 0;
+}
+
+#electionForm .snake-form-star {
+	color: red;
+}
+
+#electionForm {
+	margin-bottom: 50px;
+}
+
+#electionForm small {
+	padding-bottom: 30px;
+	font-style: italic;
+}
+
+#electionForm .card {
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+
+#electionForm .card-body {
+	padding: 1rem 1.25rem;
+}
+
+#electionForm h5 {
+	margin-bottom: 0;
+}
+
+#electionForm table {
+	margin-bottom: 0;
+}
+
+#electionForm table .choice {
+	text-align: right;
+}
+
+#electionSend {
+	margin-bottom: 50px;
+}
+
+#electionSend i {
+	font-size: 70px;
+}
+
+#electionResponse {
+	margin-bottom: 50px;
+}

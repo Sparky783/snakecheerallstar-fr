@@ -1,0 +1,107 @@
+@charset "utf-8";
+
+/* Bootstrap modification */
+.container {
+	padding-right: 30px;
+	padding-left: 30px;
+}
+
+.bg-snake {
+	background-color: #2f832f;
+}
+
+.border-snake {
+	border-color: #2f832f;
+}
+
+.btn-snake {
+	background-color: #2f832f;
+	color: white !important;
+}
+
+.card-snake {
+	margin-bottom: 15px;
+	border-color: #8bc78b;
+}
+
+.card-snake .card-header {
+	background-color: #2f832f;
+	color: white;
+}
+
+/* ScrollBar */
+::-webkit-scrollbar {
+	width: 10px;
+}
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+	background: #226722;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #555; 
+}
+
+/* ==== Général ==== */
+* {
+	position: relative;
+}
+
+body  {
+	background-color: #e0e0e3;
+	font-family: 'Roboto', sans-serif;
+}
+
+/* ==== Menu ==== */
+header {
+	position: fixed;
+	background-color: white;
+	border-bottom: solid 1px gray;
+    top: 0;
+	width: 100%;
+	z-index: 1000;
+}
+
+.navbar {
+	margin-left: -30px;
+    margin-right: -30px;
+}
+
+.navbar-brand {
+	margin: -0.5rem 0;
+}
+
+.navbar-brand img {
+	width: auto;
+	height: 56px;
+    vertical-align: middle!important;
+}
+
+.navbar-right {
+	position: absolute;
+	right: 10px;
+}
+
+/* ==== Content ==== */
+.snake-body {
+	background-color: white;
+	margin-top: 57px;
+	border-left: solid 1px gray;
+	border-right: solid 1px gray;
+	border-bottom: solid 1px gray;
+}
+
+/* ==== Footer ==== */
+footer .breadcrumb {
+	background-color: initial;
+	width: 100%;
+	padding: 10px 0;
+    margin: 0;
+}
+
+@media (max-width: 992px) {
+	.navbar-right {
+		position: relative;
+	}
+}

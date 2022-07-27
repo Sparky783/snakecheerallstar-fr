@@ -1,0 +1,22 @@
+Choses à faire:
+ - Créer un bouton "Candidater pour l'AG" dans l'espace admin (droit: administrateur)
+	- Affichage, ajout, modif et suppréssion des candidats.
+ - Créer un bouton "Appliquer une réduction" dans l'espace admin (droit: trésorier)
+	- Permet d'ajouter une réduction à une personne en particulier (basé sur la liste des personnes de la saison précédente)
+	- Permet d'ajouter une réduction à tous les membres d'une section ou du club (basé sur la liste des personnes de la saison précédente)
+ - Vérifier l'envoie automatique d'une facture (soit "Payé", soit "En attente de paiement") à la fin de chaque inscription.
+ - Créer un bouton réinitialiser le mot de passe pour l'administrateur (Dans la gestion des utilisateurs)
+ - Modifier le formulaire d'ajout d'utilisateur (bureau) pour l'envoi d'un mail automatique avec son mot de passe.
+ - Voir pour un paiement en plusieurs fois en ligne (Paypal ou autre).
+ - Redécouper les tables pour plus d'évolution. ("Adherents", "Inscriptions", "etc ...)
+	- A voir si c'est possible et comment.
+	- Passer au inscription et aux petites (Pas de compte internet)
+
+
+============================================================
+Modification faite:
+ - Ajouter colonne "saison" dans la table adherent au format "YYYY-YYYY".
+	SQL: UPDATE `adherents` SET `saison`="2019-2020"
+ - Créer une table "CandidatsAG" pour la liste des candidats.
+ - Créer une table "ElectionAG" pour chaque vote collecté.
+ - Modifier l'espace admin pour afficher les membres que de la saison en cours.

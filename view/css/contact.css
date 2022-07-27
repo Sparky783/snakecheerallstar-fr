@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+#block {
+	padding: 20px 0;
+}
+
+#partenaireList p {
+	text-align: center;
+	letter-spacing: 30px;
+}

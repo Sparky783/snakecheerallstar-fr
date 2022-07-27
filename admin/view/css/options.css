@@ -1,0 +1,15 @@
+h1 {
+	margin: 20px 0;
+}
+
+#inscription .form-group:last-child {
+	margin-bottom: 0;
+}
+
+#openInscriptionBlock {
+	margin-bottom: 20px;
+}
+
+#applyBlock {
+	margin-top: 20px;
+}
