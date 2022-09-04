@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 {
 	$app->Post("/adherent_info_add_tuteur", function($args) {
 		include_once(ABSPATH . "model/snake/Tuteur.php");
@@ -38,7 +38,7 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
 	});
 }
 
-if(ToolBox::SearchInArray($session->roles, array("admin", "tresorier", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
 {
 	$app->Post("/adherent_info_send_bill", function($args) {
 		include_once(ABSPATH . "model/snake/SnakeTools.php");
@@ -87,7 +87,7 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "tresorier", "secretai
 	});
 }
 
-if(ToolBox::SearchInArray($session->roles, array("admin", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")))
 {
 	$app->Post("/adherent_info_send_recap", function($args) {
 		include_once(ABSPATH . "model/snake/SnakeTools.php");

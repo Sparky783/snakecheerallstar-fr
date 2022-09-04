@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "coach")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "coach")))
 {
 	$app->Get("/presences_get_list/{id_section}", function($args) {
 		include_once(ABSPATH . "model/system/Database.php");

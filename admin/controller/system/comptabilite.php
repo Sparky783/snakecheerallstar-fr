@@ -1,6 +1,6 @@
 <?php
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->roles, array("admin", "tresorier")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier")))
 	WebSite::Redirect("login", true);
 // =========================
 

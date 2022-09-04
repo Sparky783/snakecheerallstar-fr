@@ -1,5 +1,9 @@
 <?php
-define("ABSPATH", dirname(__FILE__) . "/"); // Absolute pth of the API.
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+define("ABSPATH", dirname(__FILE__) . "/"); // Absolute path of the API.
 
 // Chargement de la configuration et de l'ensemble des éléments communs.
 include_once("config.php");

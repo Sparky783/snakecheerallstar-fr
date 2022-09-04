@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 {
 	// Supprime l'adhérent de la base de données.
 	$app->Post("/remove_adherent", function($args) {

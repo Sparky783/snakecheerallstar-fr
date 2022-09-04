@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 {
 	// Met a jour les informations de l'utilisateur connecté.
 	$app->Post("/profil_update_infos", function($args) {
@@ -10,12 +10,12 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
 		if($args['name'] != "")
 		{
 			$session = Session::GetInstance();
-			$user = Admin::GetById($session->id_user);
+			$user = Admin::GetById($session->admin_id);
 			$user->SetName($args['name']);
 			
 			if($user->SaveToDatabase())
 			{
-				$session->name = $user->GetName();
+				$session->admin_name = $user->GetName();
 			
 				$response = array(
 					"type" => "success",
@@ -51,19 +51,19 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
 		if ($args['old_password'] != "" &&
 			$args['new_password'] != "" &&
 			$args['confirm_password'] != "" &&
-			$old_password == $session->password &&
+			$old_password == $session->admin_password &&
 			$args['new_password'] == $args['confirm_password']
 		)
 			$password = sha1(sha1(AUTH_SALT) . sha1($args['new_password']));
 		
 		if($password != "")
 		{
-			$user = Admin::GetById($session->id_user);
+			$user = Admin::GetById($session->admin_id);
 			$user->SetPassword($password);
 			
 			if($user->SaveToDatabase())
 			{
-				$session->password = $args['new_password'];
+				$session->admin_password = $args['new_password'];
 			
 				$response = array(
 					"type" => "success",

@@ -12,7 +12,6 @@ class Admin
 	private $id = null;
 	private $email = "";
 	private $password = "";
-	private $token = "";
 	private $name = "";
 	private $roles = array();
 
@@ -25,7 +24,6 @@ class Admin
 			$this->id = intval($dbData['id_admin']);
 			$this->email = $dbData['email'];
 			$this->password = $dbData['password'];
-			$this->token = $dbData['token'];
 			$this->name = $dbData['name'];
 			$this->roles = unserialize($dbData['roles']);
 		}
@@ -45,11 +43,6 @@ class Admin
 	public function GetPassword()
 	{
 		return $this->password;
-	}
-	
-	public function GetToken()
-	{
-		return $this->token;
 	}
 
 	public function GetName()
@@ -80,11 +73,6 @@ class Admin
 	{
 		$this->password = sha1(sha1(AUTH_SALT) . sha1($password));
 	}
-	
-	public function SetToken($token)
-	{
-		$this->token = $token;
-	}
 
 	public function SetName($name)
 	{
@@ -102,6 +90,16 @@ class Admin
 		$this->roles[] = $roles;
 	}
 
+	public function ToArray()
+	{
+		return array(
+			"id_admin" => $this->id,
+			"email" => $this->email,
+			"name" => $this->name,
+			"roles" => $this->roles
+		);
+	}
+
 	public function SaveToDatabase()
 	{
 		$database = new Database();
@@ -114,7 +112,6 @@ class Admin
 				array(
 					"email" => $this->email,
 					"password" => $this->password,
-					"token" => $this->token,
 					"name" => $this->name,
 					"roles" => serialize($this->roles)
 				)
@@ -134,7 +131,6 @@ class Admin
 				array(
 					"email" => $this->email,
 					"password" => $this->password,
-					"token" => $this->token,
 					"name" => $this->name,
 					"roles" => serialize($this->roles)
 				)

@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 {
 	$app->Post("/apply_options", function($args) {
 		include_once(ABSPATH . "model/system/ToolBox.php");
@@ -45,7 +45,8 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
 
 		API::SendJSON(array(
 			"sections" => $list,
-			"isCurrentSaison" => $session->isCurrentSaison
+			"isCurrentSaison" => ($session->selectedSaison == SnakeTools::GetCurrentSaison()),
+			"CurrentSaison" => SnakeTools::GetCurrentSaison()
 		));
 	});
 

@@ -6,8 +6,8 @@
 		<?php include_once("HEAD.php"); ?>
 		<title><?php echo TITLE; ?> - Administration</title>
 		
-		<link rel="stylesheet" type="text/css" href="admin/view/css/users.css" />
-		<script type="text/javascript" src="admin/view/js/users.js"></script>
+		<link rel="stylesheet" type="text/css" href="admin/view/css/admins.css" />
+		<script type="text/javascript" src="admin/view/js/admins.js"></script>
 		<script type="text/javascript">
 			var api_url = "<?php $router->API(""); ?>";
 		</script>
@@ -17,13 +17,13 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Gestionnaire des utilisateurs</h1>
+					<h1>Gestionnaire des administrateurs</h1>
 					<div class="card">
 						<div class="card-header clearfix">
-							<span class="float-left">Il y a <span id="nbUsers"></span> utilisateurs</span>
-							<button id="addUserButton" class="btn btn-primary float-right" type="button"><i class="fas fa-plus-circle"></i> Ajouter un utilisateur</button>
+							<span class="float-left">Il y a <span id="nbAdmins"></span> administrateurs</span>
+							<button id="addAdminButton" class="btn btn-primary float-right" type="button"><i class="fas fa-plus-circle"></i> Ajouter un administrateur</button>
 						</div>
-						<table id="tableUsers" class="card-body table table-hover">
+						<table id="tableAdmins" class="card-body table table-hover">
 							<thead>
 								<tr>
 									<th scope="col">Nom</th>
@@ -42,12 +42,12 @@
 		<?php include_once("FOOTER.php"); ?>
 		
 		<!-- Modals -->
-		<div id="addUserModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div id="addAdminModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<form action="" method="post">
 						<div class="modal-header">
-							<h5 class="modal-title">Ajouter un utilisateur</h5>
+							<h5 class="modal-title">Ajouter un administrateur</h5>
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
@@ -62,12 +62,13 @@
 								<input id="emailInput" class="form-control" type="text">
 							</div>
 							<div class="form-group">
-								<label for="rightInput">Droits</label>
-								<select id="rightInput" class="form-control" multiple>
+								<label for="rolesInput">Droits</label>
+								<select id="rolesInput" class="form-control" multiple>
 									<option value="member" selected>Membre</option>
 									<option value="coach">Coach</option>
 									<option value="tresorier">Trésorier</option>
 									<option value="secretaire">Secrétaire</option>
+									<option value="webmaster">Web Master</option>
 									<option value="admin">Administrateur</option>
 								</select>
 							</div>
@@ -81,12 +82,12 @@
 			</div>
 		</div>
 		
-		<div id="editUserModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div id="editAdminModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<form action="" method="post">
 						<div class="modal-header">
-							<h5 class="modal-title">Modifier un utilisateur</h5>
+							<h5 class="modal-title">Modifier un administrateur</h5>
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
@@ -101,12 +102,13 @@
 								<input id="emailInput" class="form-control" type="text">
 							</div>
 							<div class="form-group">
-								<label for="rightInput">Droits</label>
-								<select id="rightInput" class="form-control" multiple>
+								<label for="rolesInput">Droits</label>
+								<select id="rolesInput" class="form-control" multiple>
 									<option value="member">Membre</option>
 									<option value="coach">Coach</option>
 									<option value="tresorier">Trésorier</option>
 									<option value="secretaire">Secrétaire</option>
+									<option value="webmaster">Web Master</option>
 									<option value="admin">Administrateur</option>
 								</select>
 							</div>
@@ -120,7 +122,7 @@
 			</div>
 		</div>
 
-		<div id="reinitUserPasswordModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div id="reinitAdminPasswordModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<form action="" method="post">
@@ -131,7 +133,7 @@
 							</button>
 						</div>
 						<div class="modal-body">
-							Voulez-vous vraiment réinitialiser le mot de passe de "<span id="nameUser"></span>"?
+							Voulez-vous vraiment réinitialiser le mot de passe de "<span id="nameAdmin"></span>"?
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
@@ -142,18 +144,18 @@
 			</div>
 		</div>
 		
-		<div id="removeUserModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div id="removeAdminModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<form action="" method="post">
 						<div class="modal-header">
-							<h5 class="modal-title">Supprimer un utilisateur</h5>
+							<h5 class="modal-title">Supprimer un administrateur</h5>
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
 						<div class="modal-body">
-							Voulez-vous vraiment supprimer l'utilisateur "<span id="nameUser"></span>"?
+							Voulez-vous vraiment supprimer l'administrateur "<span id="nameAdmin"></span>"?
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>

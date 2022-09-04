@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 {
 	$app->Post("/ag_candidats_list", function($args) {
 		include_once(ABSPATH . "model/snake/Candidat.php");

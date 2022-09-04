@@ -277,7 +277,7 @@ class ToolBox
 	}
 	
 	// Calcul l'age d'une personne grâce à la date de naissance. (Date américaine)
-	static public function Age(string $birthday) : int
+	static public function Age(string $birthday) : int // Format YYYY-MM-DD
 	{
 		list($annee, $mois, $jour) = explode('-', $birthday);
 		$annee = intval($annee);

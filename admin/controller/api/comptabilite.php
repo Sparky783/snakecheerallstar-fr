@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "tresorier")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier")))
 {
 	/*
 	$app->Post("/comptabilite_export_list", function($args) {

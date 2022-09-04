@@ -16,7 +16,6 @@ $website->SetPages(array(
 	"login",
 	"home",
 	"profil",
-	"users",
 	"adherents",
 	"adherent-info",
 	"email",
@@ -25,6 +24,7 @@ $website->SetPages(array(
 	"comptabilite",
 	"reductions",
 	"ag_elections",
+	"admins",
 	"options"
 ));
 $website->DefaultPage("login");

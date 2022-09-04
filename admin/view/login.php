@@ -28,7 +28,7 @@
 								<input class="form-control" type="password" name="password" placeholder="Password">
 							</div>
 							<div class="form-group form-check">
-								<input class="form-check-input" type="checkbox" name="rememberme-admin">
+								<input class="form-check-input" type="checkbox" name="rememberme-admin" checked="checked">
 								<label class="form-check-label" for="rememberme-admin">Se souvenir de moi</label>
 							</div>
 							<button type="submit" class="btn btn-snake">Se connecter</button>

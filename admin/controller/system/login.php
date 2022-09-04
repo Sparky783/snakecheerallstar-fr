@@ -1,7 +1,7 @@
 <?php
 include_once(ABSPATH . "model/system/Database.php");
-include_once(ABSPATH . "model/system/ToolBox.php");
 include_once(ABSPATH . "model/system/RememberMe.php");
+include_once(ABSPATH . "model/system/AdminToken.php");
 include_once(ABSPATH . "model/system/Admin.php");
 
 $cookieName = "rememberme-admin";
@@ -9,18 +9,17 @@ $errorHtml = "";
 
 $session = Session::GetInstance();
 
-if($session->isConnected)
+if($session->admin_isConnected)
 {
 	if(isset($_GET['logout']) && $_GET['logout'] == "true")
 	{
-		$session->isConnected = false;
+		$session->admin_isConnected = false;
 
 		// On supprime le cookie de connexion
 		RememberMe::RemoveCookie($cookieName);
 
-		$user = Admin::GetById($session->id_user);
-		$user->SetToken("");
-		$user->SaveToDatabase();
+		$admin = Admin::GetById($session->admin_id);
+		$admin->SaveToDatabase();
 	}
 	else
 	{
@@ -34,18 +33,20 @@ else
 
 	if ($cookie)
 	{
-		list ($id_user, $token, $mac) = explode('-', $cookie);
+		list ($id_admin, $token, $mac) = explode('-', $cookie);
 		
-        if (!hash_equals(hash_hmac('sha256', $id_user . '-' . $token, AUTH_SALT), $mac))
+		// Vérification de la correspondant avec le mac.
+        if (!hash_equals(hash_hmac('sha256', $id_admin . '-' . $token, AUTH_SALT), $mac))
             return false;
 		
-		$user = Admin::GetById($id_user);
+			$token = AdminToken::GetById($id_token);
 			
-		if($user != null) // Remember Me opotion trouvé
+		if($admin != null) // Remember Me opotion trouvé
 		{
-			if (hash_equals($user->GetToken(), $token))
+			if (hash_equals($admin->GetToken(), $tokenKey))
 			{
-				SaveUserInSession($user);
+				$admin = Admin::GetById($token->GetIdAdmin());
+				SaveAdminInSession($admin);
 				WebSite::Redirect("home", true);
 			}
 		}
@@ -60,21 +61,23 @@ else
 		if($email != "" && $password != "")
 		{
 			$password = sha1(sha1(AUTH_SALT) . sha1($password));
-			$user = Admin::Login($email, $password);
+			$admin = Admin::Login($email, $password);
 			
-			if($user != null) // Connexion réussi
+			if($admin != null) // Connexion réussi
 			{
-				SaveUserInSession($user);
+				SaveAdminInSession($admin);
 
 				// Ajoute le cookie si souhaité
 				if(isset($_POST[$cookieName]) && $_POST[$cookieName] == "on")
 				{
-					$token = ToolBox::GenerateRandomToken(); // generate a token, should be 128 - 256 bit
+					$tokenKey = AdminToken::GenerateRandomToken() . sha1("flyarts-admin");
 
-					$user->SetToken($token);
-					$user->SaveToDatabase();
+					$token = new AdminToken();
+					$token->SetIdAdmin($admin->GetId());
+					$token->SetToken($tokenKey);
+					$token->SaveToDatabase();
 
-					RememberMe::CreateCookie($cookieName, $user->GetId(), $token);
+					RememberMe::CreateCookie($cookieName, $token->GetId(), $tokenKey);
 				}
 				
 				global $gmm;
@@ -94,15 +97,15 @@ else
 	}
 }
 
-function SaveUserInSession($user)
+function SaveAdminInSession($admin)
 {
 	$session = Session::GetInstance();
 
-	$session->isConnected = true;
-	$session->id_user = $user->GetId();
-	$session->name = $user->GetName();
-	$session->email = $user->GetEmail();
-	$session->password = $user->GetPassword();
-	$session->roles = $user->GetRoles();
+	$session->admin_isConnected = true;
+	$session->admin_id = $admin->GetId();
+	$session->admin_name = $admin->GetName();
+	$session->admin_email = $admin->GetEmail();
+	$session->admin_password = $admin->GetPassword();
+	$session->admin_roles = $admin->GetRoles();
 }
 ?>

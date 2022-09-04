@@ -26,49 +26,84 @@
 				<p>
 					Nos coachs tous diplomés de la FFFA (Fédération Française de Football Américain), et titulaires de formation de secours sont là pour vous aider, vous guider et vous faire prendre plaisir lors de chaque entrainement.
 				</p>
-				<div class="row people">
-					<div class="col-sm-4">
-						<div class="card">
-							<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
-							<div class="card-body">
-								<h5 class="card-title">Aurélie Guérin</h5>
-								<p class="card-text">Coach de la section des grande</p>
+
+				<div class="coach-section">
+					<h3>Section Green Stars</h3>
+					<div class="row people">
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Esteban Billaud</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Laurie Mendes</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Ines Donasenti</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Mathilde Meleiro</p>
+								</div>
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-4">
-						<div class="card">
-							<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
-							<div class="card-body">
-								<h5 class="card-title">Céline Denhaene (Tabs)</h5>
-								<p class="card-text">Coach de la section des grandes et petites</p>
+				</div>
+
+				<div class="coach-section">
+					<h3>Section White Stars</h3>
+					<div class="row people">
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Lola Strazzera</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Margaux Barbe</p>
+								</div>
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-4">
-						<div class="card">
-							<img class="card-img-top" src="view/img/clea.jpg" alt="...">
-							<div class="card-body">
-								<h5 class="card-title">Cléa Castéres</h5>
-								<p class="card-text">Coach de la section des petites</p>
+				</div>
+
+				<div class="coach-section">
+					<h3>Section Black Stars</h3>
+					<div class="row people">
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Aurélie Benabdeljalil</p>
+								</div>
 							</div>
 						</div>
-					</div>
-					<div class="col-sm-4">
-						<div class="card">
-							<img class="card-img-top" src="view/img/julie_darbary.jpg" alt="...">
-							<div class="card-body">
-								<h5 class="card-title">Julie Darbary</h5>
-								<p class="card-text">Coach de la section des petites</p>
-							</div>
-						</div>
-					</div>
-					<div class="col-sm-4">
-						<div class="card">
-							<img class="card-img-top" src="view/img/laure_dufau.jpg" alt="...">
-							<div class="card-body">
-								<h5 class="card-title">Laure Dufau</h5>
-								<p class="card-text">Coach de la section des petites</p>
+						<div class="col-sm-2">
+							<div class="card">
+								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Léa Laffargue</p>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -81,7 +116,7 @@
 					La gestion et l'administration d'un club demande énormément de temps. Tout club nécéssite un bureau et des membres permettant ainsi de scinder la masse de travail entre tous et de partager nos différents points de vue. Voici les principaux dirigeants qui permettent à ce club de vivre, aidés dans leur fonction par 7 membres du conseil d'administration.
 				</p>
 				<div class="row people">
-					<div class="col-sm-4">
+					<div class="col-sm-3">
 						<div class="card">
 							<img class="card-img-top" src="view/img/rachid_benabdeljalil.jpg" alt="...">
 							<div class="card-body">
@@ -92,22 +127,22 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-sm-3">
 						<div class="card">
-							<img class="card-img-top" src="view/img/florent_lavignotte.jpg" alt="...">
+							<img class="card-img-top" src="view/img/margaux_barbe.jpg" alt="...">
 							<div class="card-body">
-								<h5 class="card-title">Florent Lavignotte</h5>
+								<h5 class="card-title">Margaux Barbe</h5>
 								<p class="card-text">
 									Trésorier
 								</p>
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-sm-3">
 						<div class="card">
 							<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
 							<div class="card-body">
-								<h5 class="card-title">Aurélie Guérin</h5>
+								<h5 class="card-title">Aurélie Benabdeljalil</h5>
 								<p class="card-text">
 									Secrétaire
 								</p>

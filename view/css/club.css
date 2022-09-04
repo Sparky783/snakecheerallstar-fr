@@ -7,3 +7,18 @@
 #bureau {
 	padding-bottom: 30px;
 }
+
+#coach .card-body,
+#bureau .card-body {
+    padding: 1.25rem 0.75rem;
+}
+
+.people {
+    justify-content: center;
+}
+
+.coach-name {
+	margin-bottom: 0;
+	text-align: center;
+	font-size: 0.8rem;
+}

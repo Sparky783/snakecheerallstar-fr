@@ -75,9 +75,9 @@
 					<table>
 						<thead>
 							<tr>
-								<th class="text-center">Petites<br>(6 à 10 ans)</th>
-								<th class="text-center">Juniors<br>(11 à 15 ans)</th>
-								<th class="text-center">Séniors<br>(16 ans et +)</th>
+								<th class="text-center">Green Stars<br>(6 à 11 ans)</th>
+								<th class="text-center">White Stars<br>(12 à 16 ans)</th>
+								<th class="text-center">Black Stars<br>(17 ans et +)</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -91,7 +91,7 @@
 					<p>Des tarifs pour les fratries sont pratiqués. Renseignez-vous auprès de notre bureau.</p>
 				</div>
 				<p class="alert alert-info">
-					Les tarifs ci-dessus n'incluent pas le prix de location de la tenue de <b>35€</b> pour l'année ainsi qu'un chèque de caution de <b>100€</b>.
+					Les tarifs ci-dessus n'incluent pas le prix de location de la tenue de <b>35€</b> pour l'année ainsi qu'un chèque de caution de <b>150€</b>.
 				</p>
 				<p>
 					Pour rejoindre l'équipe, cliquez ici

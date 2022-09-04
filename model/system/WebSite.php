@@ -100,7 +100,7 @@ class WebSite
 					// == For administrators ==
 					$session = Session::getInstance();
 										
-					if($this->admin_mode && $page != $this->default_page && !$session->isConnected)
+					if($this->admin_mode && $page != $this->default_page && !$session->admin_isConnected)
 					{
 						$gmm->ModifyValue("page", $this->default_page);
 						$this->LoadPage();

@@ -41,6 +41,7 @@ $script = "
 		});
 	</script>
 ";
+
 $html = "
 	<div id='inscriptionMenu' class='col-md-12'>
 		<div>
@@ -56,9 +57,10 @@ $html = "
 				Vous avez presque fini
 			</p>
 			<p>
-				Afin que les membres du bureau puissent valider l'inscription, veuillez fournir auprès d'un des coachs ou d'un membre du conseil les éléments suivants:
+				Afin que les membres du bureau puissent valider votre inscription, veuillez fournir auprès d'un des coachs ou d'un membre du conseil les éléments qui vous ont été envoyés par mail.
+				<br /><br />
+				Si vous n'avez pas reçu d'E-mail récapitulatif, veuillez vérifier dans vos Spam. Sinon veulliez vous adresser à l'un des membres du bureau, ou un coach, pour avoir plus d'information.
 			</p>
-			" . $list . "
 			<p class='alert alert-info'>
 				<i class='fas fa-info-circle'></i>
 				Un E-mail récapitulatif a été envoyé à l'ensemble des représentant légaux.

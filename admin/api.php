@@ -13,7 +13,7 @@ $router = new Router(true); // Enable admin mode
 
 $session = Session::getInstance();
 			
-if($session->isConnected)
+if($session->admin_isConnected)
 {
 	$app = new Api();
 

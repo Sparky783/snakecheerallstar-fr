@@ -13,9 +13,9 @@
 					<a class="nav-link" href=<?php $router->Url("home"); ?>>Accueil</a>
 				</li>
 				
-				<?php if(ToolBox::SearchInArray($session->roles, array("admin"))) { ?>
+				<?php if(ToolBox::SearchInArray($session->admin_roles, array("admin"))) { ?>
 					<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("users"); ?>>Utilisateurs</a>
+						<a class="nav-link" href=<?php $router->Url("admins"); ?>>Administrateurs</a>
 					</li>
 				<?php } ?>
 				

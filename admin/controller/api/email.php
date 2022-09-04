@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 {
 	$app->Post("/email", function($args) {
 		include_once(ABSPATH . "model/system/Session.php");

@@ -1,10 +1,10 @@
 <?php
 // ==== Access security ====
-if(!$session->isConnected)
+if(!$session->admin_isConnected)
 	WebSite::Redirect("login", true);
 // =========================
 
 global $router;
 
-$name = $session->name;
+$name = $session->admin_name;
 ?>

@@ -1,7 +1,7 @@
 <?php
 echo "==== Patch de mise à jour de la base de données et des dépendances ====";
 echo "<br /><br />";
-
+/*
 include_once("prepare.php"); // Chargement de la configuration et de l'ensemble des éléments communs.
 include_once(ABSPATH . "model/system/Database.php");
 
@@ -37,3 +37,4 @@ else
 {
     echo "Error : Impossible récupérer la liste des paiements.";
 }
+*/

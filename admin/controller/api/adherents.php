@@ -1,5 +1,5 @@
 <?php
-if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 {
 	// Retourne une liste d'adhérent en fonction d'une section donnée.
 	$app->Post("/adherent_list", function($args) {
@@ -29,13 +29,13 @@ if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
 			// Droits
 			$actions = array();
 
-			if(ToolBox::SearchInArray($session->roles, array("admin", "member")))
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 				$actions[] = "view";
 
-			if(ToolBox::SearchInArray($session->roles, array("admin", "secretaire")) && $status != "")
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")) && $status != "")
 				$actions[] = "validate";
 
-			if(ToolBox::SearchInArray($session->roles, array("admin")))
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 				$actions[] = "remove";
 
 			$list[] = array(

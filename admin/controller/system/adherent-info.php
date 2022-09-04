@@ -1,6 +1,6 @@
 <?php
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->roles, array("admin", "member")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	WebSite::Redirect("login", true);
 // =========================
 
@@ -72,7 +72,7 @@ switch($adherent->GetPayment()->GetMethod())
 		break;
 }
 
-if(ToolBox::SearchInArray($session->roles, array("admin", "tresorier", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
 	$html .= "Cotisation: " . $priceHtml . "<br />";
 
 $html .= "</p>";
@@ -97,9 +97,9 @@ foreach($tuteurs as $tuteur)
 // Actions
 $actionsHtml = '<button id="addTuteurButton" class="dropdown-item" data-toggle="modal" data-target="#addTuteurModal">Ajouter un tuteur</button>';
 
-if(ToolBox::SearchInArray($session->roles, array("admin", "tresorier", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
 	$actionsHtml .= '<button class="dropdown-item" data-toggle="modal" data-target="#sendBillModal">Envoyer une facture</button>';
 
-if(ToolBox::SearchInArray($session->roles, array("admin", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")))
 	$actionsHtml .= '<button class="dropdown-item" data-toggle="modal" data-target="#sendRecapModal">Envoyer le récapitulatif d\'inscription</button>';
 ?>

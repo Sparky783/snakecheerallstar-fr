@@ -153,28 +153,6 @@ class SnakeTools
 		return $result;
 	}
 
-	// Génère un mot de passe
-	static public function GeneratePassword($nbChar = 8)
-	{
-		if($nbChar >= 4)
-		{
-			$chars = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-						   'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-						   '0','1','2','3','4','5','6','7','8','9',
-						   '!','?','#');
-
-			$nbChars = count($chars) - 1;
-			$pass = "";
-
-			for($i = 0; $i < $nbChar; $i ++)
-				$pass .= $chars[random_int(0, $nbChars)];
-
-			return $pass;
-		}
-		else
-			return false;
-	}
-
 	// Envoie une facture au tuteur sélectionné.
 	static public function SendBill(Payment $payment, Tuteur $tuteur = null)
 	{
@@ -235,6 +213,7 @@ class SnakeTools
 	{
 		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
 		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
+		include_once(ABSPATH . "model/system/ToolBox.php");
 		include_once(ABSPATH . "model/EmailTemplates.php");
 		include_once(ABSPATH . "model/snake/Payment.php");
 		include_once(ABSPATH . "model/snake/Tuteur.php");
@@ -283,16 +262,21 @@ class SnakeTools
 		if($adherents != null) {
 			foreach($adherents as $adherent)
 			{
-				if($adherent->GetMedicine())
-				{
-					$list .= "<p>Pour " . $adherent->GetFirstname() . " " . $adherent->GetLastname() . " :</p><ul>";
-					
-					// Formulaire médical
-					if($adherent->GetMedicine())
-						$list .= "<li>Formulaire d'autorisation médical pour " . $adherent->GetFirstname() . " à remplir <a href='" . URL . "/content/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
+				$age = ToolBox::Age($adherent->GetBirthday()->format("Y-m-d"));
 
-					$list .= "</ul><br /><br />";
-				}
+				$list .= "<p>Pour " . $adherent->GetFirstname() . " " . $adherent->GetLastname() . " :</p><ul>";
+
+				if($adherent->GetMedicine())
+					$list .= "<li>Formulaire d'autorisation médical pour " . $adherent->GetFirstname() . " à remplir <a href='" . URL . "/content/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
+
+
+				// Questionnaire de santé en fonction de l'age
+				if($age < 18)
+					$list .= "<li>Questionnaire de santé (Mineur) <a href='" . URL . "/content/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+				else
+					$list .= "<li>Questionnaire de santé (Majeur) <a href='" . URL . "/content/questionnaire_sante_majeur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+
+				$list .= "</ul><br /><br />";
 			}
 		}
 
@@ -300,8 +284,6 @@ class SnakeTools
 		$list .= "<ul>";
 		$list .= "<li>Formulaire de la FFFA <a href='" . URL . "/content/licence_FFFA.pdf' title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>";
 		$list .= "<li>Autorisation parentale en cas d'accident <a href='" . URL . "/content/autorisation_parentale.pdf' title='' target='_blank'>disponible ici</a></li>";
-		$list .= "<li>Questionnaire de santé <a href='" . URL . "/content/questionnaire_sante_1.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
-		$list .= "<li>Questionnaire de santé <a href='" . URL . "/content/questionnaire_sante_2.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 		$list .= "<li>Formulaire de Sportmut <a href='" . URL . "/content/sportmut.pdf' title='' target='_blank'>disponible ici</a> (même si vous n'y adhérez pas)</li>";
 		$list .= "<li>Déclaration d'accident MDS <a href='" . URL . "/content/declaration_accident.pdf' title='' target='_blank'>disponible ici</a></li>";
 		$list .= "<li>Photocopie de la pièce d'identité</li>";
