@@ -83,32 +83,46 @@ var Adherents = {
 		dom.append("<td>" + data_adherent.lastname + "</td>");
 		dom.append("<td>" + data_adherent.firstname + "</td>");
 		
-		var actions = $("<td class='text-right'><div class='btn-group'></div></td>");
+		var actions = $("<td class='text-right'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
 		
 		data_adherent.actions.forEach(action => {
 			var button = null;
 
 			switch(action) {
 				case "view":
-					button = $("<a class='view-adherent btn btn-primary' href=" + data_adherent.link + " title='Voir le profil de " + data_adherent.firstname + "'><i class='fas fa-eye'></i></a>");
+					button = $("<a class='view-adherent dropdown-item' href=" + data_adherent.link + " title='Voir le profil de " + data_adherent.firstname + "'><i class='fas fa-eye'></i> Voir la fiche</a>");
 					break;
 
 				case "validate":
-					button = $("<button class='modify-adherent btn btn-secondary'><i class='fas fa-check'></i></button>")
+					button = $("<button class='modify-adherent dropdown-item'><i class='fas fa-check'></i> Valider l'inscription</button>")
 					button.click(function(){
 						Adherents.ModifyAdherentAction(data_adherent.id);
 					});
 					break;
 
+				case "surclasser":
+					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-up'></i> Sur-classer</button>");
+					button.click(function(){
+						Adherents.SurclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+					});
+					break;
+
+				case "sousclasser":
+					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-down'></i> Sous-classer</button>");
+					button.click(function(){
+						Adherents.SousclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+					});
+					break;
+
 				case "remove":
-					button = $("<button class='remove-adherent btn btn-danger'><i class='fas fa-trash-alt'></i></button>");
+					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-trash-alt'></i> Supprimer</button>");
 					button.click(function(){
 						Adherents.RemoveAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
 					});
 					break;
 			}
 
-			actions.find("div").append(button);
+			actions.find(".dropdown-menu").append(button);
 		});
 			
 		dom.append(actions);
@@ -126,6 +140,36 @@ var Adherents = {
 				$('#validateModal').find("#editModalTitle").html("Validation " + response.name);
 				$('#validateModal').find(".modal-body").html(response.content);
 				$('#validateModal').modal();
+			}
+		});
+	},
+
+	SurclasserAdherentAction: function (id_adherent) {
+		this.selectedId = id_adherent;
+
+		$.ajax({
+			url: api_url + "adherent_surclassement",
+			type: "POST",
+			data: {
+				id: id_adherent,
+			},
+			success: function(response) {
+				alert(response);
+			}
+		});
+	},
+
+	SousclasserAdherentAction: function (id_adherent) {
+		this.selectedId = id_adherent;
+
+		$.ajax({
+			url: api_url + "adherent_sousclassement",
+			type: "POST",
+			data: {
+				id: id_adherent,
+			},
+			success: function(response) {
+				alert(response);
 			}
 		});
 	},

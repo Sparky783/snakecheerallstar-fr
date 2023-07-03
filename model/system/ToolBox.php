@@ -1,227 +1,292 @@
 <?php
-require_once(ABSPATH . "model/system/LogManager.php");
+namespace System;
+use Exception;
+use ErrorException;
+use InvalidArgumentException;
 
-// =========================================================================
-// ==== Boite à outils du site. Fonctions statique a utiliser au besoin ====
-// =========================================================================
-
+/**
+ * This class is use for all generic stuff.
+ */
 class ToolBox
 {
-	// Regarde si le fichier existe à partir d'une URL et non pas du chemin depuis le répertoire courant.
-	static public function UrlExists(string $url) : bool
+	/**
+	 * Check if the URL file exists. 
+	 * 
+	 * @param string $url URL of the file.
+	 * @return bool Return True if the file exist, else False.
+	 */
+	public static function urlExists(string $url): bool
 	{
 		try {
-			if(file_Get_contents($url))
+			if(file_Get_contents($url)) {
 				return true;
+			}
+
 			return false;
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error with the URL for the ToolBox::UrlExists() function.");
+			LogManager::addLine('Error : Error with the URL for the ToolBox::urlExists() function.');
 		}
 	}
 	
-	// Regarde si le fichier existe à partir d'une URL et non pas du chemin depuis le répertoire courant.
-	static public function RemoveFile(string $path) : bool
-	{
-		if(file_exists($path))
-		{
-			unlink($path);
-			return true;
-		}
-		
-		return false;
-	}
-	
-	// Supprime un dossier et tout son contenu, retourne true ou false suivant le succès de l'opération.
-	static public function DeleteDirectory(string $folder) : bool
+	/**
+	 * Remove a folder and all its content.
+	 * 
+	 * @param string $folder Path of the folder to remove.
+	 * @return bool Return True if the folder is removed, else False.
+	 */
+	public static function removeDirectory(string $folderPath): bool
 	{
 		try {
-			if(!self::DeleteAllInDirectory($folder))
+			if(!self::removeDirectoryContent($folderPath)) {
 				return false;
-			if(!rmdir($folder))
+			}
+
+			if(!rmdir($folderPath)) {
 				return false;
+			}
+
 			return true;
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error with the function rmdir() in the ToolBox::DeleteDirectory() function.");
+			LogManager::addLine('Error : Error with the function rmdir() in the ToolBox::RemoveDirectory() function.');
 		}
 	}
 	
-	// Supprimer tous les fichiers et dossiers contenus dans le dossier passé en paramètre.
-	static public function DeleteAllInDirectory(string $folder) : bool
+	/**
+	 * Remove all files and folders in directory.
+	 * 
+	 * @param string $folderPath Path to the directory to clear.
+	 * @return bool return True if the folder is clear, else False.
+	 */
+	public static function removeDirectoryContent(string $folderPath): bool
 	{
 		try {
-			if($ouverture = opendir($folder)) {
-				while(false !== ($fichier = readdir($ouverture))) {
-					if($fichier != "." and $fichier != "..") {
-						if(is_dir($folder."/".$fichier)) {
-							if(self::DeleteAllFilesInDirectory($folder."/".$fichier))
-								rmdir($folder."/".$fichier);
-							else
+			if($ouverture = opendir($folderPath)) {
+				while(false !== ($file = readdir($ouverture))) {
+					if($file != '.' and $file != '..') {
+						if(is_dir($folderPath . '/' . $file)) {
+							if(self::removeDirectoryContent($folderPath . '/' . $file)) {
+								rmdir($folderPath . '/' . $file);
+							} else {
 								return false;
+							}
 						} else {
-							if(!unlink($folder."/".$fichier))
+							if(!unlink($folderPath . '/' . $file)) {
 								return false;
+							}
 						}
 					}
 				}
+
 				closedir($ouverture);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error in the ToolBox::DeleteAllInDirectory() function.");
+			LogManager::addLine('Error : Error in the ToolBox::removeDirectoryContent() function.');
 		}
 		
 	}
 	
-	// Supprimer tous les fichiers contenus dans le dossier passé en paramètre (supprime aussi les fichiers des sous-dossiers).
-	static public function DeleteAllFilesInDirectory(string $folder) : bool
+	/**
+	 * Remove all files in directory (file only).
+	 * 
+	 * @param string $folderPath Path to the folder to clear.
+	 * @param bool Define if the sub-folders must be clear.
+	 * @return bool Return True if the directory is clear, else False.
+	 */
+	public static function removeDirectoryFiles(string $folderPath, bool $subFolders): bool
 	{
 		try {
-			if($ouverture = opendir($folder)) {
-				while(false !== ($fichier = readdir($ouverture))) {
-					if($fichier != "." and $fichier != "..") {
-						if(is_dir($folder."/".$fichier)) {
-							if(!self::DeleteAllFilesInDirectory($folder."/".$fichier))
+			if($ouverture = opendir($folderPath)) {
+				while(false !== ($file = readdir($ouverture))) {
+					if($file != '.' and $file != '..') {
+						if(is_dir($file . '/' . $file) && $subFolders) {
+							if(!self::removeDirectoryFiles($folderPath . '/' . $file, $subFolders)) {
 								return false;
+							}
 						} else {
-							if(!unlink($folder."/".$fichier))
+							if(!unlink($folderPath . '/' . $file)) {
 								return false;
+							}
 						}
 					}
 				}
+
 				closedir($ouverture);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error in the ToolBox::DeleteAllFilesInDirectory() function.");
+			LogManager::addLine('Error : Error in the ToolBox::removeDirectoryFiles() function.');
 		}
 	}
 	
-	// Regarde si le chemin passé en paramètre est un dossier, et s'il n'existe pas, il le créé.
-	static public function IsDirectoryOrCreateIt(string $path) : bool
+	/**
+	 * Make a folder if it does not exist.
+	 * 
+	 * @param string $path Path of the folder.
+	 * @return bool Return True if the folder exist or if the folder was created, else False.
+	 */
+	public static function makeDirectory(string $path) : bool
 	{
 		try {
-			if(!is_dir($path))
-				if(!mkdir($path, 0777, true))
+			if(!is_dir($path)) {
+				if(!mkdir($path, 0777, true)) {
 					return false;
+				}
+			}
+
 			return true;
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error in the ToolBox::IsDirectoryOrCreateIt() function.");
+			LogManager::addLine('Error : Error in the ToolBox::makeDirectory() function.');
 		}
 	}
 	
-	// Récursive pour copier un dossier ainsi que son contenu. Retourne le nombre de fichier copié sinon FALSE.
-	static public function CopyDirectory(string $origine, string $destination)
+	/**
+	 * Copy a folder with all its contents.
+	 * 
+	 * @param string $source Path of the folder to copy.
+	 * @param string $destination Path where the copy must be.
+	 * @return int|bool Return the number of copied files, else False.
+	 */
+	public static function copyDirectory(string $source, string $destination): int|bool
 	{
 		try {
-			if($test = scandir($origine)) {
+			if($elements = scandir($source)) {
 				$nbr_files = 0;
-				foreach($test as $val) {
-					if($val != "." and $val != "..") {
-						if(is_dir($origine."/".$val)) {
-							self::IsDirectoryOrCreateIt($destination."/".$val);
-							$nbr_files += CopyDirectory($origine."/".$val, $destination."/".$val);
+
+				foreach($elements as $file) {
+					if($file != '.' and $file != '..') {
+						if(is_dir($source . '/' . $file)) {
+							self::makeDirectory($destination . '/' . $file);
+							$nbr_files += self::copyDirectory($source . '/' . $file, $destination . '/'. $file);
 						} else {
-							if(copy($origine."/".$val, $destination."/".$val)) {
+							if(copy($source . '/' . $file, $destination . '/' . $file)) {
 								$nbr_files ++;
 							} else {
-								if(!file_exists($origine."/".$val)) {
-									throw new exception($origine."/".$val." doesn't exist!");
+								if(!file_exists($source . '/' . $file)) {
+									throw new Exception($source . '/' . $file . " doesn't exist!");
 								}
 							}
 						}
 					}
 				}
+
 				return $nbr_files;
 			} else {
 				return false;
 			}
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error in the ToolBox::CopyDirectory() function.");
+			LogManager::addLine('Error : Error in the ToolBox::copyDirectory() function.');
 		}
 	}
 	
-	// Déplace un dossiers et ses fichiers. Retourne le nombre de fichiers déplacés sinon FALSE.
-	static public function MoveDirectory(string $origine, string $destination)
+	/**
+	 * Move the directory to another place.
+	 * 
+	 * @param string $source Path of the folder to move.
+	 * @param string $destination Path where the folder must be.
+	 * @return bool Return True if succeed, else False.
+	 */
+	public static function moveDirectory(string $source, string $destination): bool
 	{
-		$nbr_files = self::CopyDirectory($origine, $destination);
-
-		if($nbr_files !== false)
+		if(!is_dir($source) ||!is_dir($destination))
 		{
-			if(self::DeleteDirectory($origine))
-				return $nbr_files;
+			return false;
 		}
 
-		return false;
+		return rename($source, $destination);
 	}
 	
-	// Retourne un tableau contenant tous les chemins vers les fichiers contenus dans le chemin du dossier passé en paramètre.
-	static public function GetAllPathFilesFromDir(string $pathDir) : array
+	/**
+	 * Get all file path from a directory. Included files into subfolders.
+	 * 
+	 * @param string $folderPath Path of the folder to scan.
+	 * @return array List of all file paths.
+	 */
+	public static function getAllPathFilesFromDir(string $folderPath): array
 	{
 		try {
-			$out = array();
-			$dir = opendir(realpath($pathDir));
+			$filePaths = [];
+			$dir = opendir(realpath($folderPath));
 
 			while($file = readdir($dir))
 			{
-				if(($file!=".") && ($file!="..")) 
-					$out[] = realpath($pathDir.'/'.$file);
+				if($file != '.' && $file != '..') {
+					$filePaths[] = realpath($folderPath . '/' . $file);
+				}
 			}
 
 			closedir($dir);
-			return $out;
+			return $filePaths;
 		} catch (Exception $e) {
-			LogManager::AddLine("Error : Error in the ToolBox::GetAllPathFilesFromDir() function.");
+			LogManager::addLine('Error : Error in the ToolBox::getAllPathFilesFromDir() function.');
 		}
 	}
 	
-	// Récupère le nom de la page courante dans l'URL (Ex: index.php).
-	static public function GetCurrentPageName() : string
+	/**
+	 * Get the name of the current page in URL (Ex: index.php).
+	 * 
+	 * @return string Name of the page.
+	 */
+	public static function getCurrentPageName(): string
 	{
-		return substr($_SERVER["SCRIPT_NAME"],strrpos($_SERVER["SCRIPT_NAME"],"/")+1);
+		return substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], '/') + 1);
 	}
 	
 	// Récupère l'URL complète de la page courante.
-	static public function GetCurrentUrl() : string
+	static public function getCurrentUrl() : string
 	{
+		$isHttps = false;
 		$pageURL = 'http';
 
-		if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
-			$pageURL .= "://";
+		if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+			$isHttps = true;
+			$pageURL .= "s";
+		}
+		
+		$pageURL .= '://';
 
-		if ($_SERVER["SERVER_PORT"] != "80")
-			$pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
-		else
-			$pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+		if ($_SERVER['SERVER_PORT'] != '80' && !$isHttps) {
+			$pageURL .= $_SERVER['SERVER_NAME'] . ':'  .$_SERVER['SERVER_PORT'] . $_SERVER['REQUEST_URI'];
+		} else {
+			$pageURL .= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+		}
 		
 		return $pageURL;
 	}		
 		
-	// Format une date à partir :
-	//   -  d'un timestamp (nb Entier de sec depuis la date UNIX),
-	//   -  d'une date au format : YYYY/MM/DD 
-	//   -  d'une date au format DateTime SQL : YYYY-MM-DD hh:mm:ss
-	//   -  d'une date au format ISO : YYYY-MM-DDThh:mm:ss+00000 
-	// Format de sortie : 5 Février 2012 ( à 06h34)
-	static public function FormatDate($time = null, $displayHour = true) : string
+	/**
+	 * Format une date à partir :
+	 *   -  d'un timestamp (nb Entier de sec depuis la date UNIX),
+	 *   -  d'une date au format : YYYY/MM/DD 
+	 *   -  d'une date au format DateTime SQL : YYYY-MM-DD hh:mm:ss
+	 *   -  d'une date au format ISO : YYYY-MM-DDThh:mm:ss+00000
+	 * 
+	 * @param mixed $time Time the format.
+	 * @param bool $displayHour Define if hour must be display.
+	 * @return string Return the formated date (Ex: 5 Février 2012 ( 06h34)).
+	 */
+	public static function formatDate(mixed $time = null, bool $displayHour = true): string
 	{
-		if($time == null)
+		if($time == null) {
 			$time = time();
+		}
 
-		if(gettype($time) == "object" && get_class($time) == "DateTime")
-			$time = $time->format("Y-m-d H:i:s");
+		if(gettype($time) == 'object' && get_class($time) == 'DateTime') {
+			$time = $time->format('Y-m-d H:i:s');
+		}
 
-		if(preg_match("#^\d{5,}$#", "" . $time)) {
+		if(preg_match("#^\d{5,}$#", '' . $time)) {
 			$jour = date("j", intval($time));
 			$mois = date("m", intval($time));
 			$annee = date("Y", intval($time));
 			$heure = date("G", intval($time));
 			$minute = date("i", intval($time));
 		}
-		else if(preg_match("#^\d{4}[/-]\d{2}[/-]\d{2}([T ]\d{2}:\d{2}:\d{2})?#", "" . $time))
+		else if(preg_match("#^\d{4}[/-]\d{2}[/-]\d{2}([T ]\d{2}:\d{2}:\d{2})?#", '' . $time))
 		{
 			$annee = substr($time, 0, 4);
 			$mois = substr($time, 5, 2);
@@ -230,7 +295,7 @@ class ToolBox
 			$minute = substr($time, 14, 2);
 		}
 
-		if(intval($jour)!=0 and intval($mois)!=0 and intval($annee)!=0)
+		if(intval($jour) != 0 && intval($mois) != 0 && intval($annee) != 0)
 		{
 			switch($mois) {
 				case '01': $mois = "Janvier"; break;
@@ -245,29 +310,43 @@ class ToolBox
 				case '10': $mois = "Octobre"; break;
 				case '11': $mois = "Novembre"; break;
 				case '12': $mois = "Décembre"; break;
-				default: $mois = "Mois inconnu";
+				default:
+					throw new ErrorException('The month does not exist.');
 			}
 
-			if(substr($jour, 0, 1) == "0") 
+			if(substr($jour, 0, 1) == '0') {
 				$jour = substr($jour, 1, 1);
+			}
 			
-			if($displayHour && intval($heure) !== false && intval($minute) !== false)
-				return $jour." ".$mois." ".$annee." à ".$heure."h".$minute;
+			if($displayHour && intval($heure) !== false && intval($minute) !== false) {
+				return $jour . ' ' . $mois . ' ' . $annee . ' ' . $heure . 'h' . $minute;
+			}
 			
-			return $jour." ".$mois." ".$annee;
+			return $jour . ' ' . $mois . ' ' . $annee;
 		}
 
 		return false;
 	}
 	
-	// Converti la balise HTML <br /> en \n
-	static public function Br2nl(string $string) : string
+	/**
+	 * Convert HTML <br /> to \n.
+	 * 
+	 * @param string $string String to convert.
+	 * @return string Converted string.
+	 */
+	public static function br2nl(string $string): string
 	{
 		return preg_replace("/\<br(\s*)?\/?\>/i", "\n", $string);
 	}
 	
-	// Supprime les accents d'une chaine de caractères. (Work with Unicode)
-	static public function StripAccents(string $string) : string
+	/**
+	 * Remove all accents.
+	 * (Works with Unicode)
+	 * 
+	 * @param string $string string where accents mest be removed.
+	 * @return string Return the string without accent.
+	 */
+	public static function stripAccents(string $string): string
 	{
 		return str_replace(
 			array('à','â','ä','á','ã','å','î','ï','ì','í','ô','ö','ò','ó','õ','ø','ù','û','ü','ú','é','è','ê','ë','ç','ý','ÿ','ñ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'),
@@ -276,8 +355,13 @@ class ToolBox
 		);
 	}
 	
-	// Calcul l'age d'une personne grâce à la date de naissance. (Date américaine)
-	static public function Age(string $birthday) : int // Format YYYY-MM-DD
+	/**
+	 * Determine the age form birthday.
+	 * 
+	 * @param string $birthday Birthday of the person (YYYY-MM-DD).
+	 * @return int Age of the person.
+	 */
+	public static function Age(string $birthday): int
 	{
 		list($annee, $mois, $jour) = explode('-', $birthday);
 		$annee = intval($annee);
@@ -296,45 +380,67 @@ class ToolBox
 		{
 			if($mois == $today['mois'])
 			{
-				if($today['jour'] < $jour)
+				if($today['jour'] < $jour) {
 					$age--;
+				}
 			}
-			else
+			else {
 				$age--;
+			}
 		}
 
 		return $age;
 	}
 
-	// Calcul l'age d'une personne grâce à la date de naissance. (Date américaine)
-	static public function StringToBool(string $string) : bool
+	/**
+	 * Convert string to bool.
+	 * 
+	 * @param string $string Boolean string ("true"/"false", "1"/"0").
+	 * @return bool Corresponding boolean.
+	 */
+	public static function StringToBool(string $string): bool
 	{
 		$string = mb_strtolower($string);
 		
-		if($string == "true" || $string == "1")
+		if($string == 'true' || $string == '1') {
 			return true;
+		}
 
 		return false;
 	}
 
-	// Calcul l'age d'une personne grâce à la date de naissance. (Date américaine)
-	static public function BoolToString(bool $bool) : string
+	/**
+	 * Convert bool to string.
+	 * 
+	 * @param string $string Boolean to convert.
+	 * @return bool Corresponding boolean string ("true"/"false").
+	 */
+	public static function BoolToString(bool $bool): string
 	{
-		if($bool)
-			return "true";
+		if($bool) {
+			return 'true';
+		}
 
-		return "false";
+		return 'false';
 	}
 
-	// Recherche des valeurs dans un tableau de valeurs.
-	static public function SearchInArray(array $searchArray, array $values, $allValues = false) : bool
+	/**
+	 * Search a list of item into an array.
+	 * 
+	 * @param array $searchArray List of item to search.
+	 * @param array $values List where items must be found.
+	 * @param bool $allValues Define if all values must be found or not.
+	 * @return bool Return true if item(s) was found, else False.
+	 */
+	public static function searchInArray(array $searchArray, array $values, bool $allValues = false): bool
 	{
 		if($allValues)
 		{
 			$result = true;
 
-			foreach($values as $value)
+			foreach($values as $value) {
 				$result = $result & in_array($value, $searchArray);
+			}
 
 			return $result;
 		}
@@ -342,40 +448,51 @@ class ToolBox
 		{
 			foreach($searchArray as $item)
 			{
-				if(in_array($item, $values))
+				if(in_array($item, $values)) {
 					return true;
+				}
 			}
 
 			return false;
 		}
 	}
 	
-	// Génère un mot de passe
-	static public function GeneratePassword($nbChar = 8)
+	/**
+	 * Generate a strong password.
+	 * 
+	 * @param int $nbChar Length of the password.
+	 * @return string Generated password.
+	 */
+	public static function generatePassword(int $nbChar = 16): string
 	{
-		if($nbChar >= 4)
+		if($nbChar <= 0)
 		{
-			$chars = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-						   'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-						   '0','1','2','3','4','5','6','7','8','9',
-						   '!','?','#');
-
-			$nbChars = count($chars) - 1;
-			$pass = "";
-
-			for($i = 0; $i < $nbChar; $i ++)
-				$pass .= $chars[random_int(0, $nbChars)];
-
-			return $pass;
+			throw new InvalidArgumentException("The password's length must be positive.");
 		}
-		else
-			return false;
+
+		$chars = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+						'0','1','2','3','4','5','6','7','8','9',
+						'!','?','#','-','_');
+
+		$nbChars = count($chars) - 1;
+		$pass = '';
+
+		for($i = 0; $i < $nbChar; $i ++)
+			$pass .= $chars[random_int(0, $nbChars)];
+
+		return $pass;
 	}
 
-	// Génère un mot de passe
-	static public function GenerateRandomToken()
+	/**
+	 * Format the phone number to be display.
+	 * 
+	 * @param string $phone Numberphone to format.
+	 * @return string The formated number phone.
+	 */
+	public static function formatNumberPhone(string $phone): string
 	{
-		return hash("sha512", random_bytes(256));
+		return $phone;
 	}
 }
 ?>

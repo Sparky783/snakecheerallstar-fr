@@ -1,4 +1,6 @@
 <?php
+use System\WebSite;
+
 // ==== Access security ====
 if(!$session->admin_isConnected)
 	WebSite::Redirect("login", true);

@@ -1,9 +1,12 @@
 <?php
+use ApiCore\Api;
+use System\ToolBox;
+use System\Admin;
+use Common\EmailTemplates;
+
 if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 {
 	$app->Post("/admins_list", function($args) {
-		include_once(ABSPATH . "model/system/Admin.php");
-
 		$admins = Admin::GetList();
 		$list = array();
 		
@@ -14,13 +17,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Post("/admin_add", function($args) {
-		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/EmailTemplates.php");
-		include_once(ABSPATH . "model/system/Admin.php");
-
-		$password = SnakeTools::GeneratePassword();
+		$password = ToolBox::GeneratePassword();
 
 		$admin = new Admin();
 		$admin->SetEmail($args['email']);
@@ -33,13 +30,14 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 			// E-mail d'information
 			$resultEmail = false;
 			$mail = new PHPMailer(true); // Passing `true` enables exceptions
+			$error = null;
 
 			try {
 				//Server settings
 				$mail->isSMTP();
 				$mail->Host = SMTP_HOST;
 				$mail->SMTPAuth = SMTP_AUTH;
-				$mail->Adminname = SMTP_USERNAME;
+				$mail->Username = SMTP_USERNAME;
 				$mail->Password = SMTP_PASSWORD;
 				$mail->SMTPSecure = SMTP_SECURE;
 				$mail->Port = SMTP_PORT;
@@ -47,8 +45,11 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 
 				//Recipients
 				$mail->setFrom(EMAIL_WEBSITE, 'Nouveau compte | ' . TITLE);
-				$mail->addAddress($admin->GetEmail(), $admin->GetName());
-				$mail->addAddress(EMAIL_WABMASTER,  $admin->GetName());
+
+				if(ENV == "PROD")
+					$mail->addAddress($admin->GetEmail(), $admin->GetName());
+				else // ENV DEV
+					$mail->addAddress(EMAIL_WABMASTER,  $admin->GetName());
 
 				//Content
 				$subject = "Nouveau compte - " . TITLE;
@@ -73,24 +74,32 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 
 				$mail->isHTML(true); // Set email format to HTML
 				$mail->Subject = $subject;
-				$mail->Body    = EmailTemplates::StandardHTML($subject, $message);
-				$mail->AltBody = EmailTemplates::TextFormat("Nouveau compte - " . TITLE);
+				$mail->Body    = EmailTemplates::standardHtml($subject, $message);
+				$mail->AltBody = EmailTemplates::standardText("Nouveau compte - " . TITLE);
 
 				$mail->send();
 				$resultEmail = true;
 			}
-			catch (Exception $e) { }
+			catch (Exception $e)
+			{
+				$error = array(
+					"source" => "Server",
+					"error" => $e->getMessage()
+				);
+			}
 
 			if($resultEmail)
-				API::SendJSON($id);
+				API::SendJSON($admin->GetId());
 			else
-				API::SendJSON(false);
+				API::SendJSON($error);
+		}
+		else
+		{
+			API::SendJSON(false);
 		}
 	});
 
 	$app->Post("/admin_edit", function($args) {
-		include_once(ABSPATH . "model/system/Admin.php");
-		
 		$admin = Admin::GetById($args['id_admin']);
 		$admin->SetEmail($args['email']);
 		$admin->SetName($args['name']);
@@ -100,18 +109,10 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Post("/admin_remove", function($args) {
-		include_once(ABSPATH . "model/Admin.php");
-		
 		API::SendJSON(Admin::RemoveFromDatabase($args['id_admin']));
 	});
 
 	$app->Post("/reinit_admin_password", function($args) {
-		include_once(ABSPATH . "model/system/ToolBox.php");
-		include_once(ABSPATH . "model/system/Admin.php");
-		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-		include_once(ABSPATH . "model/EmailTemplates.php");
-		
 		$password = ToolBox::GeneratePassword();
 
 		$admin = Admin::GetById($args['id_admin']);
@@ -121,13 +122,14 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 		// E-mail d'information
 		$resultEmail = false;
 		$mail = new PHPMailer(true); // Passing `true` enables exceptions
+		$error = false;
 
 		try {
 			//Server settings
 			$mail->isSMTP();
 			$mail->Host = SMTP_HOST;
 			$mail->SMTPAuth = SMTP_AUTH;
-			$mail->adminname = SMTP_adminNAME;
+			$mail->Username = SMTP_USERNAME;
 			$mail->Password = SMTP_PASSWORD;
 			$mail->SMTPSecure = SMTP_SECURE;
 			$mail->Port = SMTP_PORT;
@@ -135,6 +137,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 
 			//Recipients
 			$mail->setFrom(EMAIL_WEBSITE, 'Reinitialisation du mot de passe | ' . TITLE);
+
 			if(ENV == "PROD")
 				$mail->addAddress($admin->GetEmail(), $admin->GetName());
 			else // ENV DEV
@@ -156,15 +159,23 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 
 			$mail->isHTML(true); // Set email format to HTML
 			$mail->Subject = $subject;
-			$mail->Body    = EmailTemplates::StandardHTML($subject, $message);
-			$mail->AltBody = EmailTemplates::TextFormat("Réinitialisation du mot de passe - " . TITLE);
+			$mail->Body    = EmailTemplates::standardHtml($subject, $message);
+			$mail->AltBody = EmailTemplates::standardText("Réinitialisation du mot de passe - " . TITLE);
 
-			$mail->send();
-			$resultEmail = true;
+			$resultEmail = $mail->send();
 		}
-		catch (Exception $e) { }
+		catch (Exception $e)
+		{
+			$error = array(
+				"source" => "Server",
+				"error" => $e->getMessage()
+			);
+		}
 
-		API::SendJSON($resultEmail);
+		if($resultEmail)
+			API::SendJSON($admin->GetId());
+		else
+			API::SendJSON($error);
 	});
 }
 ?>

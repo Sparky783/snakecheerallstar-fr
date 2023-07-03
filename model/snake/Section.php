@@ -1,7 +1,8 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Horaire.php");
+namespace Snake;
+
+use System\Database;
+use Snake\Horaire;
 
 class Section
 {
@@ -216,7 +217,7 @@ class Section
 		$database = new Database();
 
 		$sections = $database->Query(
-			"SELECT * FROM sections WHERE saison=:saison",
+			"SELECT * FROM sections WHERE saison=:saison ORDER BY min_age",
 			array("saison" => $saison)
 		);
 

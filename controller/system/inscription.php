@@ -3,15 +3,15 @@
 // ==== Controleur Inscription ====
 // ================================
 
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
-include_once(ABSPATH . "model/Options.php");
+use System\Session;
+use Snake\Inscription;
 
 global $gmm;
 
 $session = Session::getInstance();
-if(!isset($session->inscription))
+if (!isset($session->inscription)) {
 	$session->inscription = new Inscription();
+}
 
 // ==============================================
 // ==== Gestion des accés pour l'inscription ====
@@ -23,19 +23,26 @@ if(ENV == "Dev")
 	$allowAccess = true;
 
 // Accès aux inscription pour test.
-$test = true;
-if($test && $gmm->GetValue("pass") == "kamoulox" && !$session->inscriptionAllowAccess)
-	$session->inscriptionAllowAccess = true;
+if(!isset($session->inscriptionAllowAccess)) {
+	$session->inscriptionAllowAccess = false;
+}
 
-if($session->inscriptionAllowAccess)
+$test = false;
+if($test && $gmm->GetValue("pass") == "kamoulox" && !$session->inscriptionAllowAccess) {
+	$session->inscriptionAllowAccess = true;
+}
+
+if($session->inscriptionAllowAccess) {
 	$allowAccess = true;
+}
 
 // Accès normal au inscriptions suivant les paramètres du site.
 $options = unserialize($session->websiteOptions);
 $today = new DateTime();
 
-if($options->IS_OPEN_INSCRIPTION && $today >= $options->INSCRIPTION_MIN_DATE &&  $today < $options->INSCRIPTION_MAX_DATE)
+if($options->IS_OPEN_INSCRIPTION && $today >= $options->INSCRIPTION_MIN_DATE &&  $today < $options->INSCRIPTION_MAX_DATE) {
 	$allowAccess = true;
+}
 // ==============================================
 
 $script = "";

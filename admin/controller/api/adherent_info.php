@@ -1,9 +1,13 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Session;
+use Snake\SnakeTools;
+use Snake\Tuteur;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
 {
 	$app->Post("/adherent_info_add_tuteur", function($args) {
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-
 		$session = Session::GetInstance();
 
 		$tuteur = new Tuteur();
@@ -38,13 +42,9 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 }
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "tresorier", "secretaire")))
 {
 	$app->Post("/adherent_info_send_bill", function($args) {
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Adherent.php");
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-
 		$session = Session::GetInstance();
 
 		$adherent = unserialize($session->selectedAdherent);
@@ -87,13 +87,9 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "se
 	});
 }
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")))
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")))
 {
 	$app->Post("/adherent_info_send_recap", function($args) {
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Adherent.php");
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-
 		$session = Session::GetInstance();
 
 		$adherent = unserialize($session->selectedAdherent);

@@ -1,4 +1,8 @@
-<?php global $router; ?>
+<?php
+use Snake\SnakeTools;
+
+global $router;
+?>
 
 <!DOCTYPE html>
 <html lang="fr">

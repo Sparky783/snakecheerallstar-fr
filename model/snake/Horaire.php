@@ -1,4 +1,8 @@
 <?php
+namespace Snake;
+
+use DateTime;
+
 class Horaire
 {
 	// == ATTRIBUTS ==

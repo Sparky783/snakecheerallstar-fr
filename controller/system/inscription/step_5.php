@@ -1,15 +1,11 @@
 <?php
+use System\Session;
+use Snake\SnakeTools;
+
 // ================================
 // ==== Controleur Inscription ====
 // ================================
 // ==== Inscription terminé, récapitulatif des pièces à fournir ====
-
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
-include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-include_once(ABSPATH . "model/EmailTemplates.php");
 
 global $router;
 

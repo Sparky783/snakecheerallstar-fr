@@ -1,14 +1,13 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Session;
+use Common\EmailTemplates;
+use Snake\Tuteur;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")))
 {
 	$app->Post("/email", function($args) {
-		include_once(ABSPATH . "model/system/Session.php");
-		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-		include_once(ABSPATH . "model/EmailTemplates.php");
-
 		$session = Session::GetInstance();
 
 		// Récupération des données
@@ -71,8 +70,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 				}
 				else // ENV DEV
 				{
-					var_dump($tuteurs);
-
 					$mail->addAddress(EMAIL_WABMASTER, "Snake Cheer All Star");
 					$send = true;
 				}
@@ -83,8 +80,8 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 				$html = "<p>" . str_replace("\n", "<br />", $message) . "</p>";
 
 				$mail->Subject = $subject;
-				$mail->Body    = EmailTemplates::StandardHTML($subject, $html);
-				$mail->AltBody = EmailTemplates::TextFormat($subject);
+				$mail->Body    = EmailTemplates::standardHtml($subject, $html);
+				$mail->AltBody = EmailTemplates::standardText($subject);
 
 				if($send)
 					$mail->send();

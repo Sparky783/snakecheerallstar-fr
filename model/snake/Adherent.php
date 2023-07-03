@@ -1,8 +1,11 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Section.php");
-require_once("Payment.php");
+namespace Snake;
+
+use Datetime;
+use System\Database;
+use Snake\SnakeTools;
+use Snake\Section;
+use Snake\Payment;
 
 class Adherent
 {
@@ -311,6 +314,7 @@ class Adherent
 	public function SetSection(Section $section)
 	{
 		$this->section = $section;
+		$this->id_section = $section->GetId();
 	}
 
 	public function SetPayment(Payment $payment)

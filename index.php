@@ -1,23 +1,17 @@
 <?php
-include_once("prepare.php"); // Chargement de la configuration et de l'ensemble des éléments communs.
-include_once(ABSPATH . "model/system/WebSite.php");
-include_once(ABSPATH . "model/Options.php");
+use System\Session;
+use System\WebSite;
+use System\Options;
 
-// Loaded for session object
-include_once(ABSPATH . "model/snake/Inscription.php");
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+include_once("prepare.php"); // Chargement de la configuration et de l'ensemble des éléments communs.
 
 $session = Session::getInstance();
 
-// ==== Controleur général ========================================================
-if(!isset($session->websiteOptions))
-{
-	$options = new Options();
-	$options->LoadFromDatabase();
-	$session->websiteOptions = serialize($options);
-}	
-// ================================================================================
-
-$website = new WebSite();
+$website = new WebSite(ABSPATH);
 
 $website->SetPages(array(
 	"accueil",

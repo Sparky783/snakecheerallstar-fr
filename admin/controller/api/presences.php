@@ -1,10 +1,12 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "coach")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Database;
+use Snake\Adherent;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "coach")))
 {
 	$app->Get("/presences_get_list/{id_section}", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		
 		global $router;
 
 		$nbr = 0;
@@ -76,8 +78,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "coach")))
 	});
 
 	$app->Post("/validate_presences", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-		
 		$database = new Database();
 
 		$result = $database->Insert("presences", array(

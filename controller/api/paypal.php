@@ -1,8 +1,8 @@
 <?php
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
-include_once(ABSPATH . "model/SimplePayPal.php");
+use ApiCore\Api;
+use System\Session;
+use Snake\SnakeTools;
+use SimplePayPal;
 
 $app->Post("/create_order", function($args) {
 	global $router;

@@ -1,10 +1,13 @@
 <?php
+use ApiCore\Api;
+use System\ToolBox;
+use System\Database;
+use Snake\Adherent;
+
 if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 {
 	// Supprime l'adhérent de la base de données.
 	$app->Post("/remove_adherent", function($args) {
-		include_once(ABSPATH . "model/snake/Adherent.php");
-
 		$adherent = Adherent::GetById($args['id_adherent']);
 		$result = $adherent->RemoveFromDatabase();
 
@@ -14,8 +17,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Get("/validation_remove", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-
 		$database = new Database();
 		$rech = $database->Query(
 			"SELECT * FROM adherents WHERE id_section=:id_section",

@@ -1,11 +1,12 @@
 <?php
+use System\Session;
+use Snake\Inscription;
+use Snake\SnakeTools;
+
 // ================================
 // ==== Controleur Inscription ====
 // ================================
 // ==== Paiement de la cotisation et de la tenue ====
-
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
 
 global $router, $gmm;
 $session = Session::getInstance();

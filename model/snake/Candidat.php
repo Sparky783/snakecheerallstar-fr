@@ -1,6 +1,7 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
+namespace Snake;
+
+use System\Database;
 
 class Candidat
 {

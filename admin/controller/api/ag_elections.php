@@ -1,9 +1,13 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Database;
+use Snake\Candidat;
+use Snake\Adherent;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 {
 	$app->Post("/ag_candidats_list", function($args) {
-		include_once(ABSPATH . "model/snake/Candidat.php");
-
 		$candidats = Candidat::GetList();
 		$candidatsArray = array();
 
@@ -18,8 +22,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Post("/ag_candidat_add", function($args) {
-		include_once(ABSPATH . "model/snake/Candidat.php");
-
 		if($args['lastname'] != "" && $args['firstname'] != "")
 		{
 			$candidat = new Candidat();
@@ -34,8 +36,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Post("/ag_candidat_edit", function($args) {
-		include_once(ABSPATH . "model/snake/Candidat.php");
-		
 		$candidat = Candidat::GetById($args['id_candidat']);
 		$response = false;
 		
@@ -51,16 +51,10 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
 	});
 
 	$app->Post("/ag_candidat_remove", function($args) {
-		include_once(ABSPATH . "model/snake/Candidat.php");
-		
 		API::SendJSON(Candidat::RemoveFromDatabase($args['id_candidat']));
 	});
 
 	$app->Post("/ag_get_resultat", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-		include_once(ABSPATH . "model/snake/Candidat.php");
-		include_once(ABSPATH . "model/snake/Adherent.php");
-		
 		$database = new Database();
 
 		$response = array();

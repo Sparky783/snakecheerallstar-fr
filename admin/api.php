@@ -1,16 +1,14 @@
 <?php
+use ApiCore\Api;
+use System\Router;
+use System\Session;
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-			
-include_once(ABSPATH . "model/system/ToolBox.php");
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/system/Router.php"); // Load the API core. Completely independant.
-include_once(ABSPATH . "model/api-core/Api.php"); // Load the API core. Completely independant.
 
 global $router;
 $router = new Router(true); // Enable admin mode
-
 $session = Session::getInstance();
 			
 if($session->admin_isConnected)

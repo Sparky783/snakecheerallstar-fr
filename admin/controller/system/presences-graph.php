@@ -1,10 +1,12 @@
 <?php
+use System\WebSite;
+use System\ToolBox;
+use System\Database;
+
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "coach")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "coach")))
 	WebSite::Redirect("login", true);
 // =========================
-
-include_once(ABSPATH . "model/system/Database.php");
 
 $sectionsHtml = "";
 $database = new Database();

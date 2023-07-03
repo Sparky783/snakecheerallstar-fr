@@ -1,12 +1,14 @@
 <?php
+use System\WebSite;
+use System\ToolBox;
+use System\Session;
+use Snake\Adherent;
+use Snake\Payment;
+
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member",)))
 	WebSite::Redirect("login", true);
 // =========================
-
-include_once(ABSPATH . "model/system/ToolBox.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
-include_once(ABSPATH . "model/snake/Adherent.php");
 
 global $gmm;
 
@@ -69,6 +71,10 @@ switch($adherent->GetPayment()->GetMethod())
 				$priceHtml .= "</ul>";
 			}
 		}
+		break;
+
+	case Payment::$METHODS['Virement']:
+		$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Virement";
 		break;
 }
 

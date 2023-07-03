@@ -1,9 +1,11 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once(ABSPATH . "model/system/ToolBox.php");
-require_once("Section.php");
-require_once("Payment.php");
-require_once("Tuteur.php");
+namespace Snake;
+
+use System\Database;
+use System\ToolBox;
+use Snake\Section;
+use Snake\Payment;
+use Snake\Tuteur;
 
 class SnakeTools
 {
@@ -156,12 +158,6 @@ class SnakeTools
 	// Envoie une facture au tuteur sélectionné.
 	static public function SendBill(Payment $payment, Tuteur $tuteur = null)
 	{
-		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-		include_once(ABSPATH . "model/EmailTemplates.php");
-		include_once(ABSPATH . "model/snake/Payment.php");
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-
 		// Destinataire
 		if($tuteur == null)
 		{
@@ -211,13 +207,6 @@ class SnakeTools
 	// Envoie le récapitulatif d'inscription au tuteur sélectionné.
 	static public function SendRecap(Payment $payment, Tuteur $tuteur = null)
 	{
-		include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-		include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-		include_once(ABSPATH . "model/system/ToolBox.php");
-		include_once(ABSPATH . "model/EmailTemplates.php");
-		include_once(ABSPATH . "model/snake/Payment.php");
-		include_once(ABSPATH . "model/snake/Tuteur.php");
-
 		// Destinataire
 		if($tuteur == null)
 		{

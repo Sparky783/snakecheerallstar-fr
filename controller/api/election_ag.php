@@ -1,9 +1,11 @@
 <?php
+use ApiCore\Api;
+use Common\ReCaptcha;
+use System\Database;
+use System\Admin;
+use Snake\Tuteur;
+
 $app->Post("/election_ag", function($args) {
-	include_once(ABSPATH . "model/ReCaptcha.php");
-	include_once(ABSPATH . "model/snake/Tuteur.php");
-	include_once(ABSPATH . "model/User.php");
-	
 	global $router;
 
 	// ReCaptcha
@@ -45,10 +47,10 @@ $app->Post("/election_ag", function($args) {
 				}
 			}
 
-			$users = User::GetList();
-			foreach($users as $user)
+			$admins = Admin::GetList();
+			foreach($admins as $admin)
 			{
-				if($user->GetEmail() == $email)
+				if($admin->GetEmail() == $email)
 				{
 					$found = true;
 					break;

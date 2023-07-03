@@ -1,10 +1,12 @@
 <?php
+use System\WebSite;
+use System\ToolBox;
+use System\Options;
+
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 	WebSite::Redirect("login", true);
 // =========================
-
-include_once(ABSPATH . "model/Options.php");
 
 if(!isset($session->websiteOptions))
 {

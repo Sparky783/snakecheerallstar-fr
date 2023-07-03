@@ -1,28 +1,48 @@
 <?php
-require_once(ABSPATH . "model/system/LogManager.php");
-require_once(ABSPATH . "model/system/GetMethodManager.php");
-require_once(ABSPATH . "model/system/Router.php");
-require_once(ABSPATH . "model/system/Session.php");
+namespace System;
+use Exception;
+use System\Session;
+use System\Options;
+use System\Router;
+use System\GetMethodManager;
 
+// ======================
+// ==== Website core ====
+// ======================
 
+/**
+ * It is used to create main website logic and load good file depending of the demands.
+ */
 class WebSite
 {
-	private $pages = array(); // Pages list of the website.
-	private $default_page = ""; // Display page if the request page is null.
-	private $website_path = ABSPATH; // Path to the website.
-	private $admin_mode = false;
+	private array $_pages = []; // Pages list of the website.
+	private string $_defaultPage = ""; // Display page if the request page is null.
+	private string $_websitePath = ""; // Path to the website.
+	private bool $_adminMode = false;
+	private array $_includes = [];
 
 
-	public function __construct($isAdmin = false)
+	/**
+	 * Initialize a new website kernel.
+	 * 
+	 * @param string $path Define where the website files are placed (controllers, api, views).
+	 * @param bool $isAdmin Say if the kernel is used for administration pages.
+	 */
+	public function __construct(string $path, bool $isAdmin = false)
 	{
-		if($isAdmin)
-		{
-			$this->admin_mode = true;
-			$this->website_path = ABSPATH . "admin/";
+		$this->_websitePath = $path;
+
+		if(substr($this->_websitePath, -1) !== '/') {
+			$this->_websitePath .= '/';
 		}
-	
-		$this->InitModules();
-		$this->InitError();
+
+		if ($isAdmin) {
+			$this->_adminMode = true;
+		}
+
+		$this->initModules();
+		$this->initError();
+		$this->initOptions();
 	}
 
 
@@ -30,26 +50,65 @@ class WebSite
 	// ==== PUBLIC METHODS =====
 	// =========================
 
-	// Set the pages list of the website
-	public function SetPages($pages)
+	/**
+	 * Set the pages list of the website.
+	 * 
+	 * @param array $pages List of pages that can be displayed by the website.
+	 * @return bool Return True if the list has been added, else False.
+	 */
+	public function setPages(array $pages): bool
 	{
-		if(is_array($pages))
-		{
-			$this->pages = $pages;
+		if (is_array($pages)) {
+			$this->_pages = $pages;
 			return true;
 		}
 
 		return false;
 	}
 
-	// Set the default page dislayed if the resquest page is empty.
-	public function DefaultPage($page)
+	/**
+	 * Set the default page dislayed if the resquest page is empty.
+	 * This function must be called after setPages(). 
+	 * 
+	 * @param string $page First page that must be display if no one else are selected.
+	 * @return bool Return True if the default page has been added, else False.
+	 */
+	public function defaultPage(string $page): bool
 	{
-		$this->default_page = $page;
+		// Check if the page is registrated
+		if (!in_array($page, $this->_pages))
+			return false;
+
+		$this->_defaultPage = $page;
+
+		global $router;
+		$router->setDefaultPage($this->_defaultPage);
+
+		return true;
 	}
 
-	// Lunch the web site and send the good page.
-	public function Run()
+	/**
+	 * Add common includes for all pages.
+	 * 
+	 * @param string $includePath Path of the file to include.
+	 * @return void
+	 */
+	public function addIncludes(string $includePath): void
+	{
+		// Check if the include link exists.
+		if (!file_exists($includePath)) {
+			throw new Exception('The include link (' . $includePath . ') does not exist.');
+		}
+
+		$this->_includes[] = $includePath;
+	}
+
+	/**
+	 * Lunch the website kernel and display the good page.
+	 * 
+	 * @return void
+	 */
+	public function run(): void
 	{
 		$this->LoadPage();
 	}
@@ -58,81 +117,121 @@ class WebSite
 	// ==========================
 	// ==== PRIVATE METHODS =====
 	// ==========================
-	private function InitModules()
+	/**
+	 * Initialize all necessaries modules used by the website.
+	 * 
+	 * @return void
+	 */
+	private function initModules(): void
 	{
 		global $router;
-		$router = new Router($this->admin_mode);
+		$router = new Router($this->_adminMode);
 	}
 
-	// Init error display for the developpment.
-	private function InitError()
+	/**
+	 * Initialize error display for the developpment.
+	 * 
+	 * @return void
+	 */
+	private function initError(): void
 	{
-		if(ENV == "PROD")
-		{
+		if (ENV == 'PROD') {
 			ini_set('display_errors', 0);
 			ini_set('display_startup_errors', 0);
-		}
-		else
-		{
+		} else {
 			ini_set('display_errors', 1);
 			ini_set('display_startup_errors', 1);
 			error_reporting(E_ALL);
 		}
 	}
 
-	// Load the good page with the page request and display it.
-	private function LoadPage()
+	/**
+	 * Initialize website options.
+	 * TODO: a voir si c'est utile par rapport a l'objet Setting.
+	 * 
+	 * @return void
+	 */
+	private function initOptions(): void
 	{
-		if(!MAINTENANCE_MODE || $this->admin_mode)
-		{
-			// Get information of the asked page.
-			$page = $this->default_page;
-			
-			global $gmm;
-			if($gmm->GetValue("page") !== false)
-				$page = $gmm->GetValue("page");
-			
-			// Display the page.
-			if(in_array($page, $this->pages))
-			{
-				if(file_exists($this->website_path . "view/" . $page . ".php"))
-				{
-					// == For administrators ==
-					$session = Session::getInstance();
-										
-					if($this->admin_mode && $page != $this->default_page && !$session->admin_isConnected)
-					{
-						$gmm->ModifyValue("page", $this->default_page);
-						$this->LoadPage();
-						return;
-					}
-					// ========================
+		$session = Session::getInstance();
 
-					if(file_exists($this->website_path . "controller/system/" . $page . ".php"))
-						include_once($this->website_path . "controller/system/" . $page . ".php");
-
-					include_once($this->website_path . "view/" . $page . ".php");
-				}
-				else
-				{
-					include_once(ABSPATH . "view/error.php");
-				}	
-			}
-			else
-			{
-				include_once(ABSPATH . "view/error.php");
-			}
-		}
-		else
-		{
-			include_once(ABSPATH . "view/maintenance.php");
+		unset($session->websiteOptions);
+		
+		if (!isset($session->websiteOptions)) {
+			$options = new Options();
+			$options->loadFromDatabase();
+			$session->websiteOptions = serialize($options);
 		}
 	}
 
-	static public function Redirect($page, $isAdmin = false)
+	/**
+	 * Load the good page depending of the user's request and display it.
+	 * If the page has a controller, execute it before display.
+	 * 
+	 * @return void
+	 */
+	private function loadPage(): void
 	{
-		//$router = new Router($isAdmin);
+		// Manage maintenance mode
+		if (MAINTENANCE_MODE && !$this->_adminMode) {
+			include_once(ABSPATH . 'view/maintenance.php');
+			return;
+		}
+
+		// Get information of the asked page.
+		global $gmm;
+		$page = $this->_defaultPage;
+		$gmm = new GetMethodManager();
+
+		if ($gmm->getValue('page') !== false) {
+			$page = $gmm->getValue('page');
+		}
+
+		// Check if the page is registrated
+		if (!in_array($page, $this->_pages)) {
+			include_once(ABSPATH . 'view/error.php');
+			return;
+		}
+
+		// Check if page to display exists.
+		if (!file_exists($this->_websitePath . 'view/' . $page . '.php')) {
+			include_once(ABSPATH . 'view/error.php');
+			return;
+		}
+
+		// == For administrators ==
+		$session = Session::getInstance();
+
+		if ($this->_adminMode && $page != $this->_defaultPage && !$session->admin_isConnected) {
+			$gmm->setValue('page', $this->_defaultPage);
+			$this->loadPage();
+
+			return;
+		}
+		// ========================
+
+		foreach ($this->_includes as $include) {
+			include_once($include);
+		}
+
+		if (file_exists($this->_websitePath . 'controller/system/' . $page . '.php')) {
+			include_once($this->_websitePath . 'controller/system/' . $page . '.php');
+		}
+
+		include_once($this->_websitePath . 'view/' . $page . '.php');
+	}
+
+	/**
+	 * Redirect the user on a spesific page.
+	 * 
+	 * @param string $page Page where the user have to be redirected.
+	 * @param bool $isAdmin Say if the contexte is for the administration pages.
+	 * @param GetMethodManager $gmm GetMethodManager object to use to send specific data.
+	 * @return void
+	 */
+	static public function redirect(string $page, bool $isAdmin = false, GetMethodManager $gmm = null): void
+	{
 		global $router;
-		header('Location: ' . $router->GetUrl($page));
+		header('Location: ' . $router->getUrl($page, $gmm));
 	}
 }

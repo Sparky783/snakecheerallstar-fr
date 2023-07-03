@@ -1,9 +1,10 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Adherent.php");
-require_once("Tuteur.php");
-require_once("Payment.php");
+namespace Snake;
+
+use System\Database;
+use Snake\Adherent;
+use Snake\Tuteur;
+use Snake\Payment;
 
 class Inscription
 {
@@ -19,8 +20,7 @@ class Inscription
 		"Validation" => 5
 	);
 
-
-
+	
 	// ==============================================================================
 	// ==== Classe ==================================================================
 	// ==============================================================================

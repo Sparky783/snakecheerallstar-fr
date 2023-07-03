@@ -1,10 +1,13 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Session;
+use Snake\Section;
+use Snake\SnakeTools;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 {
 	$app->Post("/apply_options", function($args) {
-		include_once(ABSPATH . "model/system/ToolBox.php");
-		include_once(ABSPATH . "model/Options.php");
-
 		$session = Session::getInstance();
 		
 		if(isset($session->websiteOptions))
@@ -24,8 +27,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 
 	$app->Post("/section_list", function($args) {
-		include_once(ABSPATH . "model/snake/Section.php");
-
 		$session = Session::getInstance();
 
 		$sections = Section::GetList($session->selectedSaison);
@@ -51,9 +52,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 
 	$app->Post("/section_add", function($args) {
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Section.php");
-
 		$section = new Section();
 		$section->SetName($args['name']);
 		$section->SetSaison(SnakeTools::GetCurrentSaison());
@@ -69,8 +67,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 
 	$app->Post("/section_edit", function($args) {
-		include_once(ABSPATH . "model/snake/Section.php");
-		
 		$section = Section::GetById($args['id_section']);
 		$section->SetName($args['name']);
 		$section->SetMinAge($args['min_age']);
@@ -82,8 +78,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 
 	$app->Post("/sections_remove", function($args) {
-		include_once(ABSPATH . "model/snake/Section.php");
-		
 		API::SendJSON(Section::RemoveFromDatabase($args['id_section']));
 	});
 }

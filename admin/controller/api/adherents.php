@@ -1,12 +1,15 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+use ApiCore\Api;
+use System\ToolBox;
+use System\Session;
+use System\Database;
+use Snake\Adherent;
+use Snake\Section;
+
+if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
 {
 	// Retourne une liste d'adhérent en fonction d'une section donnée.
 	$app->Post("/adherent_list", function($args) {
-		include_once(ABSPATH . "model/system/ToolBox.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Adherent.php");
-
 		global $router;
 
 		$list = array();
@@ -29,14 +32,18 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 			// Droits
 			$actions = array();
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
 				$actions[] = "view";
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")) && $status != "")
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")) && $status != "")
 				$actions[] = "validate";
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
+			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
+			{
+				$actions[] = "surclasser";
+				$actions[] = "sousclasser";
 				$actions[] = "remove";
+			}
 
 			$list[] = array(
 				"id" => $adherent->GetId(),
@@ -56,8 +63,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 
 	// Retourne le formulaire des éléments en attentes.
 	$app->Get("/adherent_validate_form/{id_adherent}", function($args) {
-		include_once(ABSPATH . "model/snake/Adherent.php");
-
 		$adherent = Adherent::GetById($args['id_adherent']);
 		$missDocHtml = "";
 
@@ -72,6 +77,10 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 
 				case Payment::$METHODS['Cheque']:
 					$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - " . $adherent->GetPayment()->GetNbDeadlines() ." Chèques";
+					break;
+
+				case Payment::$METHODS['Virement']:
+					$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Virement";
 					break;
 			}
 
@@ -89,7 +98,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 				$missDocHtml .= "
 					<div class='custom-control custom-switch'>
 						<input id='customSwitchChqBuyUniform' class='custom-control-input' type='checkbox' name='chqBuyUniform' />
-						<label class='custom-control-label' for='customSwitchChqBuyUniform'>Chèque d'achat de la tenue (" . $adherent['price_buy_uniform'] . "€)</label>
+						<label class='custom-control-label' for='customSwitchChqBuyUniform'>Chèque d'achat de la tenue (" . $adherent->GetSection()->GetPriceUniform() . "€)</label>
 					</div>
 				";
 			}
@@ -148,8 +157,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 
 	// Met à jour les éléments attendu pour l'inscription
 	$app->Post("/adherent_validate_update", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-
 		$data = array();
 		if(isset($args['chqBuyUniform'])) $data['chq_buy_uniform'] = ToolBox::StringToBool($args['chqBuyUniform']);
 		if(isset($args['chqRentUniform'])) $data['chq_rent_uniform'] = ToolBox::StringToBool($args['chqRentUniform']);
@@ -185,10 +192,6 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 	});
 
 	$app->Post("/adherent_export_list", function($args) {
-		include_once(ABSPATH . "model/system/ToolBox.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		include_once(ABSPATH . "model/snake/Adherent.php");
-
 		$session = Session::GetInstance();
 		$adherents = null;
 
@@ -235,6 +238,46 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
 		}
 		else
 			API::SendJSON("Erreur");
+	});
+
+	$app->Post("/adherent_surclassement", function($args) {
+		$session = Session::GetInstance();
+		$adherent = Adherent::GetById($args['id']);
+		$sections = Section::GetList($session->selectedSaison);
+
+		foreach($sections as $section)
+		{
+			if($section->GetMinAge() > $adherent->GetSection()->GetMinAge())
+			{
+				$adherent->SetSection($section);
+				$adherent->SaveToDatabase();
+
+				API::SendJSON("L'adhérent à été surclassé en " . $section->GetName());
+				return;
+			}
+		}
+		
+		API::SendJSON("Impossible de surclasser l'adhérent.");
+	});
+
+	$app->Post("/adherent_sousclassement", function($args) {
+		$session = Session::GetInstance();
+		$adherent = Adherent::GetById($args['id']);
+		$sections = Section::GetList($session->selectedSaison);
+
+		for($i = count($sections) - 1; $i > 0; $i--)
+		{
+			if($sections[$i]->GetMinAge() < $adherent->GetSection()->GetMinAge())
+			{
+				$adherent->SetSection($sections[$i]);
+				$adherent->SaveToDatabase();
+				
+				API::SendJSON("L'adhérent à été sousclassé en " . $sections[$i]->GetName());
+				return;
+			}
+		}
+		
+		API::SendJSON("Impossible de sousclasser l'adhérent.");
 	});
 }
 ?>

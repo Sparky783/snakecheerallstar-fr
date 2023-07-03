@@ -1,10 +1,10 @@
 <?php
-$app->Post("/contact", function($args) {
-	include_once(ABSPATH . "model/PHPMailer/src/PHPMailer.php");
-	include_once(ABSPATH . "model/PHPMailer/src/SMTP.php");
-	include_once(ABSPATH . "model/ReCaptcha.php");
-	include_once(ABSPATH . "model/EmailTemplates.php");
+use Exception;
+use ApiCore\Api;
+use Common\ReCaptcha;
+use Common\EmailTemplates;
 
+$app->Post("/contact", function($args) {
 	// ReCaptcha
 	$secret = "6LeNSLcUAAAAAKYgk_tGwoFD4sEwV2sRKZAKnxHL"; // A modifier
 	$responseCaptcha = null;
@@ -63,8 +63,8 @@ $app->Post("/contact", function($args) {
 				";
 
 				$mail->Subject = $sujet;
-				$mail->Body    = EmailTemplates::StandardHTML($sujet, $html);
-				$mail->AltBody = EmailTemplates::TextFormat($sujet);
+				$mail->Body    = EmailTemplates::standardHtml($sujet, $html);
+				$mail->AltBody = EmailTemplates::standardText($sujet);
 
 				$mail->send();
 				$reponse = array(

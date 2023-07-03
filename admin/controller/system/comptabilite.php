@@ -1,10 +1,12 @@
 <?php
+use System\WebSite;
+use System\ToolBox;
+use Snake\Payment;
+
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier")))
+if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "tresorier")))
 	WebSite::Redirect("login", true);
 // =========================
-
-include_once(ABSPATH . "model/snake/Payment.php");
 
 $amountEspece = 0;
 $amountCheque = 0;

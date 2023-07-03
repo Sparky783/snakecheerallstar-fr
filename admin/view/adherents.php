@@ -26,8 +26,11 @@
 									<?php echo $sectionsHtml; ?>
 								</select>
 							</div>
-							<div class="btn-group">
-								<button id="buttonExport" class="btn btn-primary" data-toggle="modal" data-target="#exportModal">Exporter</button>
+							<div class="list-buttons">
+								<div class="btn-group">
+									<button id="buttonExport" class="btn btn-primary" data-toggle="modal" data-target="#exportModal">Exporter</button>
+								</div>
+								<?php echo $addAdhButtonHtml; ?>
 							</div>
 						</div>
 						<table id="tableAdherents" class="card-body table table-hover">

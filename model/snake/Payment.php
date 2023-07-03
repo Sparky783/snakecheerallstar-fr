@@ -1,8 +1,10 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Adherent.php");
-require_once("Reduction.php");
+namespace Snake;
+
+use DateTime;
+use System\Database;
+use Snake\Adherent;
+use Snake\Reduction;
 
 class Payment
 {
@@ -14,6 +16,7 @@ class Payment
 		"Espece" => 1,
 		"Cheque" => 2,
 		"Internet" => 3,
+		"Virement" => 4,
 	);
 
 

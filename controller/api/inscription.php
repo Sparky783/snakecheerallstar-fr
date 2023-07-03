@@ -1,6 +1,12 @@
 <?php
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
+use ApiCore\Api;
+use System\Session;
+use System\ToolBox;
+use Snake\Inscription;
+use Snake\SnakeTools;
+use Snake\Adherent;
+use Snake\Tuteur;
+use Snake\Reduction;
 
 // ============================
 // ==== Step 1 - Adherents ====
@@ -54,19 +60,11 @@ $app->Post("/inscription_validate_adherents", function($args) {
 
 		if($result)
 		{
-			if(count($listAdherents) > 0)
-			{
-				// Enregistrement des adhérents dans l'objet inscription
-				foreach($listAdherents as $adherent)
-					$session->inscription->AddAdherent($adherent);
+			// Enregistrement des adhérents dans l'objet inscription
+			foreach($listAdherents as $adherent)
+				$session->inscription->AddAdherent($adherent);
 
-				$session->inscription->ChangeState(Inscription::$STEPS['Tuteurs']);
-			}
-			else
-			{
-				$result = false;
-				$message = "Veuillez ajouter au moins un adhérent.";
-			}
+			$session->inscription->ChangeState(Inscription::$STEPS['Tuteurs']);
 		}
 	}
 	else
@@ -95,12 +93,14 @@ $app->Post("/inscription_validate_tuteurs", function($args) {
 
 	if(isset($args['tuteurs']))
 	{
+		$listTuteurs = array();
+
 		foreach($args['tuteurs'] as $tuteur)
 		{
 			$tut = new Tuteur();
 			
 			if($tut->SetInformation($tuteur))
-				$session->inscription->AddTuteur($tut);
+				$listTuteurs[] = $tut;
 			else
 			{
 				$result = false;
@@ -110,13 +110,11 @@ $app->Post("/inscription_validate_tuteurs", function($args) {
 
 		if($result)
 		{
-			if($session->inscription->CountTuteurs() > 0)
-				$session->inscription->ChangeState(Inscription::$STEPS['Authorization']);
-			else
-			{
-				$result = false;
-				$message = "Veuillez ajouter au moins un tuteur.";
-			}
+			// Enregistrement des tuteurs dans l'objet inscription
+			foreach($listTuteurs as $tuteur)
+				$session->inscription->AddTuteur($tuteur);
+
+			$session->inscription->ChangeState(Inscription::$STEPS['Authorization']);
 		}
 	}
 	else
@@ -219,15 +217,18 @@ $app->Post("/inscription_validate_payment", function($args) {
 		$message = "Veuillez choisir un moyen de paiement.";
 	}
 
-	// Ajout de la réduction suite au Pass Sport mis en place par le gouvernement 
-	if(ToolBox::StringToBool($args['passSport']))
+	// Ajout de la réduction suite au Pass Sport mis en place par le gouvernement
+	if(isset($args['passSport']))
 	{
-		$reduc = new Reduction();
-		$reduc->SetType(Reduction::$TYPE['Amount']);
-		$reduc->SetValue(50); // 50€
-		$reduc->SetSujet("Pass Sport");
-		
-		$session->inscription->GetPayment()->AddReduction($reduc);
+		if(ToolBox::StringToBool($args['passSport']))
+		{
+			$reduc = new Reduction();
+			$reduc->SetType(Reduction::$TYPE['Amount']);
+			$reduc->SetValue(50); // 50€
+			$reduc->SetSujet("Pass Sport");
+			
+			$session->inscription->GetPayment()->AddReduction($reduc);
+		}
 	}
 	
 	// Sauvegarde en base de donnée de l'inscription

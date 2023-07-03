@@ -1,19 +1,21 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once(ABSPATH . "model/system/ToolBox.php");
+namespace System;
 
-class OptionParam
+// ==============================
+// ==== Website setting item ====
+// ==============================
+class SettingsItem
 {
-    private $id = null;
-    private $type = null;
-    private $value = null;
+    private $id = null;	// ID of the setting item.
+    private $type = null; // Setting type (Boolean, Date, Int, etc ...)
+    private $value = null; // Setting value (save as Text type in database)
    
    
     public function __construct($dbData = null)
     {
         if($dbData != null)
         {
-            $this->id = $dbData['id_option'];
+            $this->id = $dbData['id_setting'];
             $this->type = $dbData['type'];
             $this->SetValue($dbData['value']);
         }
@@ -60,7 +62,7 @@ class OptionParam
         return $this->value;
     }
 
-    // Met à jour la basse de donnée
+    // Update database
     public function SaveToDatabase()
     {
         $database = new Database();
@@ -83,7 +85,7 @@ class OptionParam
                     break;
             }
 
-            $database->Update("options", "id_option", $this->id, array("value" => $value));
+            $database->Update("settings", "id_setting", $this->id, array("value" => $value));
 
             return true;
         }

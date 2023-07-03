@@ -1,7 +1,8 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Adherent.php");
+namespace Snake;
+
+use System\Database;
+use Snake\Adherent;
 
 class Tuteur
 {

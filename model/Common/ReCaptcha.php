@@ -1,4 +1,6 @@
 <?php
+namespace Common;
+
 /**
  * This is a PHP library that handles calling reCAPTCHA form Google.
  *    - Documentation and latest version

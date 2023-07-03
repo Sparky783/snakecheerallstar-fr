@@ -1,5 +1,7 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
+namespace Snake;
+
+use System\Database;
 
 class Reduction
 {

@@ -1,4 +1,8 @@
 <?php
+use System\WebSite;
+use System\ToolBox;
+use Snake\SnakeTools;
+
 // ==== Access security ====
 if(!$session->admin_isConnected)
 	WebSite::Redirect("login", true);
@@ -55,5 +59,5 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 	$links .= "<a class='btn btn-secondary btn-lg btn-block' href='" . $router->GetUrl("options") . "'><i class='fas fa-cog'></i> Options du site</a>";
 
 if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
-	$links .= "<a class='btn btn-secondary btn-lg btn-block' href='" . $router->GetUrl("admins") . "'><i class='fas fa-cog'></i> Utilisateurs</a>";
+	$links .= "<a class='btn btn-secondary btn-lg btn-block' href='" . $router->GetUrl("admins") . "'><i class='fas fa-cog'></i> Administrateurs</a>";
 ?>
