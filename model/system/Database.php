@@ -17,7 +17,15 @@ class Database
 	// == CONSTRUCTOR ==
 	public function __construct()
 	{
-		$result = $this->connection();
+		try
+		{
+			$this->_bdd = new PDO("mysql:host=" . DB_HOST . "; dbname=" . DB_NAME, DB_USER, DB_PASSWORD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '" . DB_CHARSET . "'"));
+		}
+		catch(Exception $e)
+		{
+			var_dump($e->getMessage());
+			new Erreur($e);
+		}
 	}
 
 	
@@ -25,9 +33,9 @@ class Database
 	/**
 	 * Get an instance of database.
 	 * 
-	 * @return PDO Instance of the database.
+	 * @return PDO|null Instance of the database.
 	 */
-	public function getDatabase(): PDO
+	public function getDatabase(): PDO|null
 	{
 		return $this->_bdd;
 	}
@@ -44,27 +52,6 @@ class Database
 	
 	// == OTHER METHODS ==
 	/**
-	 * Allow to connect on the database.
-	 * 
-	 * @return bool Return true if the connection is succeed, else False.
-	 */
-	private function connection(): bool
-	{
-		try
-		{
-			$this->_bdd = new PDO("mysql:host=" . DB_HOST . "; dbname=" . DB_NAME, DB_USER, DB_PASSWORD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '" . DB_CHARSET . "'"));
-
-			return true;
-		}
-		catch(Exception $e)
-		{
-			new Erreur($e);
-		}
-
-		return false;
-	}
-	
-	/**
 	 * Execute a SQL query.
 	 * 
 	 * @param string Query to send.
@@ -73,7 +60,7 @@ class Database
 	 */
 	public function query(string $requete, array $variables = array()): PDOStatement|bool
 	{
-		if($this->_bdd && $requete)
+		if($this->_bdd !== null && !empty($requete))
 		{
 			// Prepare variables
 			foreach($variables as &$variable)
@@ -82,13 +69,20 @@ class Database
 					$variable = intval($variable);
 			}
 
-			$req = $this->_bdd->prepare($requete);
-			$req->execute($variables);
+			try {
+				$req = $this->_bdd->prepare($requete);
+				$req->execute($variables);
 
-			if($req->errorCode() === '00000')
-				return $req;
-			else
-				$this->_error = $req->errorInfo();
+				if($req->errorCode() === '00000')
+					return $req;
+				else
+					$this->_error = $req->errorInfo();
+			}
+			catch(Exception $e)
+			{
+				var_dump($e->getMessage());
+				new Erreur($e);
+			}
 		}
 
 		return false;

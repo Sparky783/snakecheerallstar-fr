@@ -1,4 +1,8 @@
 <?php
+/*
+include_once 'Route.php'
+*/
+
 namespace ApiCore;
 use ApiCore\Route;
 

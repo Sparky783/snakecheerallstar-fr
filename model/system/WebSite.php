@@ -2,7 +2,7 @@
 namespace System;
 use Exception;
 use System\Session;
-use System\Options;
+use System\Option;
 use System\Router;
 use System\GetMethodManager;
 
@@ -41,7 +41,6 @@ class WebSite
 		}
 
 		$this->initModules();
-		$this->initError();
 		$this->initOptions();
 	}
 
@@ -129,23 +128,6 @@ class WebSite
 	}
 
 	/**
-	 * Initialize error display for the developpment.
-	 * 
-	 * @return void
-	 */
-	private function initError(): void
-	{
-		if (ENV == 'PROD') {
-			ini_set('display_errors', 0);
-			ini_set('display_startup_errors', 0);
-		} else {
-			ini_set('display_errors', 1);
-			ini_set('display_startup_errors', 1);
-			error_reporting(E_ALL);
-		}
-	}
-
-	/**
 	 * Initialize website options.
 	 * TODO: a voir si c'est utile par rapport a l'objet Setting.
 	 * 
@@ -154,8 +136,6 @@ class WebSite
 	private function initOptions(): void
 	{
 		$session = Session::getInstance();
-
-		unset($session->websiteOptions);
 		
 		if (!isset($session->websiteOptions)) {
 			$options = new Options();
@@ -174,7 +154,7 @@ class WebSite
 	{
 		// Manage maintenance mode
 		if (MAINTENANCE_MODE && !$this->_adminMode) {
-			include_once(ABSPATH . 'view/maintenance.php');
+			include_once($this->_websitePath . 'view/maintenance.php');
 			return;
 		}
 
@@ -195,6 +175,8 @@ class WebSite
 
 		// Check if page to display exists.
 		if (!file_exists($this->_websitePath . 'view/' . $page . '.php')) {
+			
+			var_dump($this->_websitePath . 'view/' . $page . '.php');
 			include_once(ABSPATH . 'view/error.php');
 			return;
 		}

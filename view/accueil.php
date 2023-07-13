@@ -24,7 +24,7 @@
 				<div class="welcomeTitle">
 					<h1>Snake Cheer All Star</h1>
 					<p>
-						Site officiel de cheerleading en France et dans le Sud-Ouest
+						Club sportif de cheerleading sur Pau
 					</p>
 				</div>
 			</div>

@@ -3,6 +3,7 @@ namespace System;
 use DateTime;
 use ErrorException;
 use System\Database;
+use System\ToolBox;
 
 /**
  * Represent a custom option that can be created, edit and remove by the user.
@@ -10,7 +11,7 @@ use System\Database;
 class OptionParam
 {
     // == ATTRIBUTS ==
-    private ?string $_id = null;	
+    private string $_id = '';	
     private string $_type = '';  // Option type (Boolean, Date, Int, etc ...)
     private mixed $_value = null; // Option value (Save as Text type in database)
    
@@ -36,7 +37,7 @@ class OptionParam
     /**
      * Get the option ID.
      * 
-     * @return int ID of the option.
+     * @return string ID of the option.
      */
     public function getId(): string
     {
@@ -113,7 +114,7 @@ class OptionParam
     public function initialize(string $type): void
     {
         $this->_type = $type;
-        $this->_id = null;
+        $this->_id = '';
     }
 
 	/**
@@ -124,54 +125,34 @@ class OptionParam
 	 */
     public function saveToDatabase(): bool
     {
+        // Insert must be done manually
         $database = new Database();
-        $result = false;
 
-		if($this->_id == null) // Insert
-		{
-			$id = $database->Insert(
-				"options",
-				array(
-					"type" => $this->_type,
-					"value" => $this->_value
-				)
-			);
+        if($this->_type == null)
+            throw new ErrorException("The type of the option cannot be null.");
 
-			if($id !== false)
-			{
-				$this->_id = intval($id);
+        $value = null;
+        switch($this->_type)
+        {
+            case "boolean":
+                $value = Toolbox::BoolToString($this->_value);
+                break;
 
-				$result = true;
-			}
-		}
-		else // Update
-		{
-            if($this->_type == null)
-                throw new ErrorException("The type of the option cannot be null.");
+            case "date":
+                $value = $this->_value->format("Y-m-d");
+                break;
 
-            $value = null;
-            switch($this->_type)
-            {
-                case "boolean":
-                    $value = Toolbox::BoolToString($this->_value);
-                    break;
+            default:
+                $value = $this->_value;
+                break;
+        }
 
-                case "date":
-                    $value = $this->_value->format("Y-m-d");
-                    break;
-
-                default:
-                    $value = $this->_value;
-                    break;
-            }
-
-			$result = $database->Update(
-                "options", "id_option", $this->_id,
-                array(
-                    "value" => $value
-                )
-            );
-		}
+        $result = $database->Update(
+            "options", "id_option", $this->_id,
+            array(
+                "value" => $value
+            )
+        );
 
 		return $result;
     }

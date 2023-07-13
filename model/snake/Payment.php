@@ -54,36 +54,36 @@ class Payment
 	}
 	
 	// == METHODES GETTERS ==
-	public function GetId()
+	public function getId()
 	{
 		return $this->id;
 	}
 
-	public function GetBasePrice()
+	public function getBasePrice()
 	{
 		if($this->base_price == null)
-			$this->LoadFromDatabase();
+			$this->loadFromDatabase();
 		
 		return $this->base_price;
 	}
 
-	public function GetFixedPrice()
+	public function getFixedPrice()
 	{
 		if($this->fixed_price == null)
-			$this->LoadFromDatabase();
+			$this->loadFromDatabase();
 		
 		return $this->fixed_price;
 	}
 
-	public function GetMethod()
+	public function getMethod()
 	{
 		if($this->method == 0)
-			$this->LoadFromDatabase();
+			$this->loadFromDatabase();
 
 		return $this->method;
 	}
 
-	public function GetDatePayment()
+	public function getDatePayment()
 	{
 		if($this->date_payment == null)
 			$this->LoadFromDatabase();
@@ -91,30 +91,30 @@ class Payment
 		return $this->date_payment;
 	}
 
-	public function GetNbDeadlines()
+	public function getNbDeadlines()
 	{
 		if($this->nb_deadlines == 0 && $this->method == 2) // 2 = Paiement par chèques
-			$this->LoadFromDatabase();
+			$this->loadFromDatabase();
 
 		return $this->nb_deadlines;
 	}
 
-	public function GetDeadlines()
+	public function getDeadlines()
 	{
-		return SnakeTools::MakeDeadlines($this->GetFinalAmount(), $this->GetNbDeadlines());
+		return SnakeTools::makeDeadlines($this->getFinalAmount(), $this->getNbDeadlines());
 	}
 
-	public function IsDone()
+	public function isDone()
 	{
 		return $this->is_done;
 	}
 
 	// Retourne la liste des réductions associés au paiement. Si besoin, charge les données depuis la BDD.
-	public function GetReductions()
+	public function getReductions()
 	{
 		if($this->id != null && count($this->reductions) == 0)
 		{
-			$list = Reduction::GetListByIdPayment($this->id);
+			$list = Reduction::getListByIdPayment($this->id);
 			
 			if($list !== false)
 				$this->reductions = $list;
@@ -124,11 +124,11 @@ class Payment
 	}
 
 	// Retourne la liste des adhérents liés au paiement. Si besoin, charge les données depuis la BDD.
-	public function GetAdherents()
+	public function getAdherents()
 	{
 		if($this->id != null && count($this->adherents) == 0)
 		{
-			$list = Adherent::GetListByIdPayment($this->id);
+			$list = Adherent::getListByIdPayment($this->id);
 			
 			if($list !== false)
 				$this->adherents = $list;
@@ -137,41 +137,40 @@ class Payment
 		return $this->adherents;
 	}
 
-	public function GetBasePriceWithReductions()
+	public function getBasePriceWithReductions()
 	{
-		$this->GetReductions(); // Charge les réductions si elle n'ont pas été chargées.
+		$this->getReductions(); // Charge les réductions si elle n'ont pas été chargées.
 
 		$montant = $this->base_price;
 		
-		// Applique les réductions de type "Pourcentage".
+		// Toujours appliquer les "Pourcentage" avant ...
 		foreach($this->reductions as $reduction)
 		{
-			if($reduction->GetType() == Reduction::$TYPE['Percentage'])
-				$montant = round($montant * (1 - ($reduction->GetValue() / 100)));
+			if($reduction->getType() == Reduction::$TYPE['Percentage'])
+				$montant = round($montant * (1 - ($reduction->getValue() / 100)));
 		}
 		
-		// Applique les réductions de type "Montant".
+		// ... puis appliquer les "Montant".
 		foreach($this->reductions as $reduction)
 		{
-			if($reduction->GetType() == Reduction::$TYPE['Amount'])
+			if($reduction->getType() == Reduction::$TYPE['Amount'])
 				$montant -= $reduction->GetValue();
 		}
 		
 		return $montant;
 	}
 	
-	public function GetFinalAmount()
+	public function getFinalAmount()
 	{
 		return $this->GetBasePriceWithReductions() + $this->fixed_price;
 	}
-	
-	// == METHODES SETTERS ==
-	public function SetId($id)
+
+	public function setId($id)
 	{
 		$this->id = intval($id);
 	}
 	
-	public function SetBasePrice($base_price)
+	public function setBasePrice($base_price)
 	{
 		$this->base_price = intval($base_price);
 	}

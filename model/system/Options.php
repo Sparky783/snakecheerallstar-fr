@@ -13,7 +13,7 @@ use System\OptionParam;
 class Options
 {
     // == ATTRIBUTES ==
-    private array $options = array();
+    private array $_options = array();
    
    
     // == CONSTRUCTORS ==
@@ -31,11 +31,11 @@ class Options
     public function loadFromDatabase(): void
     {
         $database = new Database();
-        $rech = $database->query("SELECT * FROM options");
+        $rech = $database->query("SELECT * FROM `options`");
 
         while($data = $rech->fetch()) {
             $param = new OptionParam($data);
-            $this->options[$param->getId()] = $param;
+            $this->_options[$param->getId()] = $param;
         }
     }
 
@@ -48,7 +48,7 @@ class Options
     {
         $result = true;
 
-        foreach($this->options as $option) {
+        foreach($this->_options as $option) {
             $result &= $option->saveToDatabase();
         }
 
@@ -69,14 +69,14 @@ class Options
      */
     public function __set(string $name, mixed $value): void
     {
-        if(isset($this->options[$name])) {
-            $this->options[$name]->setValue($value);
+        if(isset($this->_options[$name])) {
+            $this->_options[$name]->setValue($value);
         } else {
             $option = new OptionParam();
             $option->initialize($this->getTypeFromValue($value));
             $option->setValue($value);
 
-            $this->options[$name] = $option;
+            $this->_options[$name] = $option;
         }
     }
 
@@ -89,8 +89,8 @@ class Options
      */
     public function __get(string $name): mixed
     {
-        if(isset($this->options[$name])) {
-            return $this->options[$name]->getValue();
+        if(isset($this->_options[$name])) {
+            return $this->_options[$name]->getValue();
         }
 
         throw new ErrorException('The option ' . $name . ' does not exist.');
@@ -104,7 +104,7 @@ class Options
      */
     public function __isset(string $name): bool
     {
-        return isset($this->options[$name]);
+        return isset($this->_options[$name]);
     }
 
     /**
@@ -116,7 +116,7 @@ class Options
      */
     public function __unset(string $name): void
     {
-        unset($this->options[$name]);
+        unset($this->_options[$name]);
     }
 
     // == PRIVATE METHODS ==
