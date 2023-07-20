@@ -5,15 +5,23 @@ use DateTime;
 use System\Database;
 use Snake\SnakeTools;
 
+// TODO
+
+/**
+ * Outil de gestion des élection de l'assemblé générale.
+ */
 class ElectionAG
 {
 	// == ATTRIBUTS ==
-	private $votesRapportMoral;
-	private $votesRapportFinancier;
-	private $method;
-	private $date_payment;
-	private $deadlines;
-	private $is_done;
+	/**
+	 * @var 
+	 */
+	private $_votesRapportMoral;
+	private $_votesRapportFinancier;
+	private $_method;
+	private $_datePayment;
+	private $_deadlines;
+	private $_isDone;
 	
 	// == METHODES PRIMAIRES ==
 	public function __construct($dbData = null)

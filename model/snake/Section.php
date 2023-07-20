@@ -4,181 +4,327 @@ namespace Snake;
 use System\Database;
 use Snake\Horaire;
 
+/**
+ * Représente une section (équipe) du club.
+ */
 class Section
 {
 	// == ATTRIBUTS ==
-	private $id = null;
-	private $name = "";
-	private $saison = "";
-	private $min_age = 0;
-	private $priceCotisation = 0;
-	private $priceRentUniform = 0;
-	private $priceCleanUniform = 0;
-	private $priceUniform = 0;
-	private $nbMaxMembers = 0;
-	private $horaires = array();
+	/**
+	 * @var int $_id ID de la section.
+	 */
+	private int $_id = null;
 	
-	private $nbMembers; // Nombre d'adhérents inscrit
+	/**
+	 * @var string $_name Nom de la section.
+	 */
+	private string $_name = '';
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct(array $dbData = null)
+	/**
+	 * @var string $_saison Saison de la section.
+	 */
+	private $_saison = '';
+	
+	/**
+	 * @var int $_minAge Age minimun accepté pour intégrer la section.
+	 */
+	private int $_minAge = 0;
+	
+	/**
+	 * @var float $_priceCotisation Prix de la cotisation pour intégrer la section.
+	 */
+	private float $_priceCotisation = 0;
+	
+	/**
+	 * @var float $_priceRentUniform Prix de la location de la tenue pour cette section.
+	 */
+	private float $_priceRentUniform = 0;
+	
+	/**
+	 * @var float $_priceUniform Prix de l'achat de la tenue pour cette section.
+	 */
+	private float $_priceUniform = 0;
+
+	/**
+	 * @var float $_priceCleanUniform Prix du nettoyage de la tenue.
+	 */
+	private float $_priceCleanUniform = 0;
+	
+	/**
+	 * @var int $_nbMaxMembers Nombre maximum de membre pouvant intégrer la section.
+	 */
+	private int $_nbMaxMembers = 0;
+	
+	/**
+	 * @var array $_horaires Liste des horaires d'entrainement pour cette section.
+	 */
+	private array $_horaires = [];
+	
+	/**
+	 * @var int $_nbMembers Nombre de membre actuel dans la section.
+	 */
+	private $_nbMembers;
+
+	
+	// ==== CONSTRUCTOR ====
+	public function __construct(array $dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_section']);
-			$this->name = $dbData['name'];
-			$this->saison = $dbData['saison'];
-			$this->min_age = intval($dbData['min_age']);
-			$this->priceCotisation = intval($dbData['price_cotisation']);
-			$this->priceRentUniform = intval($dbData['price_rent_uniform']);
-			$this->priceCleanUniform = intval($dbData['price_clean_uniform']);
-			$this->priceUniform = intval($dbData['price_buy_uniform']);
-			$this->nbMaxMembers = intval($dbData['nb_max_members']);
-			$this->horaires = unserialize($dbData['horaires']);
+		if (count($dbData) !== 0) {
+			$this->_id = (int)$dbData['id_section'];
+			$this->_name = $dbData['name'];
+			$this->_saison = $dbData['saison'];
+			$this->_minAge = (int)$dbData['min_age'];
+			$this->_priceCotisation = (float)$dbData['price_cotisation'];
+			$this->_priceRentUniform = (float)$dbData['price_rent_uniform'];
+			$this->_priceCleanUniform = (float)$dbData['price_clean_uniform'];
+			$this->_priceUniform = (float)$dbData['price_buy_uniform'];
+			$this->_nbMaxMembers = (int)$dbData['nb_max_members'];
+			$this->_horaires = unserialize($dbData['horaires']);
 		}
 	}
 	
-	// == METHODES GETTERS ==
-	public function GetId() : int
+	// ==== GETTERS ====
+	/**
+	 * Retourne l'ID de la section.
+	 * 
+	 * @return int
+	 */
+	public function getId(): int
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetName() : string
+	/**
+	 * Retourne le nom de la section.
+	 * 
+	 * @return int
+	 */
+	public function getName(): string
 	{
-		return $this->name;
+		return $this->_name;
 	}
 
-	public function GetSaison() : string
+	/**
+	 * Retourne la saison de la section.
+	 * 
+	 * @return int
+	 */
+	public function getSaison(): string
 	{
-		return $this->saison;
+		return $this->_saison;
 	}
 
-	public function GetMinAge() : int
+	/**
+	 * Retourne l'age minimum accepté pour intégrer la section.
+	 * 
+	 * @return int
+	 */
+	public function getMinAge(): int
 	{
-		return $this->min_age;
+		return $this->_minAge;
 	}
 
-	public function GetPriceCotisation() : int
+	/**
+	 * Retourne le montant de la cotisation de la section.
+	 * 
+	 * @return float
+	 */
+	public function getPriceCotisation(): float
 	{
-		return $this->priceCotisation;
+		return $this->_priceCotisation;
 	}
 
-	public function GetPriceRentUniform() : int
+	/**
+	 * Retourne le montant de location de l'uniforme de la section.
+	 * 
+	 * @return float
+	 */
+	public function getPriceRentUniform(): float
 	{
-		return $this->priceRentUniform;
+		return $this->_priceRentUniform;
 	}
 
-	public function GetPriceCleanUniform() : int
+	/**
+	 * Retourne le montant d'achat de la tenue pour la section.
+	 * 
+	 * @return float
+	 */
+	public function getPriceUniform(): float
 	{
-		return $this->priceCleanUniform;
+		return $this->_priceUniform;
 	}
 
-	public function GetPriceUniform() : int
+	/**
+	 * Retourne le montant du nettoyage de la tenue.
+	 * 
+	 * @return float
+	 */
+	public function getPriceCleanUniform(): float
 	{
-		return $this->priceUniform;
+		return $this->_priceCleanUniform;
 	}
 
-	public function GetNbMaxMembers() : int
+	/**
+	 * Retourne le nombre maximum de membre accepté pour la section.
+	 * 
+	 * @return int
+	 */
+	public function getNbMaxMembers(): int
 	{
-		return $this->nbMaxMembers;
+		return $this->_nbMaxMembers;
 	}
 
-	public function GetHoraires() : array
+	/**
+	 * Retourne les horaires d'entrainement de la section.
+	 * 
+	 * @return array
+	 */
+	public function getHoraires(): array
 	{
-		return $this->horaires;
+		return $this->_horaires;
 	}
 	
-	public function GetNbMembers() : int
+	/**
+	 * Retourne le nombre actuel de membre dans la section.
+	 * 
+	 * @return int
+	 */
+	public function getNbMembers(): int
 	{
-		return $this->nbMembers;
+		return $this->_nbMembers;
 	}
 	
-	// == METHODES SETTERS ==
-	public function SetName($name)
+	// ==== SETTERS ====
+	/**
+	 * Définie le nom de la section.
+	 * 
+	 * @param string $name
+	 * @return void
+	 */
+	public function setName(string $name): void
 	{
-		$this->name = $name;
+		$this->_name = $name;
 	}
 
-	public function SetSaison($saison)
+	/**
+	 * Définie la saison de la section.
+	 * 
+	 * @param string $saison
+	 * @return void
+	 */
+	public function setSaison(string $saison): void
 	{
-		$this->saison = $saison;
+		$this->_saison = $saison;
 	}
 
-	public function SetMinAge($min_age)
+	/**
+	 * Définie l'age minimum pour intégrer la section.
+	 * 
+	 * @param int $minAge
+	 * @return void
+	 */
+	public function setMinAge(int $minAge): void
 	{
-		$this->min_age = intval($min_age);
+		$this->_minAge = intval($minAge);
 	}
 
-	public function SetPriceCotisation($price)
+	/**
+	 * Définie le prix de la cotisation pour intégrer la section.
+	 * 
+	 * @param float $price
+	 * @return void
+	 */
+	public function setPriceCotisation(float $price): void
 	{
-		$this->priceCotisation = intval($price);
+		$this->_priceCotisation = intval($price);
 	}
 
-	public function SetPriceUniform($price)
+	/**
+	 * Définie le prix de l'uniforme pour la section.
+	 * 
+	 * @param float $price
+	 * @return void
+	 */
+	public function setPriceUniform(float $price): void
 	{
-		$this->priceUniform = intval($price);
+		$this->_priceUniform = intval($price);
 	}
 
-	public function SetNbMaxMembers($nbMaxMembers)
+	/**
+	 * Définie le nombre maximum de memebre pouvant intégrer la section.
+	 * 
+	 * @param int $nbMaxMembers
+	 * @return void
+	 */
+	public function setNbMaxMembers(int $nbMaxMembers): void
 	{
 		$this->nbMaxMembers = intval($nbMaxMembers);
 	}
 	
-	// == AUTRES METHODES ==
-	public function AddHoraire(Horaire $horaire)
+	// ==== AUTRES METHODES ====
+	/**
+	 * Ajoute une horaire d'entrainement à la section.
+	 * 
+	 * @param Horaire $horaire Horaire à ajouter.
+	 * @return void
+	 */
+	public function addHoraire(Horaire $horaire): void
 	{
-		$this->horaires[] = $horaire;
+		$this->_horaires[] = $horaire;
 	}
 	
-	public function AddMember()
+	/**
+	 * Incrémente le nombre de membre présent dans la section.
+	 *
+	 * @return void
+	 */
+	public function addMember(): void
 	{
-		$this->nbMembers ++;
+		$this->_nbMembers ++;
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Sauvegarde les données de la section dans la base de données
+	 */
+	public function saveToDatabase()
 	{
 		$database = new Database();
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
-				"sections",
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'sections',
 				array(
-					"name" => $this->name,
-					"saison" => $this->saison,
-					"min_age" => $this->min_age,
-					"price_cotisation" => $this->priceCotisation,
-					"price_rent_uniform" => $this->priceRentUniform,
-					"price_clean_uniform" => $this->priceCleanUniform,
-					"price_buy_uniform" => $this->priceUniform,
-					"nb_max_members" => $this->nbMaxMembers,
-					"horaires" => serialize($this->horaires)
+					'name' => $this->_name,
+					'saison' => $this->_saison,
+					'min_age' => $this->_minAge,
+					'price_cotisation' => $this->_priceCotisation,
+					'price_rent_uniform' => $this->_priceRentUniform,
+					'price_clean_uniform' => $this->_priceCleanUniform,
+					'price_buy_uniform' => $this->_priceUniform,
+					'nb_max_members' => $this->_nbMaxMembers,
+					'horaires' => serialize($this->_horaires)
 				)
 			);
 
-			if($id !== false)
-			{
+			if ($id !== false) {
 				$this->id = intval($id);
 				return true;
 			}
 			
 			return false;
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"sections", "id_section", $this->id,
+		} else { // Update
+			$result = $database->update(
+				'sections', 'id_section', $this->_id,
 				array(
-					"name" => $this->name,
-					"saison" => $this->saison,
-					"min_age" => $this->min_age,
-					"price_cotisation" => $this->priceCotisation,
-					"price_rent_uniform" => $this->priceRentUniform,
-					"price_clean_uniform" => $this->priceCleanUniform,
-					"price_buy_uniform" => $this->priceUniform,
-					"nb_max_members" => $this->nbMaxMembers,
-					"horaires" => serialize($this->horaires)
+					'name' => $this->_name,
+					'saison' => $this->_saison,
+					'min_age' => $this->_minAge,
+					'price_cotisation' => $this->_priceCotisation,
+					'price_rent_uniform' => $this->_priceRentUniform,
+					'price_clean_uniform' => $this->_priceCleanUniform,
+					'price_buy_uniform' => $this->_priceUniform,
+					'nb_max_members' => $this->_nbMaxMembers,
+					'horaires' => serialize($this->_horaires)
 				)
 			);
 
@@ -189,17 +335,22 @@ class Section
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_section)
+	/**
+	 * Retourne une section suivant son ID.
+	 * 
+	 * @param int $idSection
+	 * @return Section|false Retourne False en cas d'échec.
+	 */
+	public static function getById(int $idSection): Section|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM sections WHERE id_section=:id_section",
-			array("id_section" => intval($id_section))
+			['id_section' => $idSection]
 		);
 
-		if($rech != null)
-		{
+		if ($rech != null) {
 			$data = $rech->fetch();
 
 			return new Section($data);
@@ -208,25 +359,31 @@ class Section
 		return false;
 	}
 
-	// Retourne la liste de toutes les sections du club pour une saison donnée.
-	static public function GetList($saison = null)
+	/**
+	 * Retourne la liste de toutes les sections du club pour une saison donnée. Par défaut c'est la saison en cours qui est sélectionnée.
+	 * 
+	 * @param string $saison
+	 * @return array|false Retourne False en cas d'échec.
+	 */
+	public static function getList(string $saison = ''): array|false
 	{
-		if($saison == null)
-			$saison = SnakeTools::GetCurrentSaison();
+		if ($saison === '') {
+			$saison = SnakeTools::getCurrentSaison();
+		}
 
 		$database = new Database();
 
-		$sections = $database->Query(
+		$sections = $database->query(
 			"SELECT * FROM sections WHERE saison=:saison ORDER BY min_age",
-			array("saison" => $saison)
+			['saison' => $saison]
 		);
 
-		if($sections != null)
-		{
-			$list = array();
+		if ($sections !== null) {
+			$list = [];
 
-			while($data = $sections->fetch())
+			while($data = $sections->fetch()) {
 				$list[] = new Section($data);
+			}
 
 			return $list;
 		}
@@ -234,10 +391,15 @@ class Section
 		return false;
 	}
 
-	static public function RemoveFromDatabase($id_section)
+	/**
+	 * Supprime une section de la base de données.
+	 * 
+	 * @param int $idSection ID de la section à supprimer.
+	 * @return bool Retourne True si la section à bien été supprimé, sinon False.
+	 */
+	public static function removeFromDatabase(int $idSection): bool
 	{
 		$database = new Database();
-
-		return $database->Delete("sections", "id_section", intval($id_section));
+		return $database->delete('sections', 'id_section', $idSection);
 	}
 }

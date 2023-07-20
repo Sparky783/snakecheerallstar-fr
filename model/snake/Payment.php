@@ -5,316 +5,426 @@ use DateTime;
 use System\Database;
 use Snake\Adherent;
 use Snake\Reduction;
+use Snake\EPaymentType;
 
+/**
+ * Représente un paiement.
+ * Contient les réductions et les montants associés au paiement.
+ */
 class Payment
 {
-	// ==============================================================================
-	// ==== Enumérations ============================================================
-	// ==============================================================================
-	// Méthode de paiement
-	static public $METHODS = array(
-		"Espece" => 1,
-		"Cheque" => 2,
-		"Internet" => 3,
-		"Virement" => 4,
-	);
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id ID du paiement.
+	 */
+	private ?int $_id = null;
 
+	/**
+	 * @var float $_basePrice Prix de base du paiement. Ce montant peux évoluer avec les réductions.
+	 */
+	private float $_basePrice = null;
 
+	/**
+	 * @var float $_fixedPrice Prix fixe du paiement. Les réductions n'impact pas ce prix.
+	 */
+	private float $_fixedPrice = null;
 
-	// ==============================================================================
-	// ==== Classe ==================================================================
-	// ==============================================================================
-	// == ATTRIBUTS ==
-	private $id = null;
-	private $base_price = null;
-	private $fixed_price = null;
-	private $method = 0;
-	private $date_payment = null;
-	private $nb_deadlines = 0;
-	private $is_done = false;
+	/**
+	 * @var EPaymentType|null $_method Méthode de paiement utilisé pour régler la facture.
+	 */
+	private ?EPaymentType $_method = null;
+
+	/**
+	 * @var DateTime|null $_paymentDate Date ou le paiement à été réglé.
+	 */
+	private DateTime $_paymentDate = null;
+
+	/**
+	 * @var int $_nbDeadlines Nombre d'échéance choisi pour le paiement en plusieur fois.
+	 */
+	private int $_nbDeadlines = 0;
+
+	/**
+	 * @var bool $_isDone Informe si le paiement à été réglé en totalité ou non.
+	 */
+	private bool $_isDone = false;
 	
-	private $reductions = array();
-	private $adherents = array();
+	/**
+	 * @var Reduction[] $_reductions Liste des réductions à appliquer pour ce paiement.
+	 */
+	private array $_reductions = [];
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * @var Adherent[] $_adherents Liste des adhérents lié au paiement.
+	 */
+	private array $_adherents = [];
+
+	
+	// ==== CONSTRUCTOR ====
+	public function __construct(array $dbData = [])
 	{
-		$this->date_payment = date("Y-m-d");
+		$this->_paymentDate = date('Y-m-d');
 
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_payment']);
-			$this->base_price = intval($dbData['base_price']);
-			$this->fixed_price = intval($dbData['fixed_price']);
-			$this->method = $dbData['method'];
-			$this->date_payment = new DateTime($dbData['date_payment']);
-			$this->nb_deadlines = intval($dbData['nb_deadlines']);
-			$this->is_done = boolval($dbData['is_done']);
+		if (count($dbData) !== 0) {
+			$this->_id = (int)$dbData['id_payment'];
+			$this->_basePrice = (int)$dbData['base_price'];
+			$this->_fixedPrice = (int)$dbData['fixed_price'];
+			$this->_method = $dbData['method'];
+			$this->_paymentDate = new DateTime($dbData['date_payment']);
+			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
+			$this->_isDone = (bool)$dbData['is_done'];
 		}
 	}
 	
-	// == METHODES GETTERS ==
-	public function getId()
+	// ==== GETTERS ====
+	/**
+	 * Retourne l'ID du paiement.
+	 * 
+	 * @return int
+	 */
+	public function getId(): int
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function getBasePrice()
+	/**
+	 * Retourne le prix de base du paiement. Ce montant peux être impacté par les réductions.
+	 * 
+	 * @return float
+	 */
+	public function getBasePrice(): float
 	{
-		if($this->base_price == null)
-			$this->loadFromDatabase();
-		
-		return $this->base_price;
+		return $this->_basePrice;
 	}
 
-	public function getFixedPrice()
+	/**
+	 * Retourne le prix fixe du paiement. Ce montantn NE peux PAS être impacté par les réductions.
+	 * 
+	 * @return float
+	 */
+	public function getFixedPrice(): float
 	{
-		if($this->fixed_price == null)
-			$this->loadFromDatabase();
-		
-		return $this->fixed_price;
+		return $this->_fixedPrice;
 	}
 
-	public function getMethod()
+	/**
+	 * Retourne la méthode de paiement choisie pour régler ce paiement.
+	 */
+	public function getMethod(): EPaymentType
 	{
-		if($this->method == 0)
-			$this->loadFromDatabase();
-
-		return $this->method;
+		return $this->_method;
 	}
 
-	public function getDatePayment()
+	/**
+	 * Retourne la date et l'heure à laquelle le paiement à été réglé.
+	 * Pour un paiement en plusieur fois, retourne la date et l'heure du dernier paiement.
+	 * 
+	 * @return DateTime
+	 */
+	public function getDate(): DateTime
 	{
-		if($this->date_payment == null)
-			$this->LoadFromDatabase();
-
-		return $this->date_payment;
+		return $this->_paymentDate;
 	}
 
-	public function getNbDeadlines()
+	/**
+	 * Retourne le nombre d'échéance choisies pour un paiement en plusieur fois.
+	 * Si c'est un paiement unique, retourne 0.
+	 * 
+	 * @return int
+	 */
+	public function getNbDeadlines(): int 
 	{
-		if($this->nb_deadlines == 0 && $this->method == 2) // 2 = Paiement par chèques
-			$this->loadFromDatabase();
+		if($this->_method !== EPaymentType::Cheque) {
+			return 0;
+		}
 
-		return $this->nb_deadlines;
+		return $this->_nbDeadlines;
 	}
 
-	public function getDeadlines()
+	/**
+	 * Retourne la liste des montants de chaque échéance pour un paiement en plusieurs fois.
+	 * Dans les autres cas de type de paiement, retourne False.
+	 * 
+	 * @return array|false
+	 */
+	public function getDeadlines(): array|false
 	{
+		if($this->_method !== EPaymentType::Cheque) {
+			return false;
+		}
+
 		return SnakeTools::makeDeadlines($this->getFinalAmount(), $this->getNbDeadlines());
 	}
 
-	public function isDone()
+	/**
+	 * Retourne True si la totalité du paiement à été réglé, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function isDone(): bool
 	{
-		return $this->is_done;
+		return $this->_isDone;
 	}
 
-	// Retourne la liste des réductions associés au paiement. Si besoin, charge les données depuis la BDD.
-	public function getReductions()
+	/**
+	 * Retourne la liste des réductions associés au paiement. Si besoin, charge les données depuis la BDD.
+	 * 
+	 * @return Reduction[]
+	 */
+	public function getReductions(): array
 	{
-		if($this->id != null && count($this->reductions) == 0)
-		{
-			$list = Reduction::getListByIdPayment($this->id);
+		if ($this->_id !== null && count($this->_reductions) == 0) {
+			$list = Reduction::getListByIdPayment($this->_id);
 			
-			if($list !== false)
-				$this->reductions = $list;
+			if ($list !== false) {
+				$this->_reductions = $list;
+			}
 		}
 
-		return $this->reductions;
+		return $this->_reductions;
 	}
 
-	// Retourne la liste des adhérents liés au paiement. Si besoin, charge les données depuis la BDD.
-	public function getAdherents()
+	/**
+	 * Retourne la liste des adhérents liés au paiement. Si besoin, charge les données depuis la BDD.
+	 * 
+	 * @return Adherent[]
+	 */
+	public function getAdherents(): array
 	{
-		if($this->id != null && count($this->adherents) == 0)
-		{
-			$list = Adherent::getListByIdPayment($this->id);
+		if ($this->_id !== null && count($this->_adherents) === 0) {
+			$list = Adherent::getListByIdPayment($this->_id);
 			
-			if($list !== false)
-				$this->adherents = $list;
+			if ($list !== false) {
+				$this->_adherents = $list;
+			}
 		}
 
-		return $this->adherents;
+		return $this->_adherents;
 	}
 
-	public function getBasePriceWithReductions()
+	/**
+	 * Calcule le prix de base en appliquant les réductions. Le prix fixe n'est pas inclus.
+	 * 
+	 * @return float
+	 */
+	public function getBasePriceWithReductions(): float
 	{
 		$this->getReductions(); // Charge les réductions si elle n'ont pas été chargées.
 
-		$montant = $this->base_price;
+		$montant = $this->_basePrice;
 		
 		// Toujours appliquer les "Pourcentage" avant ...
-		foreach($this->reductions as $reduction)
-		{
-			if($reduction->getType() == Reduction::$TYPE['Percentage'])
+		foreach ($this->_reductions as $reduction) {
+			if($reduction->getType() == Reduction::$TYPE['Percentage']) {
 				$montant = round($montant * (1 - ($reduction->getValue() / 100)));
+			}
 		}
 		
 		// ... puis appliquer les "Montant".
-		foreach($this->reductions as $reduction)
-		{
-			if($reduction->getType() == Reduction::$TYPE['Amount'])
+		foreach ($this->_reductions as $reduction) {
+			if($reduction->getType() == Reduction::$TYPE['Amount']) {
 				$montant -= $reduction->GetValue();
+			}
 		}
 		
 		return $montant;
 	}
 	
-	public function getFinalAmount()
+	/**
+	 * Retourne le montant final. Prix de base avec les réduction et le prix fixe.
+	 * 
+	 * @return float
+	 */
+	public function getFinalAmount(): float
 	{
-		return $this->GetBasePriceWithReductions() + $this->fixed_price;
+		return $this->getBasePriceWithReductions() + $this->_fixedPrice;
 	}
 
-	public function setId($id)
+	/**
+	 * Définie l'ID du paiement.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setId(int $id): void
 	{
-		$this->id = intval($id);
+		$this->_id = $id;
 	}
 	
-	public function setBasePrice($base_price)
+	/**
+	 * Définie le prix de base sur lequel sera appliqué les réductions
+	 * 
+	 * @param float $basePrice
+	 * @return void
+	 */
+	public function setBasePrice(float $basePrice): void
 	{
-		$this->base_price = intval($base_price);
+		$this->_basePrice = $basePrice;
 	}
 
-	public function SetFixedPrice($fixed_price)
+	/**
+	 * Définie le prix fixe (Les réductions ne sont pas appliqué sur ce montant)
+	 * 
+	 * @param float $fixedPrice
+	 * @return void
+	 */
+	public function setFixedPrice(float $fixedPrice): void
 	{
-		$this->fixed_price = intval($fixed_price);
+		$this->_fixedPrice = $fixedPrice;
 	}
 
-	public function SetMethod($method)
+	/**
+	 * Définie la methode de paiement.
+	 * 
+	 * @param EPaiementType $method
+	 * @return void
+	 */
+	public function setMethod(EPaiementType $method): void
 	{
-		$this->method = $method;
+		$this->_method = $method;
 	}
 
-	public function SetNbDeadlines($nb_deadlines)
+	/**
+	 * Définie le nombre d'échéance à appliquer pour ce paiement.
+	 * 
+	 * @param int $nbDeadlines
+	 * @return void
+	 */
+	public function setNbDeadlines(int $nbDeadlines): void
 	{
-		$this->nb_deadlines = intval($nb_deadlines);
+		$this->_nbDeadlines = $nbDeadlines;
 	}
 
-	public function SetIsDone($is_done)
+	/**
+	 * Définie si le paiement à été payé en totalité ou non.
+	 * 
+	 * @param bool $isDone
+	 * @return void
+	 */
+	public function setIsDone(bool $isDone): void
 	{
-		$this->is_done = boolval($is_done);
+		$this->_isDone = $isDone;
 	}
 
 	// == AUTRES METHODES ==
-	public function AddReduction(Reduction $reduction)
+	/**
+	 * Ajoute une réduction au paiement
+	 * 
+	 * @param Reduction $reduction
+	 * @return void
+	 */
+	public function addReduction(Reduction $reduction): void
 	{
-		if($this->id != null)
-			$reduction->SetIdPayment($this->id);
+		if ($this->_id != null) {
+			$reduction->setIdPayment($this->_id);
+		}
 
-		$this->reductions[] = $reduction;
+		$this->_reductions[] = $reduction;
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Sauvegarde le paiement dans la base de données
+	 * 
+	 * @return void
+	 */
+	public function saveToDatabase(): void
 	{
 		$database = new Database();
 		$result = false;
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
+		if ($this->_id == null) { // Insert
+			$id = $database->insert(
 				"payments",
-				array(
-					"base_price" => $this->base_price,
-					"fixed_price" => $this->fixed_price,
-					"method" => $this->method,
-					"date_payment" => $this->date_payment,
-					"nb_deadlines" => $this->nb_deadlines,
-					"is_done" => $this->is_done
-				)
+				[
+					"base_price" => $this->_basePrice,
+					"fixed_price" => $this->_fixedPrice,
+					"method" => $this->_method,
+					"date_payment" => $this->_paymentDate,
+					"nb_deadlines" => $this->_nbDeadlines,
+					"is_done" => $this->_isDone
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->id = intval($id);
+			if ($id !== false) {
+				$this->_id = (int)$id;
 				$result = true;
 			}
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"payments", "id_payment", $this->id,
-				array(
-					"base_price" => $this->base_price,
-					"fixed_price" => $this->fixed_price,
-					"method" => $this->method,
-					"date_payment" => $this->date_payment,
-					"nb_deadlines" => $this->nb_deadlines,
-					"is_done" => $this->is_done
-				)
+		} else { // Update
+			$result = $database->update(
+				"payments", "id_payment", $this->_id,
+				[
+					"base_price" => $this->_basePrice,
+					"fixed_price" => $this->_fixedPrice,
+					"method" => $this->_method,
+					"date_payment" => $this->_paymentDate,
+					"nb_deadlines" => $this->_nbDeadlines,
+					"is_done" => $this->_isDone
+				]
 			);
 		}
 
 		// Sauvegarde les réductions.
-		if($id !== false)
-		{
-			foreach($this->reductions as $reduction)
-			{
-				$reduction->SetIdPayment($this->id);
-				$result = $result & $reduction->SaveToDatabase();
+		if($id !== false) {
+			foreach ($this->_reductions as $reduction) {
+				$reduction->setIdPayment($this->id);
+				$result &= $reduction->saveToDatabase();
 			}
 		}
 
 		return $result;
 	}
 
-	public function RemoveFromDatabase()
+	/**
+	 * Charge les infos depuis la base de données.
+	 * 
+	 * @return void
+	 */
+	private function loadFromDatabase(): void
 	{
-		if($this->id != null)
-		{
-			$database = new Database();
-			return $database->Delete("payments", "id_payment", $this->id);
-
-			// Les réductions sont supprimées grâce à la contrainte par clè étrangère de la BDD.
+		if ($this->_id === null) {
+			return false;
 		}
 
-		return false;
-	}
+		$database = new Database();
+		$rech = $database->query(
+			"SELECT * FROM payments WHERE id_payment=:id_payment",
+			['id_payment' => $this->_id]
+		);
 
-	// Remonte les infos depuis la BDD.
-	private function LoadFromDatabase()
-	{
-		if($this->id != null)
-		{
-			$database = new Database();
-			$rech = $database->Query(
-				"SELECT * FROM payments WHERE id_payment=:id_payment",
-				array("id_payment" => $this->id)
-			);
-	
-			if($rech != null)
-			{
-				$dbData = $rech->fetch();
+		if ($rech !== null) {
+			$dbData = $rech->fetch();
 
-				$this->base_price = intval($dbData['base_price']);
-				$this->fixed_price = intval($dbData['fixed_price']);
-				$this->method = $dbData['method'];
-				$this->date_payment = new DateTime($dbData['date_payment']);
-				$this->nb_deadlines = intval($dbData['nb_deadlines']);
-				$this->is_done = boolval($dbData['is_done']);
+			$this->_basePrice = (int)$dbData['base_price'];
+			$this->_fixedPrice = (int)$dbData['fixed_price'];
+			$this->_method = $dbData['method'];
+			$this->_paymentDate = new DateTime($dbData['date_payment']);
+			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
+			$this->_isDone = (bool)$dbData['is_done'];
 
-				return true;
-			}
+			return true;
 		}
-		
-		return false;
 	}
-
 
 
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_payment)
+	/**
+	 * Retourne un paiement à l'aide de sont ID.
+	 * 
+	 * @param int $idPayment
+	 * @return Payment|false Retourne false en cas d'échec
+	 */
+	public static function getById(int $idPayment): Payment|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM payments WHERE id_payment=:id_payment",
-			array("id_payment" => intval($id_payment))
+			['id_payment' => $id_payment]
 		);
 
-		if($rech != null)
-		{
+		if($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Payment($data);
@@ -323,33 +433,51 @@ class Payment
 		return false;
 	}
 
-	// Retourne la liste de tous les paiement fait pendant la saison.
-	// Par défaut ceux de la saison en cours.
-	static public function GetList($saison = null)
+	/**
+	 * Retourne la liste de tous les paiements fait pendant la saison. Par défaut ceux de la saison en cours.
+	 * 
+	 * @param string $saison
+	 * @return array|false Retourne false en cas d'échec
+	 */
+	public static function getList(string $saison = null): array
 	{
-		if($saison == null)
-			$saison = SnakeTools::GetCurrentSaison();
+		if ($saison === null) {
+			$saison = SnakeTools::getCurrentSaison();
+		}
 
 		$database = new Database();
 
-		$payments = $database->Query(
+		$payments = $database->query(
 			"SELECT payments.* FROM payments
 			JOIN adherents ON payments.id_payment = adherents.id_payment
 			JOIN sections ON sections.id_section = adherents.id_section
 			WHERE saison=:saison",
-			array("saison" => $saison)
+			['saison' => $saison]
 		);
 
-		if($payments != null)
-		{
-			$list = array();
+		if($payments != null) {
+			$list = [];
 
-			while($data = $payments->fetch())
+			while ($data = $payments->fetch()) {
 				$list[] = new Payment($data);
+			}
 
 			return $list;
 		}
 		
 		return false;
+	}
+
+	/**
+	 * Supprime le paiement de la base de données.
+	 * 
+	 * @param int $id
+	 * @return bool
+	 */
+	public static function removeFromDatabase(int $id): bool
+	{
+		$database = new Database();
+		return $database->delete("payments", "id_payment", $id);
+		// Les réductions sont supprimées grâce à la contrainte par clè étrangère de la BDD.
 	}
 }

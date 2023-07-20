@@ -2,44 +2,68 @@
 namespace Snake;
 
 use DateTime;
+use Snake\EDay;
 
+/**
+ * Représente une horaire de cours d'entrainement.
+ */
 class Horaire
 {
-	// == ATTRIBUTS ==
-	private $day = "";
-	private $start_time = null;
-	private $end_time = null;
+	// ==== ATTRIBUTS ====
+	private EDay $_day;
+	private DateTime $_startTime = null;
+	private DateTime $_endTime = null;
 	
-	// == METHODES PRIMAIRES ==
-    public function __construct(string $day, string $start_time, string $end_time)
+	// ==== CONSTRUCTOR ====
+    public function __construct(EDay $day, string $startTime, string $endTime)
     {
-        $this->day = $day;
-        $this->start_time = new DateTime($start_time);
-        $this->end_time = new DateTime($end_time);
+        $this->_day = $day;
+        $this->_startTime = new DateTime($startTime);
+        $this->_endTime = new DateTime($endTime);
     }
 	
-    // == METHODES GETTERS ==
-    public function GetDay() : string
+    // ==== GETTERS ====
+    /**
+     * Retourne le jour d'entrainement.
+     * 
+     * @return EDay
+     */
+    public function getDay(): EDay
     {
-        return $this->day;
+        return $this->_day;
     }
 
-    public function GetStartTime() : DateTime
+    /**
+     * Retourne l'heure de début du cours.
+     * 
+     * @return DateTime
+     */
+    public function getStartTime(): DateTime
     {
-        return $this->start_time;
+        return $this->_startTime;
     }
 
-    public function GetEndtime() : DateTime
+    /**
+     * Retourne l'heure de fin du cours.
+     * 
+     * @return DateTime
+     */
+    public function getEndtime(): DateTime
     {
-        return $this->end_time;
+        return $this->_endTime;
     }
 	
-	// == METHODES SETTERS ==
+	// ==== SETTERS ====
 	
-	// == AUTRES METHODES ==
-	public function Duration()
+	// ==== AUTRES METHODES ====
+    /**
+     * Retourne la durée du cours d'entrainement.
+     * 
+     * @return string
+     */
+	public function duration(): string 
 	{
-        $interval = $this->start_time->diff($this->start_time);
+        $interval = $this->_startTime->diff($this->_startTime);
         return $interval->format('%h:%i');
 	}
 }

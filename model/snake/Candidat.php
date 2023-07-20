@@ -3,114 +3,187 @@ namespace Snake;
 
 use System\Database;
 
+/**
+ * Représente un candidat pour l'election de l'AG.
+ */
 class Candidat
 {
-	// == ATTRIBUTS ==
-	private $id;
-	private $firstname;
-	private $lastname;
-	private $nb_votes = 0;
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id ID du candidat.
+	 */
+	private ?int $_id;
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * @var string $_firstname Prénom du candidat.
+	 */
+	private string $_firstname;
+	
+	/**
+	 * @var string $_lastname Nom de famille du candidat.
+	 */
+	private string $_lastname;
+	
+	/**
+	 * @var int $_nbVotes Nombre de voix pour le candidat.
+	 */
+	private int $_nbVotes = 0;
+	
+	// ==== CONSTRUCTOR ====
+	public function __construct(array $dbData = null)
 	{
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_candidat']);
-			$this->firstname = $dbData['firstname'];
-			$this->lastname = $dbData['lastname'];
+		if ($dbData != null) {
+			$this->_id = (int)$dbData['id_candidat'];
+			$this->_firstname = $dbData['firstname'];
+			$this->_lastname = $dbData['lastname'];
 		}
 	}
 	
-	// == METHODES GETTERS ==
-	public function GetId()
+	// ==== GETTERS ====
+	/**
+	 * Retourne l'ID du candidat.
+	 * 
+	 * @return int|null
+	 */
+	public function getId(): int|null
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetFirstname()
+	/**
+	 * Retourne le prénom du candidat.
+	 * 
+	 * @return string
+	 */
+	public function getFirstname(): string
 	{
-		return $this->firstname;
+		return $this->_firstname;
 	}
 
-	public function GetLastname()
+	/**
+	 * Retourne le nom de famille du candidat.
+	 * 
+	 * @return string
+	 */
+	public function getLastname(): string
 	{
-		return $this->lastname;
+		return $this->_lastname;
+	}
+
+	/**
+	 * Retourne le nombre de voix pour le candidat.
+	 * 
+	 * @return int
+	 */
+	public function getNbVotes(): int
+	{
+		return $this->_nbVotes;
 	}
 	
-	// == METHODES SETTERS ==
-	private function SetId($id)
+	// ==== SETTERS ====
+	/**
+	 * Définie d'ID du candidat.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	private function setId(int $id): void
 	{
-		$this->id = intval($id);
-
-		return true;
+		$this->_id = $id;
 	}
 
-	public function SetFirstname($firstname)
+	/**
+	 * Définie le prénom du candidat.
+	 * 
+	 * @param string $firstname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setFirstname(string $firstname): bool
 	{
-		if($firstname != "")
-		{
-			$this->firstname = trim(ucwords(mb_strtolower($firstname)));
+		if ($firstname !== '') {
+			$this->_firstname = trim(ucwords(mb_strtolower($firstname)));
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetLastname($lastname)
+	/**
+	 * Définie le nom de famille du candidat.
+	 * 
+	 * @param string $lastname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setLastname(string $lastname): bool
 	{
-		if($lastname != "")
-		{
+		if ($lastname !== '') {
 			$this->lastname = trim(ucwords(mb_strtolower($lastname)));
+
 			return true;
 		}
+
 		return false;
 	}
 
-	public function AddVotes($nb_votes)
+	/**
+	 * Ajoute des votes au candidat.
+	 * 
+	 * @param int $nbVotes Nombre de votes à ajouter.
+	 * @return void
+	 */
+	public function addVotes(int $nbVotes): void
 	{
-		$this->nb_votes += $nb_votes;
+		$this->_nbVotes += $nbVotes;
 	}
 
-	public function ToArray()
+	/**
+	 * Retourne un tableau représentant le candidat.
+	 * 
+	 * @return array
+	 */
+	public function toArray(): array
 	{
-		return array(
-			"id_candidat" => $this->id,
-			"firstname" => $this->firstname,
-			"lastname" => $this->lastname,
-			"name" => $this->firstname . " " . $this->lastname,
-			'nbVotes' => $this->nb_votes
-		);
+		return [
+			'id_candidat' => $this->_id,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'name' => $this->_firstname . ' ' . $this->_lastname,
+			'nbVotes' => $this->_nbVotes
+		];
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Sauvegarde les informations dans la base de données
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
-				"ag_candidats",
-				array(
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname
-				)
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'ag_candidats',
+				[
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->id = intval($id);
+			if($id !== false) {
+				$this->_id = (int)$id;
+
 				return true;
 			}
 			
 			return false;
-		}
-		else // Update
-		{
-			return $database->Update(
-				"ag_candidats", "id_candidat", $this->id,
+		} else { // Update
+			return $database->update(
+				'ag_candidats', 'id_candidat', $this->_id,
 				array(
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname
 				)
 			);
 		}
@@ -120,17 +193,22 @@ class Candidat
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_candidat)
+	/**
+	 * Retourne un candidat suivant son ID.
+	 * 
+	 * @param int $idCandidat ID du candidat.
+	 * @return Candidat|false Retourne l'instance du candidat, sinon False si l'adhérent n'existe pas.
+	 */
+	public static function getById(int $idCandidat): Candidat|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM ag_candidats WHERE id_candidat=:id_candidat",
-			array("id_candidat" => intval($id_candidat))
+			['id_candidat' => $idCandidat]
 		);
 
-		if($rech != null)
-		{
+		if ($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Candidat($data);
@@ -139,19 +217,23 @@ class Candidat
 		return false;
 	}
 
-	// Retourne la liste de tous les candidats se présentant à l'assemblé générale du club.
-	static public function GetList()
+	/**
+	 * Retourne la liste de tous les candidats se présentant à l'assemblé générale du club.
+	 * 
+	 * @return array|false Retourne la liste des candidats, sinon False en cas d'échec.
+	 */
+	public static function getList(): array|false
 	{
 		$database = new Database();
 
-		$candidats = $database->Query("SELECT * FROM ag_candidats");
+		$candidats = $database->query("SELECT * FROM ag_candidats");
 
-		if($candidats != null)
-		{
+		if ($candidats !== null) {
 			$list = array();
 
-			while($candidat = $candidats->fetch())
+			while($candidat = $candidats->fetch()) {
 				$list[] = new Candidat($candidat);
+			}
 
 			return $list;
 		}
@@ -159,10 +241,15 @@ class Candidat
 		return false;
 	}
 
-	static public function RemoveFromDatabase($id_candidat)
+	/**
+	 * Supprime un candidat de la liste
+	 * 
+	 * @return bool Retourne True si le candidat à été supprimé, sinon False.
+	 */
+	public static function removeFromDatabase(int $idCandidat)
 	{
 		$database = new Database();
 		
-		return $database->Delete("ag_candidats", "id_candidat", intval($id_candidat));
+		return $database->delete('ag_candidats', 'id_candidat', $id_candidat);
 	}
 }

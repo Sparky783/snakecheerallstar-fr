@@ -2,153 +2,214 @@
 namespace Snake;
 
 use System\Database;
+use Snake\EReductionType;
 
+/**
+ * Représente une réduction pour un paiement.
+ */
 class Reduction
 {
-	// ==============================================================================
-	// ==== Enumérations ============================================================
-	// ==============================================================================
-	// Type de réduction
-	static public $TYPE = array(
-		"None" => 0,
-		"Percentage" => 1,
-		"Amount" => 2,
-	);
-	// ==============================================================================
-
-
-
-	// ==============================================================================
-	// ==== Classe ==================================================================
-	// ==============================================================================
-	// == ATTRIBUTS ==
-	private $id = null;
-	private $id_payment = null;
-	private $type = 0;
-	private $value = 0;
-	private $sujet = "";
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id ID de la réduction.
+	 */
+	private ?int $_id = null;
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * @var int|null $_idPayment ID du paiement associé à la réduction.
+	 */
+	private ?int $_idPayment = null;
+	
+	/**
+	 * @var EReductionType $_type Type de réduction (montant, pourçantage).
+	 */
+	private EReductionType $_type = EReductionType::None;
+	
+	/**
+	 * @var float $_value $_id Valeur à appliquer pour la réduction.
+	 */
+	private float $_value = 0;
+	
+	/**
+	 * @var string $_sujet Objet de la réduction.
+	 */
+	private string $_sujet = '';
+	
+
+	// ==== CONSTRUCTOR ====
+	public function __construct(array $dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_reduction']);
-			$this->id_payment = intval($dbData['id_payment']);
-			$this->type = intval($dbData['type']);
-			$this->value = intval($dbData['value']);
+		if (count($dbData) !== 0) {
+			$this->id = (int)$dbData['id_reduction'];
+			$this->id_payment = (int)$dbData['id_payment'];
+			$this->type = (EReductionType)$dbData['type'];
+			$this->value = (float)$dbData['value'];
 			$this->sujet = $dbData['sujet'];
 		}
 	}
 	
-	// == METHODES GETTERS ==
-	public function GetId()
+	// ==== GETTERS ====
+	/**
+	 * Retourne l'ID de la réduction.
+	 * 
+	 * @return int|null
+	 */
+	public function getId(): int|null
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetIdPayment()
+	/**
+	 * Retourne l'ID du paiement associé à la réduction.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdPayment(): int|null
 	{
-		return $this->id_payment;
+		return $this->_idPayment;
 	}
 
-	public function GetType()
+	/**
+	 * Retourne le type de réduction (montant, pourçantage).
+	 * 
+	 * @return EReductionType
+	 */
+	public function getType(): EReductionType
 	{
-		return $this->type;
+		return $this->_type;
 	}
 
-	public function GetValue()
+	/**
+	 * Valeur de la réduction à appliquer
+	 * 
+	 * @return float
+	 */
+	public function getValue(): float
 	{
-		return $this->value;
+		return $this->_value;
 	}
 
-	public function GetSujet()
+	/**
+	 * Retourne l'objet de la réduction
+	 * 
+	 * @return string
+	 */
+	public function getSujet(): string
 	{
-		return $this->sujet;
+		return $this->_sujet;
 	}
 	
-	// == METHODES SETTERS ==
-	public function SetId($id)
+	// ==== SETTERS ====
+	/**
+	 * Définie l'ID de la réduction.
+	 * 
+	 * @param int $id ID de la réduction.
+	 * @return void
+	 */
+	public function setId(int $id): void
 	{
-		$this->id = intval($id);
+		$this->_id = $id;
 	}
 
-	public function SetIdPayment($id_payment)
+	/**
+	 * Définie l'ID du paiement associé à la réduction.
+	 * 
+	 * @param int $idPayment ID du paiement associé à la réduction.
+	 * @return void
+	 */
+	public function setIdPayment(int $idPayment): void
 	{
-		$this->id_payment = intval($id_payment);
+		$this->_idPayment = $idPayment;
 	}
 	
-	public function SetType($type)
+	/**
+	 * Définie le type de la réduction (montant, pourçantage).
+	 * 
+	 * @param EReductionType $type Type de la réduction.
+	 * @return void
+	 */
+	public function setType(EReductionType $type): void
 	{
-		$this->type = $type;
+		$this->_type = $type;
 	}
 
-	public function SetValue($value)
+	/**
+	 * Définie la valeur à appliquer pour cette réduction.
+	 * 
+	 * @param float $value Valeur de la réduction.
+	 * @return void
+	 */
+	public function setValue(float $value): void
 	{
-		$this->value = $value;
+		$this->_value = $value;
 	}
 
-	public function SetSujet($sujet)
+	/**
+	 * Définie l'objet de la réduction.
+	 * 
+	 * @param string $sujet Objet de la réduction.
+	 * @return void
+	 */
+	public function setSujet(string $sujet): void
 	{
-		$this->sujet = $sujet;
+		$this->_sujet = $sujet;
 	}
 
-	// == AUTRES METHODES ==
-	public function SaveToDatabase()
+	// ==== AUTRES METHODES ====
+	public function saveToDatabase()
 	{
 		$database = new Database();
 
-		if($this->id_payment != null)
-		{
-			if($this->id == null) // Insert
-			{
-				$id = $database->Insert(
+		if ($this->_idPayment != null) {
+			if ($this->_id == null) { // Insert
+				$id = $database->insert(
 					"reductions",
-					array(
-						"id_payment" => $this->id_payment,
-						"type" => $this->type,
-						"value" => $this->value,
-						"sujet" => $this->sujet
-					)
+					[
+						'id_payment' => $this->_idPayment,
+						'type' => $this->_type,
+						'value' => $this->_value,
+						'sujet' => $this->_sujet
+					]
 				);
 
-				if($id !== false)
-				{
-					$this->id = intval($id);
+				if ($id !== false) {
+					$this->id = (int)$id;
 					return true;
 				}
-			}
-			else // Update
-			{
-				return $database->Update(
+			} else { // Update
+				return $database->update(
 					"reductions", "id_reduction", $this->id,
-					array(
-						"id_payment" => $this->id_payment,
-						"type" => $this->type,
-						"value" => $this->value,
-						"sujet" => $this->sujet
-					)
+					[
+						'id_payment' => $this->_idPayment,
+						'type' => $this->_type,
+						'value' => $this->_value,
+						'sujet' => $this->_sujet
+					]
 				);
 			}
 		}
 	}
-
 
 
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_reduction)
+	/**
+	 * Retourne une réduction suivant son ID.
+	 * 
+	 * @param int
+	 * @return Reduction|false Retourne False en cas d'échec.
+	 */
+	public static function getById(int $idReduction): Reduction|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM reductions WHERE id_reduction=:id_reduction",
-			array("id_reduction" => intval($id_reduction))
+			['id_reduction' => $idReduction]
 		);
 
-		if($rech != null)
-		{
+		if ($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Reduction($data);
@@ -157,20 +218,26 @@ class Reduction
 		return false;
 	}
 
-	static public function GetListByIdPayment($id_payment)
+	/**
+	 * Retourne toutes les réductions d'un paiement.
+	 * 
+	 * @param int $idPayment ID du paiement ou les réduction doivent être récupérées.
+	 * @return array|false Retourne False en cas d'échec.
+	 */
+	public static function getListByIdPayment(int $idPayment): array
 	{
 		$database = new Database();
 		$reductions = $database->Query(
 			"SELECT * FROM reductions WHERE id_payment=:id_payment",
-			array("id_payment" => $id_payment)
+			['id_payment' => $id_payment]
 		);
 
-		if($reductions != null)
-		{
-			$list = array();
+		if ($reductions !== null) {
+			$list = [];
 
-			while($reduction = $reductions->fetch())
+			while ($reduction = $reductions->fetch()) {
 				$list[] = new Reduction($reduction);
+			}
 
 			return $list;
 		}
