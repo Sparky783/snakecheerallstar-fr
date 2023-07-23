@@ -9,6 +9,7 @@ use Snake\Inscription;
 global $gmm;
 
 $session = Session::getInstance();
+
 if (!isset($session->inscription)) {
 	$session->inscription = new Inscription();
 }
@@ -28,7 +29,7 @@ if(!isset($session->inscriptionAllowAccess)) {
 }
 
 $test = false;
-if($test && $gmm->GetValue("pass") == "kamoulox" && !$session->inscriptionAllowAccess) {
+if($test && $gmm->getValue("pass") == "kamoulox" && !$session->inscriptionAllowAccess) {
 	$session->inscriptionAllowAccess = true;
 }
 
@@ -40,7 +41,7 @@ if($session->inscriptionAllowAccess) {
 $options = unserialize($session->websiteOptions);
 $today = new DateTime();
 
-if($options->IS_OPEN_INSCRIPTION && $today >= $options->INSCRIPTION_MIN_DATE &&  $today < $options->INSCRIPTION_MAX_DATE) {
+if ($options->IS_OPEN_INSCRIPTION && $today >= $options->INSCRIPTION_MIN_DATE &&  $today < $options->INSCRIPTION_MAX_DATE) {
 	$allowAccess = true;
 }
 // ==============================================

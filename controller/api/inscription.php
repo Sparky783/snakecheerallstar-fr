@@ -11,152 +11,132 @@ use Snake\Reduction;
 // ============================
 // ==== Step 1 - Adherents ====
 // ============================
-$app->Post("/inscription_validate_adherents", function($args) {
+$app->post('/inscription_validate_adherents', function($args) {
 	$session = Session::getInstance();
-	$session->inscription->ClearAdherents(); // Nettoie la liste des adhérents.
+	$session->inscription->clearAdherents(); // Nettoie la liste des adhérents.
 
 	$result = true;
-	$message = "";
+	$message = '';
 
-	if(isset($args['adherents']))
-	{
-		$listAdherents = array();
+	if (isset($args['adherents'])) {
+		$listAdherents = [];
 
-		$nbBySection = SnakeTools::NbBySection();
+		$nbBySection = SnakeTools::nbBySection();
 
 		// Vérification des adhérents
-		foreach($args['adherents'] as $adherent)
-		{
+		foreach($args['adherents'] as $adherent) {
 			$adh = new Adherent();
 			
-			if($adh->SetInformation($adherent))
-			{
+			if ($adh->setInformation($adherent)) {
 				// Si l'adhérent appartien à une section
-				if($adh->GetSection() != null)
-				{
+				if($adh->getSection() !== null) {
 					// Si la section n'est pas pleine.
-					if($nbBySection[$adh->GetSection()->GetId()] < $adh->GetSection()->GetNbMaxMembers())
-					{
+					if($nbBySection[$adh->getSection()->getId()] < $adh->getSection()->getNbMaxMembers()) {
 						$listAdherents[] = $adh;
-					}
-					else
-					{
+					} else {
 						$result = false;
-						$message = "Désolé, la section " . $adh->GetSection()->GetName() . " pour " . $adh->GetFirstname() . " est pleine.";
+						$message = "Désolé, la section " . $adh->getSection()->getName() . " pour " . $adh->getFirstname() . " est pleine.";
 					}
-				}
-				else
-				{
+				} else {
 					$result = false;
-					$message = "Désolé, " . $adh->GetFirstname() . " est trop jeune pour s'inscrire.";
+					$message = "Désolé, " . $adh->getFirstname() . " est trop jeune pour s'inscrire.";
 				}
-			}
-			else
-			{
+			} else {
 				$result = false;
 				$message = "L'un des champs n'est pas correctement rempli.";
 			}
 		}
 
-		if($result)
-		{
+		if ($result) {
 			// Enregistrement des adhérents dans l'objet inscription
-			foreach($listAdherents as $adherent)
-				$session->inscription->AddAdherent($adherent);
+			foreach ($listAdherents as $adherent) {
+				$session->inscription->addAdherent($adherent);
+			}
 
-			$session->inscription->ChangeState(Inscription::$STEPS['Tuteurs']);
+			$session->inscription->changeState(Inscription::$STEPS['Tuteurs']);
 		}
-	}
-	else
-	{
+	} else {
 		$result = false;
 		$message = "Veuillez ajouter au moins un adhérent.";
 	}
 
-	$reponse = array(
+	$reponse = [
 		'result' => $result,
 		'message' => $message
-	);
+	];
 
-	API::SendJSON($reponse);
+	API::sendJSON($reponse);
 });
 
 // ==========================
 // ==== Step 2 - Tuteurs ====
 // ==========================
-$app->Post("/inscription_validate_tuteurs", function($args) {
+$app->post('/inscription_validate_tuteurs', function($args) {
 	$session = Session::getInstance();
 	$session->inscription->ClearTuteurs(); // Nettoie la liste des adhérents.
 	
 	$result = true;
-	$message = "";
+	$message = '';
 
-	if(isset($args['tuteurs']))
-	{
+	if (isset($args['tuteurs'])) {
 		$listTuteurs = array();
 
-		foreach($args['tuteurs'] as $tuteur)
-		{
+		foreach ($args['tuteurs'] as $tuteur) {
 			$tut = new Tuteur();
 			
-			if($tut->SetInformation($tuteur))
+			if ($tut->SetInformation($tuteur)) {
 				$listTuteurs[] = $tut;
-			else
-			{
+			} else {
 				$result = false;
 				$message = "L'un des champs n'est pas correctement rempli.";
 			}
 		}
 
-		if($result)
-		{
+		if ($result) {
 			// Enregistrement des tuteurs dans l'objet inscription
-			foreach($listTuteurs as $tuteur)
-				$session->inscription->AddTuteur($tuteur);
+			foreach($listTuteurs as $tuteur) {
+				$session->inscription->addTuteur($tuteur);
+			}
 
-			$session->inscription->ChangeState(Inscription::$STEPS['Authorization']);
+			$session->inscription->changeState(Inscription::$STEPS['Authorization']);
 		}
-	}
-	else
-	{
+	} else {
 		$result = false;
 		$message = "Veuillez ajouter au moins un tuteur.";
 	}
 
-	$reponse = array(
+	$reponse = [
 		'result' => $result,
 		'message' => $message
-	);
+	];
 
-	API::SendJSON($reponse);
+	API::sendJSON($reponse);
 });
 
 // ================================
 // ==== Step 3 - Authorization ====
 // ================================
-$app->Post("/inscription_validate_authorization", function($args) {
+$app->post('/inscription_validate_authorization', function($args) {
 	$session = Session::getInstance();
 	
 	$result = true;
-	$message = "";
+	$message = '';
 
-	if($args['authorization'] == "true")
-	{
-		$session->inscription->SetAuthorization(true);
+	if($args['authorization'] === 'true') {
+		$session->inscription->setAuthorization(true);
 		
 		// Ajout d'une réduction pour les fratries.
-		if(count($session->inscription->GetAdherents()) > 1)
-		{
+		if(count($session->inscription->getAdherents()) > 1) {
 			$reduc = new Reduction();
-			$reduc->SetType(Reduction::$TYPE['Percentage']);
-			$reduc->SetValue(15); // 15%
-			$reduc->SetSujet("Tarif fratrie");
+			$reduc->setType(Reduction::$TYPE['Percentage']);
+			$reduc->setValue(15); // 15%
+			$reduc->setSujet("Tarif fratrie");
 			
-			$session->inscription->GetPayment()->AddReduction($reduc);
+			$session->inscription->getPayment()->addReduction($reduc);
 		}
 
-		$session->inscription->ComputeCotisation();
-		$session->inscription->ChangeState(Inscription::$STEPS['Payment']);
+		$session->inscription->computeCotisation();
+		$session->inscription->changeState(Inscription::$STEPS['Payment']);
 	}
 	else
 	{

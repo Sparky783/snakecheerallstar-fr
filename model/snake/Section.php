@@ -11,9 +11,9 @@ class Section
 {
 	// == ATTRIBUTS ==
 	/**
-	 * @var int $_id ID de la section.
+	 * @var int|null $_id ID de la section.
 	 */
-	private int $_id = null;
+	private ?int $_id = null;
 	
 	/**
 	 * @var string $_name Nom de la section.

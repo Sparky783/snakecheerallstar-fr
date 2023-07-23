@@ -344,7 +344,7 @@ class SnakeTools
 			$mail->AltBody = EmailTemplates::TextFormat($sujet);
 			$mail->send();
 			
-			return true
+			return true;
 		}
 		catch (Exception $e) { }
 
