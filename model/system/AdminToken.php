@@ -8,30 +8,40 @@ use System\Database;
  */
 class AdminToken
 {
-	// == ATTRIBUTS ==
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id Admin token's ID.
+	 */
 	private ?int $_id = null;
+	
+	/**
+	 * @var int|null $_idAdmin Admin' ID associated to this admin token.
+	 */
 	private ?int $_idAdmin = null;
-	private string $_token = "";
+	
+	/**
+	 * @var string $_token Value of the token.
+	 */
+	private string $_token = '';
 
 	
-	// == CONSTRUCTORS ==
-	public function __construct($dbData = null)
+	// ==== CONSTRUCTOR ====
+	public function __construct($dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->_id = intval($dbData['id_token']);
-			$this->_idAdmin = intval($dbData['id_admin']);
+		if (count($dbData) > 0) {
+			$this->_id = (int)$dbData['id_token'];
+			$this->_idAdmin = (int)$dbData['id_admin'];
 			$this->_token = $dbData['token'];
 		}
 	}
 
-	// == GETTERS ==
+	// ==== GETTERS ====
 	/**
 	 * Get the ID of this token.
 	 * 
-	 * @return int Token ID.
+	 * @return int|null Token ID.
 	 */
-	public function getId(): int
+	public function getId(): int|null
 	{
 		return $this->_id;
 	}
@@ -39,9 +49,9 @@ class AdminToken
 	/**
 	 * Get the administrator's ID associatedd to this token.
 	 * 
-	 * @return int Administrator's ID.
+	 * @return int|null Administrator's ID.
 	 */
-	public function getIdAdmin(): int
+	public function getIdAdmin(): int|null
 	{
 		return $this->_idAdmin;
 	}
@@ -56,27 +66,27 @@ class AdminToken
 		return $this->_token;
 	}
 
-	// == SETTERS ==
+	// ==== SETTERS ====
 	/**
 	 * Define the token ID.
 	 * 
-	 * @param mixed $id Token ID.
+	 * @param int $id Token ID.
      * @return void
 	 */
-	public function SetId(mixed $id = null): void
+	public function setId(int $id = null): void
 	{
-		$this->_id = intval($id);
+		$this->_id = $id;
 	}
 
 	/**
 	 * Define the IDof the associated administrator.
 	 * 
-	 * @param mixed $idAdmin Administrator ID.
+	 * @param int $idAdmin Administrator ID.
      * @return void
 	 */
-	public function setIdAdmin(mixed $idAdmin): void
+	public function setIdAdmin(int $idAdmin): void
 	{
-		$this->_idAdmin = intval($idAdmin);
+		$this->_idAdmin = $idAdmin;
 	}
 
 	/**
@@ -90,7 +100,7 @@ class AdminToken
 		$this->_token = $token;
 	}
 
-	// == OTHER METHODS ==
+	// ==== OTHER METHODS ====
 	/**
 	 * Save this token object into database.
 	 * If this token is a new one, create id and affect a new ID.
@@ -102,31 +112,27 @@ class AdminToken
 		$database = new Database();
 		$result = false;
 
-		if($this->_id == null) // Insert
-		{
-			$id = $database->Insert(
-				"admin_tokens",
-				array(
-					"id_admin" => $this->_idAdmin,
-					"token" => $this->_token
-				)
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'admin_tokens',
+				[
+					'id_admin' => $this->_idAdmin,
+					'token' => $this->_token
+				]
 			);
 
-			if($id !== false)
-			{
+			if ($id !== false) {
 				$this->_id = intval($id);
 
 				$result = true;
 			}
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"admin_tokens", "id_token", $this->_id,
-				array(
-					"id_admin" => $this->_idAdmin,
-					"token" => $this->_token
-				)
+		} else { // Update
+			$result = $database->update(
+				'admin_tokens', 'id_token', $this->_id,
+				[
+					'id_admin' => $this->_idAdmin,
+					'token' => $this->_token
+				]
 			);
 		}
 
@@ -140,23 +146,24 @@ class AdminToken
 	/**
 	 * Get a token from his ID.
 	 * 
-	 * @param mixed $idAdmin ID of the token to get.
-	 * @return AdminToken|bool Token wanted, else False if the process failed.
+	 * @param int $idAdmin ID of the token to get.
+	 * @return AdminToken|false Token wanted, else False if the process failed.
 	 */
-	static public function getById(mixed $idToken): AdminToken|bool
+	public static function getById(int $idToken): AdminToken|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM admin_tokens WHERE id_token=:id_token",
-			array("id_token" => intval($idToken))
+			['id_token' => $idToken]
 		);
 
-		if($rech != null)
-		{
+		if ($rech !== null) {
 			$data = $rech->fetch();
-
-			return new AdminToken($data);
+			
+			if ($data !== false) {
+				return new AdminToken($data);
+			}
 		}
 		
 		return false;
@@ -166,23 +173,23 @@ class AdminToken
 	 * Get a list of tokens from an admin ID.
 	 * 
 	 * @param int $idAdmin ID of the admin associated to tokens.
-	 * @return array|bool List of tokens associated to this admin ID, else False if the process failed.
+	 * @return array|false List of tokens associated to this admin ID, else False if the process failed.
 	 */
-	static public function getByAdmin(int $idAdmin): array|bool
+	public static function getByAdmin(int $idAdmin): array|false
 	{
 		$database = new Database();
 
 		$tokens = $database->query(
 			"SELECT * FROM admin_tokens WHERE id_admin=:id_admin",
-			array("id_admin" => intval($idAdmin))
+			['id_admin' => $idAdmin]
 		);
 
-		if($tokens != null)
-		{
-			$list = array();
+		if ($tokens !== null) {
+			$list = [];
 
-			while($data = $tokens->fetch())
+			while ($data = $tokens->fetch()) {
 				$list[] = new AdminToken($data);
+			}
 
 			return $list;
 		}
@@ -193,20 +200,19 @@ class AdminToken
 	/**
 	 * Return the list of all administrator tokens present into the database.
 	 * 
-	 * @return array|bool List of the administrator tokens, else False is the process failed.
+	 * @return array|false List of the administrator tokens, else False is the process failed.
 	 */
-	static public function getList(): array|bool
+	public static function getList(): array|false
 	{
 		$database = new Database();
-
 		$tokens = $database->query("SELECT * FROM admin_tokens");
 
-		if($tokens != null)
-		{
+		if ($tokens !== null) {
 			$list = array();
 
-			while($data = $tokens->fetch())
+			while ($data = $tokens->fetch()) {
 				$list[] = new AdminToken($data);
+			}
 
 			return $list;
 		}
@@ -220,11 +226,11 @@ class AdminToken
 	 * @param int $idToken Id of the token to remove.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	static public function removeFromDatabase(int $idToken): bool
+	public static function removeFromDatabase(int $idToken): bool
 	{
 		$database = new Database();
 
-		return $database->delete("admin_tokens", "id_token", $idToken);
+		return $database->delete('admin_tokens', 'id_token', $idToken);
 	}
 
 	/**
@@ -232,7 +238,7 @@ class AdminToken
 	 * 
 	 * @return string Token generated.
 	 */
-	static public function generateRandomToken(): string
+	public static function generateRandomToken(): string
 	{
 		return hash("sha512", random_bytes(256));
 	}

@@ -18,7 +18,7 @@ global $router;
 $router = new Router();
 $session = Session::getInstance();
 
-if(!MAINTENANCE_MODE) {
+if (!MAINTENANCE_MODE) {
 	$app = new Api();
 	
 	// Open the controler folder and include all files.
@@ -27,9 +27,11 @@ if(!MAINTENANCE_MODE) {
 	if (is_dir($dir)) {
 		if ($dh = opendir($dir)) {
 			while (($file = readdir($dh)) !== false) {
-				if(substr($file, -4) === ".php")
+				if(substr($file, -4) === ".php") {
 					include_once $dir . '/' . $file;
+				}
 			}
+
 			closedir($dh);
 		}
 	}

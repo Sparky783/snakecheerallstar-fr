@@ -10,20 +10,63 @@
 		<link href="https://fonts.googleapis.com/css?family=Poppins:700" rel="stylesheet"> 
 		<link rel="stylesheet" type="text/css" href="view/css/inscription.css" />
 		
-		<?php echo $script; ?>
+		<script type='text/javascript' src='view/js/inscription.js'></script>
+		<script>
+			let urlApi = '<?= $router->getAPI('') ?>'
+		</script>
 	</head>
 	<body>
 		<?php include_once("HEADER.php"); ?>
+
 		<main class="container snake-body">
-			<div class="col-sm-12">
+			<?php if ($allowAccess) { ?>
 				<div class="row">
-					<?php echo $htmlStep; ?>
+					<div class="col-sm-12">
+						<div id="steps">
+							<div class="steps-line">
+								<span></span>
+							</div>
+							
+							<div class="steps-blocks">
+								<div id="stepAdherents" class="step active">
+									<span>1<br />Adhérents</span>
+								</div>
+								<div id="stepTuteurs" class="step">
+									<span>2<br />Tuteurs</span>
+								</div>
+								<div id="stepAuthorisation" class="step">
+									<span>3<br />Autorisations</span>
+								</div>
+								<div id="stepPayment" class="step">
+									<span>4<br />Paiement</span>
+								</div>
+								<div id="stepValidation" class="step">
+									<span>5<br />Confirmation</span>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<?php echo $html; ?>
-			</div>
+
+				<?php include('inscription-adherents.php') ?>
+				<?php include('inscription-tuteurs.php') ?>
+				<?php include('inscription-authorisation.php') ?>
+				<?php include('inscription-payment.php') ?>
+				<?php include('inscription-validation.php') ?>
+			<?php } else { ?>
+				<div class="row">
+					<div class="col-sm-12">
+						<div id='messageInscription'>
+							<div class='alert alert-warning'>
+								<i class='fas fa-exclamation-triangle'></i>
+								Les inscriptions sont fermé pour le moment.
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php } ?>
 		</main>
+
 		<?php include_once("FOOTER.php"); ?>
 	</body>
 </html>

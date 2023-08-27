@@ -1,11 +1,18 @@
 <?php
 namespace Snake;
 
-use System\Database;
+use DateTime;
 use System\ToolBox;
 use Snake\Section;
 use Snake\Payment;
 use Snake\Tuteur;
+use Snake\EmailTemplates;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once ABSPATH. 'model/PHPMailer/src/Exception.php';
+require_once ABSPATH. 'model/PHPMailer/src/PHPMailer.php';
+require_once ABSPATH. 'model/PHPMailer/src/SMTP.php';
 
 /**
  * Outil pour la gestion du site des Snake.
@@ -15,20 +22,19 @@ class SnakeTools
 	/**
 	 * Détermine la bonne section pour l'adhérent suivant ça date de naissance.
 	 * 
-	 * @param string $birthday Date de naissance de l'adhérent
+	 * @param DateTime $birthday Date de naissance de l'adhérent
 	 * @return Section|false Section dans laquelle l'adhérent doit aller. Retourne False si aucune section ne correspond.
 	 */
-	public static function findSection(string $birthday): Section|false
+	public static function findSection(DateTime $birthday): Section|false
 	{
-		list($annee, $mois, $jour) = explode('-', $birthday);
-		$age = (int)(date("Y")) - (int)$annee;
+		$year = (int)$birthday->format('Y');
 
 		$sections = Section::getList();
 		$currentDiff = 9999;
 		$selectedSection = false;
 
 		foreach ($sections as $section) {
-			$diff = $age - $section->getMinAge();
+			$diff = $section->getMaxYear() - $year;
 
 			if ($diff >= 0) {
 				if ($diff < $currentDiff) {
@@ -111,39 +117,6 @@ class SnakeTools
 		
 		return $deadlines;
 	}
-	
-	/**
-	 * Retourne le nombre d'ahérents inscrit par section pour la saison souhaité.
-	 * 
-	 * @param string $saison Saison ou récupérer les adhérents. Par défaut la saison en cours est sélectionnée.
-	 * @return array Liste du nombre d'adhérent par section.
-	 */
-	public static function nbAdherentsBySection(string $saison = ''): array
-	{
-		if ($saison === null) {
-			$saison = self::getCurrentSaison();
-		}
-
-		$database = new DataBase();
-		$sections = [];
-
-		$result = $database->query(
-			"SELECT * FROM adherents INNER JOIN sections ON adherents.id_section = sections.id_section WHERE saison=:saison",
-			['saison' => $saison]
-		);
-
-		if ($result) {
-			while ($data = $result->fetch()) {
-				if(!isset($sections[$data['id_section']])) {
-					$sections[$data['id_section']] = 0;
-				}
-					
-				$sections[$data['id_section']] ++;
-			}
-		}
-
-		return $sections;
-	}
 
 	/**
 	 * Format le numéro de la facture pour quelle soit à la taille souhaité.
@@ -158,12 +131,12 @@ class SnakeTools
 		$billNumber = $billNumber . ''; // Convertie en string
 		$result = '';
 
-		if(strlen($billNumber) > $numberSize) {
+		if (strlen($billNumber) > $numberSize) {
 			return false;
 		}
 
-		for($i = $numberSize - strlen($billNumber); $i > 0; $i--) {
-			$result .= "0";
+		for ($i = $numberSize - strlen($billNumber); $i > 0; $i--) {
+			$result .= '0';
 		}
 
 		$result .= $billNumber;
@@ -185,7 +158,7 @@ class SnakeTools
 			$tuteur = new Tuteur();
 			$tuteur->setFirstname(TITLE);
 			$tuteur->setEmail(EMAIL_CONTACT);
-			$tuteur->setPhone("00 00 00 00 00");
+			$tuteur->setPhone('00 00 00 00 00');
 		}
 
 		// Concaténation des infos
@@ -207,14 +180,14 @@ class SnakeTools
 
 			//Recipients
 			$mail->setFrom(EMAIL_WEBSITE, 'Facture | ' . TITLE);
-			$mail->addAddress($tuteur->GetEmail(), $tuteur->GetLastname() . " " . $tuteur->GetFirstname());
-			$mail->addAddress(EMAIL_WABMASTER, $tuteur->GetLastname() . " " . $tuteur->GetFirstname());
+			$mail->addAddress($tuteur->getEmail(), $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
+			$mail->addAddress(EMAIL_WABMASTER, $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
 
 			//Content
 			$mail->isHTML(true); // Set email format to HTML
 			$mail->Subject = "Facture d'inscription - " . TITLE;
-			$mail->Body    = EmailTemplates::BillHTML($number, $payment, $tuteur);
-			$mail->AltBody = EmailTemplates::TextFormat("Facture d'inscription - " . TITLE);
+			$mail->Body    = EmailTemplates::billHtml($number, $payment, $tuteur);
+			$mail->AltBody = EmailTemplates::standardText("Facture d'inscription - " . TITLE);
 
 			$mail->send();
 
@@ -229,7 +202,7 @@ class SnakeTools
 	 * Envoie le récapitulatif d'inscription au tuteur sélectionné.
 	 * 
 	 * @param Payment $payment Paiement pour l'inscription.
-	 * @param Tuteur $tuteur Tuteur à qui envoyer le mail. Si le tuteur n'est pas précisé, le mail sera envoyé au bureau du club.
+	 * @param Tuteur|null $tuteur Tuteur à qui envoyer le mail. Si le tuteur n'est pas précisé, le mail sera envoyé au bureau du club.
 	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
 	 */
 	public static function sendRecap(Payment $payment, Tuteur $tuteur = null): bool
@@ -239,11 +212,11 @@ class SnakeTools
 			$tuteur = new Tuteur();
 			$tuteur->setFirstname(TITLE);
 			$tuteur->setEmail(EMAIL_CONTACT);
-			$tuteur->setPhone("00 00 00 00 00");
+			$tuteur->setPhone('00 00 00 00 00');
 		}
 
 		// E-mail Facture
-		$list = "";
+		$list = '';
 
 		// Détail du paiement de la cotisation
 		switch ($payment->getMethod()) {
@@ -275,12 +248,12 @@ class SnakeTools
 			foreach ($adherents as $adherent) {
 				$list .= "<p>Pour " . $adherent->getFirstname() . " " . $adherent->getLastname() . " :</p><ul>";
 
-				if ($adherent->getMedicine()) {
+				if ($adherent->hasMedicine()) {
 					$list .= "<li>Formulaire d'autorisation médical pour " . $adherent->getFirstname() . " à remplir <a href='" . URL . "/content/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
 				}
 
 				// Questionnaire de santé en fonction de l'age
-				$age = ToolBox::age($adherent->getBirthday()->format("Y-m-d"));
+				$age = ToolBox::age($adherent->getBirthday());
 				if ($age < 18) {
 					$list .= "<li>Questionnaire de santé (Mineur) <a href='" . URL . "/content/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 				} else {
@@ -291,6 +264,7 @@ class SnakeTools
 			}
 		}
 
+		$list = "<p>Afin de finaliser l'inscription de votre/vos adhérent pour la saison de cheerleading, veuillez nous fournir les documents suivants :</p>";
 		$list .= "<p>Pour chaque adhérent, veuillez fournir les éléments suivants :</p>";
 		$list .= "<ul>";
 		$list .= "<li>Formulaire de la FFFA <a href='" . URL . "/content/licence_FFFA.pdf' title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>";
@@ -302,7 +276,10 @@ class SnakeTools
 		$list .= "</ul>";
 		$list .= "<p>Veuillez remettre l'ensemble des éléments ci-dessus aux coachs ou aux membres du bureau présents pendant les cours.</p>";
 		$list .= "<p>Merci de bien vouloir mettre les chèques à l'ordre de Snake Cheer All Star.</p>";
+		$list .= "<p><br /><br />Cordialement,<br />" . TITLE . "</p>";
 
+		$sujet = "Récapitulatif d'inscription " . TITLE;
+			
 
 		// ================================================
 		// E-mail récapitulatif
@@ -323,25 +300,18 @@ class SnakeTools
 			//Recipients
 			$mail->setFrom(EMAIL_WEBSITE, 'Récapitulatif d\'inscription | ' . TITLE);
 
-			if (ENV === "PROD") {
-				$mail->addAddress($tuteur->GetEmail(), $tuteur->GetLastname() . " " . $tuteur->GetFirstname());
-				$mail->addAddress(EMAIL_WABMASTER, $tuteur->GetLastname() . " " . $tuteur->GetFirstname());
+			if (ENV === 'PROD') {
+				$mail->addAddress($tuteur->getEmail(), $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
+				$mail->addAddress(EMAIL_WABMASTER, $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
 			} else { // ENV DEV
-				$mail->addAddress(EMAIL_WABMASTER, $tuteur->GetLastname() . " " . $tuteur->GetFirstname());
+				$mail->addAddress(EMAIL_WABMASTER, $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
 			}
 			
 			//Content
 			$mail->isHTML(true); // Set email format to HTML
-
-			$sujet = "Récapitulatif d'inscription " . TITLE;
-			$html = "
-				<p>Afin de finaliser l'inscription de votre/vos adhérent pour la saison de cheerleading, veuillez nous fournir les documents suivants :</p>
-				".$list."
-			";
-
 			$mail->Subject = $sujet;
-			$mail->Body    = EmailTemplates::StandardHTML($sujet, $html);
-			$mail->AltBody = EmailTemplates::TextFormat($sujet);
+			$mail->Body    = EmailTemplates::standardHTML($sujet, $list);
+			$mail->AltBody = EmailTemplates::standardText($sujet);
 			$mail->send();
 			
 			return true;

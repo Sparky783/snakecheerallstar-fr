@@ -128,14 +128,14 @@ class Tuteur
 	 */
 	public function getAdherents(): array
 	{
-		if($this->_id !== null && count($this->_adherents) === 0) {
+		if ($this->_id !== null && count($this->_adherents) === 0) {
 			$database = new Database();
-			$adherents = $database->Query(
+			$adherents = $database->query(
 				"SELECT * FROM adherent_tuteur JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent WHERE id_tuteur=:id_tuteur",
-				array("id_tuteur" => $this->id)
+				['id_tuteur' => $this->_id]
 			);
 
-			if($adherents != null) {
+			if ($adherents != null) {
 				while($adherent = $adherents->fetch()) {
 					$this->_adherents[] = new Adherent($adherent);
 				}
@@ -259,7 +259,7 @@ class Tuteur
 		$result = true;
 		
 		if (isset($infos['id_tuteur'])) {
-			$result &= $this->setId($infos['id_tuteur']);
+			$this->setId((int)$infos['id_tuteur']);
 		}
 		
 		if (isset($infos['firstname'])) {
@@ -299,9 +299,9 @@ class Tuteur
 	/**
 	 * Sauvegarde les informations du tuteur dans la base de données.
 	 * 
-	 * @return void
+	 * @return bool Retourne True en cas de succès, sinon false.
 	 */
-	public function saveToDatabase(): void
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 		$result = false;
@@ -324,7 +324,7 @@ class Tuteur
 			}
 		} else { // Update
 			$result = $database->update(
-				'tuteurs', 'id_tuteur', $this->id,
+				'tuteurs', 'id_tuteur', $this->_id,
 				[
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,

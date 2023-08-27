@@ -7,14 +7,13 @@ use ErrorException;
  */
 class Settings
 {
-    // == ATTRIBUTES ==
-    private array $settings = array();
+    // ==== ATTRIBUTS ====
+	/**
+	 * @var array $settings Setting list.
+	 */
+    private array $settings = [];
 
-
-    // == CONSTRUCTORS ==
-    public function __construct() {}
-
-
+	// ==== OTHER METHODS ====
     /**
      * Load all settings from database.
      *
@@ -23,12 +22,11 @@ class Settings
     public function loadFromDatabase(): void
     {
         $database = new Database();
-        $rech = $database->Query("SELECT * FROM settings");
+        $rech = $database->query("SELECT * FROM settings");
         
-        while($data = $rech->fetch())
-        {
+        while ($data = $rech->fetch()) {
             $param = new SettingsItem($data);
-            $this->settings[$param->GetId()] = $param;
+            $this->settings[$param->getId()] = $param;
         }
     }
 
@@ -41,14 +39,14 @@ class Settings
     {
         $result = true;
 
-        foreach($this->settings as $option) {
-            $result &= $option->SaveToDatabase();
+        foreach ($this->settings as $option) {
+            $result &= $option->saveToDatabase();
         }
 
         return $result;
     }
 
-    // == OVERRIDE ==
+    // ==== OVERRIDE ====
     // Override Set, Get, Isset and Unset function.
     // That is used to do Setting->MyVariable;
 
@@ -61,7 +59,7 @@ class Settings
      */
     public function __set(string $name, mixed $value): void
     {
-        $this->settings[$name]->SetValue($value);
+        $this->settings[$name]->setValue($value);
     }
 
     /**
@@ -73,11 +71,11 @@ class Settings
      */
     public function __get(string $name): mixed
     {
-        if(isset($this->settings[$name])) {
-            return $this->settings[$name]->GetValue();
+        if (isset($this->settings[$name])) {
+            return $this->settings[$name]->getValue();
         }
 
-        throw new ErrorException('The setting ' . $name . ' does not exist.');
+        throw new ErrorException("The setting '$name' does not exist.");
     }
 
     /**

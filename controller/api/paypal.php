@@ -2,9 +2,10 @@
 use ApiCore\Api;
 use System\Session;
 use Snake\SnakeTools;
-use SimplePayPal;
+use Snake\SimplePayPal;
 
-$app->Post("/create_order", function($args) {
+/*
+$app->Post("/create_paypal_order", function($args) {
 	global $router;
 	$session = Session::getInstance();
 
@@ -45,40 +46,42 @@ $app->Post("/create_order", function($args) {
 
 	API::SendJSON(json_decode($response));
 });
+*/
 
-$app->Post("/approve_order", function($args) {
+$app->post("/approve_paypal_order", function($args) {
 	$session = Session::getInstance();
 	
-	$paypal = new SimplePayPal(array(
-		"url" => PAYPAL_URL,
-		"client_id" => PAYPAL_CLIENT_ID,
-		"secret" => PAYPAL_SECRET
-	));
+	$paypal = new SimplePayPal([
+		'url' => PAYPAL_URL,
+		'client_id' => PAYPAL_CLIENT_ID,
+		'secret' => PAYPAL_SECRET
+	]);
 	
-	$response = $paypal->ShowOrderDetails($args['orderID']);
+	$response = $paypal->showOrderDetails($args['orderID']);
 
 	$amount = $response->purchase_units[0]->payments->captures[0]->amount;
 
 	$result = true;
-	$message = "";
+	$message = '';
+	
+	// Valide le paiement PayPal
+	$validPayment = true;
+	$validPayment = $validPayment && $amount->currency_code === 'EUR';
+	$validPayment = $validPayment && (int)$amount->value === $session->inscription->getPayment()->getFinalAmount();
+	$validPayment = $validPayment && $response->status === 'COMPLETED';
 
-	if ($amount->currency_code == "EUR" &&
-		intval($amount->value) == $session->inscription->GetPayment()->GetFinalAmount() &&
-		$response->status == "COMPLETED")
-	{
-		$session->inscription->GetPayment()->SetIsDone(true);
-		$message = "Le paiement à bien été effectué.";
-	}
-	else
-	{
+	if ($validPayment) {
+		$session->inscription->getPayment()->setIsDone(true);
+		$message = 'Le paiement à bien été effectué.';
+	} else {
 		$result = false;
-		$message = "Le paiement ne correspond pas à la cotisation.";
+		$message = 'Le paiement ne correspond pas à la cotisation.';
 	}
 
-	API::SendJSON(array(
+	API::SendJSON([
 		'result' => $result,
 		'message' => $message,
 		'responsePayPal' => $response
-	));
+	]);
 });
 ?>

@@ -8,22 +8,40 @@ use System\Database;
  */
 class Admin
 {
-	// == ATTRIBUTS ==
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id Admin's ID.
+	 */
 	private ?int $_id = null;
-	private string $_email = "";
-	private string $_password = "";
-	private string $_name = "";
-	private array $_roles = array();
+	
+	/**
+	 * @var string $_email Admin's E-mail.
+	 */
+	private string $_email = '';
+	
+	/**
+	 * @var string $_password Admin's password.
+	 */
+	private string $_password = '';
+	
+	/**
+	 * @var string $_name Admin's name.
+	 */
+	private string $_name = '';
+	
+	/**
+	 * @var array $_roles Admin's roles.
+	 */
+	private array $_roles = [];
 
-	// == CONSTRUCTORS ==
+	// ==== CONSTRUCTOR ====
 	/**
 	 * Make a new object of admin session
 	 */
-	public function __construct($dbData = null)
+	public function __construct($dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->_id = intval($dbData['id_admin']);
+		if (count($dbData) > 0) {
+			$this->_id = (int)$dbData['id_admin'];
 			$this->_email = $dbData['email'];
 			$this->_password = $dbData['password'];
 			$this->_name = $dbData['name'];
@@ -31,7 +49,7 @@ class Admin
 		}
 	}
 
-	// == GETTERS ==
+	// ==== GETTERS ====
 	/**
 	 * Return the admin ID.
 	 * 
@@ -83,16 +101,16 @@ class Admin
 		return $this->_roles;
 	}
 
-	// == SETTERS ==
+	// ==== SETTERS ====
 	/**
 	 * Define the admin ID.
 	 * 
-	 * @param mixed $id ID of the admin.
+	 * @param int $id ID of the admin.
      * @return void
 	 */
-	public function setId(mixed $id = null): void
+	public function setId(int $id = null): void
 	{
-		$this->_id = intval($id);
+		$this->_id = $id;
 	}
 
 	/**
@@ -103,7 +121,7 @@ class Admin
 	 */
 	public function setEmail(string $email): bool
 	{
-		if(preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
+		if (preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
 			$this->_email = $email;
 			return true;
 		}
@@ -144,7 +162,7 @@ class Admin
 		$this->_roles = $roles;
 	}
 
-	// == OTHER METHODS ==
+	// ==== OTHER METHODS ====
 	/**
 	 * Add a nex roles to the admin.
 	 * 
@@ -163,12 +181,12 @@ class Admin
 	 */
 	public function toArray(): array
 	{
-		return array(
-			"id_admin" => $this->_id,
-			"email" => $this->_email,
-			"name" => $this->_name,
-			"roles" => $this->_roles
-		);
+		return [
+			'id_admin' => $this->_id,
+			'email' => $this->_email,
+			'name' => $this->_name,
+			'roles' => $this->_roles
+		];
 	}
 
 	/**
@@ -182,35 +200,31 @@ class Admin
 		$database = new Database();
 		$result = false;
 
-		if($this->_id == null) // Insert
-		{
-			$id = $database->Insert(
-				"admins",
-				array(
-					"email" => $this->_email,
-					"password" => $this->_password,
-					"name" => $this->_name,
-					"roles" => serialize($this->_roles)
-				)
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'admins',
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'roles' => serialize($this->_roles)
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->_id = intval($id);
+			if ($id !== false) {
+				$this->_id = (int)$id;
 
 				$result = true;
 			}
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"admins", "id_admin", $this->_id,
-				array(
-					"email" => $this->_email,
-					"password" => $this->_password,
-					"name" => $this->_name,
-					"roles" => serialize($this->_roles)
-				)
+		} else { // Update
+			$result = $database->update(
+				'admins', 'id_admin', $this->_id,
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'roles' => serialize($this->_roles)
+				]
 			);
 		}
 
@@ -224,20 +238,19 @@ class Admin
 	/**
 	 * Get an admin from his ID.
 	 * 
-	 * @param mixed $idAdmin ID of the admin to get.
-	 * @return Admin|bool Admin wanted, else False if the process failed.
+	 * @param int $idAdmin ID of the admin to get.
+	 * @return Admin|false Admin wanted, else False if the process failed.
 	 */
-	public static function getById(mixed $idAdmin): Admin|bool
+	public static function getById(int $idAdmin): Admin|false
 	{
 		$database = new Database();
 
 		$rech = $database->Query(
 			"SELECT * FROM admins WHERE id_admin=:id_admin",
-			array("id_admin" => intval($idAdmin))
+			['id_admin' => $idAdmin]
 		);
 
-		if($rech != null)
-		{
+		if ($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Admin($data);
@@ -251,18 +264,18 @@ class Admin
 	 * 
 	 * @return array|bool List of the administrators, else False is the process failed.
 	 */
-	static public function GetList(): array|bool
+	public static function getList(): array|bool
 	{
 		$database = new Database();
 
-		$admins = $database->Query("SELECT * FROM admins");
+		$admins = $database->query("SELECT * FROM admins");
 
-		if($admins != null)
-		{
-			$list = array();
+		if ($admins !== null) {
+			$list = [];
 
-			while($data = $admins->fetch())
+			while ($data = $admins->fetch()) {
 				$list[] = new Admin($data);
+			}
 
 			return $list;
 		}
@@ -273,14 +286,14 @@ class Admin
 	/**
 	 * Remove an administrator from the databas.
 	 * 
-	 * @param mixed $idAdmin Id of the admin to remove.
+	 * @param int $idAdmin Id of the admin to remove.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	static public function removeFromDatabase(mixed $idAdmin): bool
+	public static function removeFromDatabase(int $idAdmin): bool
 	{
 		$database = new Database();
 
-		return $database->Delete("admins", "id_admin", intval($idAdmin));
+		return $database->delete('admins', 'id_admin', $idAdmin);
 	}
 
 	/**
@@ -288,25 +301,25 @@ class Admin
 	 * 
 	 * @param string $login Username or E-mail of the admin depending of the configuration.
 	 * @param string $password Password of the admin. The password must be correctly hashed.
-	 * @return Admin|bool Return the admin logged, else False if the process failed.
+	 * @return Admin|false Return the admin logged, else False if the process failed.
 	 */
-	static public function login(string $login, string $password): Admin|bool
+	public static function login(string $login, string $password): Admin|false
 	{
 		$database = new Database();
 		$rech = $database->query(
 			"SELECT * FROM admins WHERE email=:email AND password=:password",
-			array(
-				"email" => $login,
-				"password" => $password,
-			)
+			[
+				'email' => $login,
+				'password' => $password,
+			]
 		);
 		
-		if($rech !== false)
-		{
+		if ($rech !== false) {
 			$data = $rech->fetch();
 			
-			if($data != null) // Connexion réussi
+			if ($data !== false) {
 				return new Admin($data);
+			}
 		}
 
 		return false;

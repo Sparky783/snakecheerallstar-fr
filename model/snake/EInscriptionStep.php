@@ -5,9 +5,7 @@ namespace Snake;
  * Etapes de l'inscription
  */
 enum EInscriptionStep {
-	case Adherents;
-	case Tuteurs;
-	case Authorization;
+	case Information;
 	case Payment;
 	case Validation;
 }

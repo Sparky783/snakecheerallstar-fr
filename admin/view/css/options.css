@@ -17,3 +17,8 @@ h1 {
 #applyBlock {
 	margin-top: 20px;
 }
+
+#sectionList {
+	padding: 0;
+	overflow: auto;
+}

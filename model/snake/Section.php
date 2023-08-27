@@ -26,29 +26,34 @@ class Section
 	private $_saison = '';
 	
 	/**
-	 * @var int $_minAge Age minimun accepté pour intégrer la section.
+	 * @var int $_maxYear Année de naissance maximum accepté pour intégrer la section.
 	 */
-	private int $_minAge = 0;
+	private int $_maxYear = 0;
 	
 	/**
-	 * @var float $_priceCotisation Prix de la cotisation pour intégrer la section.
+	 * @var float $_cotisationPrice Prix de la cotisation pour intégrer la section.
 	 */
-	private float $_priceCotisation = 0;
+	private float $_cotisationPrice = 0;
 	
 	/**
-	 * @var float $_priceRentUniform Prix de la location de la tenue pour cette section.
+	 * @var float $_rentUniformPrice Prix de la location de la tenue pour cette section.
 	 */
-	private float $_priceRentUniform = 0;
+	private float $_rentUniformPrice = 0;
 	
 	/**
-	 * @var float $_priceUniform Prix de l'achat de la tenue pour cette section.
+	 * @var float $_cleanUniformPrice Prix du nettoyage de la tenue.
 	 */
-	private float $_priceUniform = 0;
+	private float $_cleanUniformPrice = 0;
 
 	/**
-	 * @var float $_priceCleanUniform Prix du nettoyage de la tenue.
+	 * @var float $_buyUniformPrice Prix de l'achat de la tenue pour cette section.
 	 */
-	private float $_priceCleanUniform = 0;
+	private float $_buyUniformPrice = 0;
+
+	/**
+	 * @var float $_depositUniformPrice Montant de caution de la tenue.
+	 */
+	private float $_depositUniformPrice = 0;
 	
 	/**
 	 * @var int $_nbMaxMembers Nombre maximum de membre pouvant intégrer la section.
@@ -63,7 +68,7 @@ class Section
 	/**
 	 * @var int $_nbMembers Nombre de membre actuel dans la section.
 	 */
-	private $_nbMembers;
+	private $_nbMembers = -1;
 
 	
 	// ==== CONSTRUCTOR ====
@@ -73,11 +78,12 @@ class Section
 			$this->_id = (int)$dbData['id_section'];
 			$this->_name = $dbData['name'];
 			$this->_saison = $dbData['saison'];
-			$this->_minAge = (int)$dbData['min_age'];
-			$this->_priceCotisation = (float)$dbData['price_cotisation'];
-			$this->_priceRentUniform = (float)$dbData['price_rent_uniform'];
-			$this->_priceCleanUniform = (float)$dbData['price_clean_uniform'];
-			$this->_priceUniform = (float)$dbData['price_buy_uniform'];
+			$this->_maxYear = (int)$dbData['max_year'];
+			$this->_cotisationPrice = (float)$dbData['cotisation_price'];
+			$this->_rentUniformPrice = (float)$dbData['rent_uniform_price'];
+			$this->_cleanUniformPrice = (float)$dbData['clean_uniform_price'];
+			$this->_buyUniformPrice = (float)$dbData['buy_uniform_price'];
+			$this->_depositUniformPrice = (float)$dbData['deposit_uniform_price'];
 			$this->_nbMaxMembers = (int)$dbData['nb_max_members'];
 			$this->_horaires = unserialize($dbData['horaires']);
 		}
@@ -119,9 +125,9 @@ class Section
 	 * 
 	 * @return int
 	 */
-	public function getMinAge(): int
+	public function getMaxYear(): int
 	{
-		return $this->_minAge;
+		return $this->_maxYear;
 	}
 
 	/**
@@ -129,9 +135,9 @@ class Section
 	 * 
 	 * @return float
 	 */
-	public function getPriceCotisation(): float
+	public function getCotisationPrice(): float
 	{
-		return $this->_priceCotisation;
+		return $this->_cotisationPrice;
 	}
 
 	/**
@@ -139,19 +145,9 @@ class Section
 	 * 
 	 * @return float
 	 */
-	public function getPriceRentUniform(): float
+	public function getRentUniformPrice(): float
 	{
-		return $this->_priceRentUniform;
-	}
-
-	/**
-	 * Retourne le montant d'achat de la tenue pour la section.
-	 * 
-	 * @return float
-	 */
-	public function getPriceUniform(): float
-	{
-		return $this->_priceUniform;
+		return $this->_rentUniformPrice;
 	}
 
 	/**
@@ -159,9 +155,29 @@ class Section
 	 * 
 	 * @return float
 	 */
-	public function getPriceCleanUniform(): float
+	public function getCleanUniformPrice(): float
 	{
-		return $this->_priceCleanUniform;
+		return $this->_cleanUniformPrice;
+	}
+
+	/**
+	 * Retourne le montant d'achat de la tenue à l'achat pour la section.
+	 * 
+	 * @return float
+	 */
+	public function getBuyUniformPrice(): float
+	{
+		return $this->_buyUniformPrice;
+	}
+
+	/**
+	 * Retourne le montant de caution de la tenue.
+	 * 
+	 * @return float
+	 */
+	public function getDepositUniformPrice(): float
+	{
+		return $this->_depositUniformPrice;
 	}
 
 	/**
@@ -187,11 +203,19 @@ class Section
 	/**
 	 * Retourne le nombre actuel de membre dans la section.
 	 * 
-	 * @return int
+	 * @return int|false
 	 */
-	public function getNbMembers(): int
+	public function getNbMembers(): int|false
 	{
-		return $this->_nbMembers;
+		if ($this->_id !== null) {
+			$list = Adherent::getListBySection($this->_id);
+
+			if($list !== false) {
+				return count($list);
+			}
+		}
+
+		return false;
 	}
 	
 	// ==== SETTERS ====
@@ -220,12 +244,12 @@ class Section
 	/**
 	 * Définie l'age minimum pour intégrer la section.
 	 * 
-	 * @param int $minAge
+	 * @param int $maxYear
 	 * @return void
 	 */
-	public function setMinAge(int $minAge): void
+	public function setMaxYear(int $maxYear): void
 	{
-		$this->_minAge = intval($minAge);
+		$this->_maxYear = $maxYear;
 	}
 
 	/**
@@ -234,20 +258,53 @@ class Section
 	 * @param float $price
 	 * @return void
 	 */
-	public function setPriceCotisation(float $price): void
+	public function setCotisationPrice(float $price): void
 	{
-		$this->_priceCotisation = intval($price);
+		$this->_cotisationPrice = $price;
 	}
 
 	/**
-	 * Définie le prix de l'uniforme pour la section.
+	 * Définie le montant de location de l'uniforme de la section.
 	 * 
 	 * @param float $price
 	 * @return void
 	 */
-	public function setPriceUniform(float $price): void
+	public function setRentUniformPrice(float $price): void
 	{
-		$this->_priceUniform = intval($price);
+		$this->_rentUniformPrice = $price;
+	}
+
+	/**
+	 * Définie le prix de nettoyage de l'uniforme pour la section.
+	 * 
+	 * @param float $price
+	 * @return void
+	 */
+	public function setCleanUniformPrice(float $price): void
+	{
+		$this->_cleanUniformPrice = $price;
+	}
+
+	/**
+	 * Définie le prix de l'uniforme à l'achat pour la section.
+	 * 
+	 * @param float $price
+	 * @return void
+	 */
+	public function setBuyUniformPrice(float $price): void
+	{
+		$this->_buyUniformPrice = $price;
+	}
+
+	/**
+	 * Définie le montant de caution de l'uniforme pour la section.
+	 * 
+	 * @param float $price
+	 * @return void
+	 */
+	public function setDepositUniformPrice(float $price): void
+	{
+		$this->_depositUniformPrice = $price;
 	}
 
 	/**
@@ -258,7 +315,7 @@ class Section
 	 */
 	public function setNbMaxMembers(int $nbMaxMembers): void
 	{
-		$this->nbMaxMembers = intval($nbMaxMembers);
+		$this->_nbMaxMembers = $nbMaxMembers;
 	}
 	
 	// ==== AUTRES METHODES ====
@@ -272,15 +329,23 @@ class Section
 	{
 		$this->_horaires[] = $horaire;
 	}
-	
+
 	/**
-	 * Incrémente le nombre de membre présent dans la section.
-	 *
-	 * @return void
+	 * Retourne les donnnées de la section sous forme de tableau.
 	 */
-	public function addMember(): void
+	public function toArray(): array
 	{
-		$this->_nbMembers ++;
+		return [
+			'idSection' => $this->getId(),
+			'name' => $this->getName(),
+			'maxYear' => $this->getMaxYear(),
+			'cotisationPrice' => $this->getCotisationPrice(),
+			'rentUniformPrice' => $this->getRentUniformPrice(),
+			'cleanUniformPrice' => $this->getCleanUniformPrice(),
+			'buyUniformPrice' => $this->getBuyUniformPrice(),
+			'depositUniformPrice' => $this->getDepositUniformPrice(),
+			'maxMembers' => $this->getNbMaxMembers()
+		];
 	}
 
 	/**
@@ -293,21 +358,22 @@ class Section
 		if ($this->_id === null) { // Insert
 			$id = $database->insert(
 				'sections',
-				array(
+				[
 					'name' => $this->_name,
 					'saison' => $this->_saison,
-					'min_age' => $this->_minAge,
-					'price_cotisation' => $this->_priceCotisation,
-					'price_rent_uniform' => $this->_priceRentUniform,
-					'price_clean_uniform' => $this->_priceCleanUniform,
-					'price_buy_uniform' => $this->_priceUniform,
+					'max_year' => $this->_maxYear,
+					'cotisation_price' => $this->_cotisationPrice,
+					'rent_uniform_price' => $this->_rentUniformPrice,
+					'clean_uniform_price' => $this->_cleanUniformPrice,
+					'buy_uniform_price' => $this->_buyUniformPrice,
+					'deposit_uniform_price' => $this->_depositUniformPrice,
 					'nb_max_members' => $this->_nbMaxMembers,
 					'horaires' => serialize($this->_horaires)
-				)
+				]
 			);
 
 			if ($id !== false) {
-				$this->id = intval($id);
+				$this->_id = $id;
 				return true;
 			}
 			
@@ -315,17 +381,18 @@ class Section
 		} else { // Update
 			$result = $database->update(
 				'sections', 'id_section', $this->_id,
-				array(
+				[
 					'name' => $this->_name,
 					'saison' => $this->_saison,
-					'min_age' => $this->_minAge,
-					'price_cotisation' => $this->_priceCotisation,
-					'price_rent_uniform' => $this->_priceRentUniform,
-					'price_clean_uniform' => $this->_priceCleanUniform,
-					'price_buy_uniform' => $this->_priceUniform,
+					'max_year' => $this->_maxYear,
+					'cotisation_price' => $this->_cotisationPrice,
+					'rent_uniform_price' => $this->_rentUniformPrice,
+					'clean_uniform_price' => $this->_cleanUniformPrice,
+					'buy_uniform_price' => $this->_buyUniformPrice,
+					'deposit_uniform_price' => $this->_depositUniformPrice,
 					'nb_max_members' => $this->_nbMaxMembers,
 					'horaires' => serialize($this->_horaires)
-				)
+				]
 			);
 
 			return $result;
@@ -374,7 +441,7 @@ class Section
 		$database = new Database();
 
 		$sections = $database->query(
-			"SELECT * FROM sections WHERE saison=:saison ORDER BY min_age",
+			"SELECT * FROM sections WHERE saison=:saison ORDER BY max_year",
 			['saison' => $saison]
 		);
 

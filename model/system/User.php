@@ -7,22 +7,40 @@ use System\Database;
  */
 class User
 {
-	// == ATTRIBUTS ==
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id User's ID.
+	 */
 	private ?int $_id = null;
-	private string $_email = "";
-	private string $_password = "";
-	private string $_name = "";
-	private array $_status = array();
+	
+	/**
+	 * @var string $_email User's E-mail.
+	 */
+	private string $_email = '';
+	
+	/**
+	 * @var string $_password User's password.
+	 */
+	private string $_password = '';
+	
+	/**
+	 * @var string $_name User's name.
+	 */
+	private string $_name = '';
+	
+	/**
+	 * @var array $_status User's status.
+	 */
+	private array $_status = [];
 
-	// == CONSTRUCTORS ==
+	// ==== CONSTRUCTOR ====
 	/**
 	 * Make a new object of user session
 	 */
-	public function __construct($dbData = null)
+	public function __construct($dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->_id = intval($dbData['id_user']);
+		if (count($dbData) > 0) {
+			$this->_id = (int)$dbData['id_user'];
 			$this->_email = $dbData['email'];
 			$this->_password = $dbData['password'];
 			$this->_name = $dbData['name'];
@@ -30,13 +48,13 @@ class User
 		}
 	}
 
-	// == GETTERS ==
+	// ==== GETTERS ====
 	/**
 	 * Return the user ID.
 	 * 
-	 * @return int
+	 * @return int|null
 	 */
-	public function getId(): int
+	public function getId(): int|null
 	{
 		return $this->_id;
 	}
@@ -82,16 +100,16 @@ class User
 		return $this->_status;
 	}
 
-	// == SETTERS ==
+	// ==== SETTERS ====
 	/**
 	 * Define the user ID.
 	 * 
-	 * @param mixed $id ID of the user.
+	 * @param int $id ID of the user.
      * @return void
 	 */
-	public function setId(mixed $id = null): void
+	public function setId(int $id): void
 	{
-		$this->_id = intval($id);
+		$this->_id = $id;
 	}
 
 	/**
@@ -102,8 +120,9 @@ class User
 	 */
 	public function setEmail(string $email): bool
 	{
-		if(preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
+		if (preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
 			$this->_email = $email;
+
 			return true;
 		}
 
@@ -143,7 +162,7 @@ class User
 		$this->_status = $status;
 	}
 
-	// == OTHER METHODS ==
+	// ==== OTHER METHODS ===
 	/**
 	 * Add a nex status to the user.
 	 * 
@@ -162,12 +181,12 @@ class User
 	 */
 	public function toArray(): array
 	{
-		return array(
-			"id_user" => $this->_id,
-			"email" => $this->_email,
-			"name" => $this->_name,
-			"status" => $this->_status
-		);
+		return [
+			'id_user' => $this->_id,
+			'email' => $this->_email,
+			'name' => $this->_name,
+			'status' => $this->_status
+		];
 	}
 
 	/**
@@ -181,35 +200,31 @@ class User
 		$database = new Database();
 		$result = false;
 
-		if($this->_id == null) // Insert
-		{
-			$id = $database->Insert(
-				"users",
-				array(
-					"email" => $this->_email,
-					"password" => $this->_password,
-					"name" => $this->_name,
-					"status" => serialize($this->_status)
-				)
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'users',
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'status' => serialize($this->_status)
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->_id = intval($id);
+			if ($id !== false) {
+				$this->_id = (int)$id;
 
 				$result = true;
 			}
-		}
-		else // Update
-		{
+		} else { // Update
 			$result = $database->Update(
-				"users", "id_user", $this->_id,
-				array(
-					"email" => $this->_email,
-					"password" => $this->_password,
-					"name" => $this->_name,
-					"status" => serialize($this->_status)
-				)
+				'users', 'id_user', $this->_id,
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'status' => serialize($this->_status)
+				]
 			);
 		}
 
@@ -223,20 +238,19 @@ class User
 	/**
 	 * Get an user from his ID.
 	 * 
-	 * @param mixed $idUser ID of the user to get.
-	 * @return User|bool User wanted, else False if the process failed.
+	 * @param int $idUser ID of the user to get.
+	 * @return User|false User wanted, else False if the process failed.
 	 */
-	public static function getById(mixed $idUser): User|bool
+	public static function getById(int $idUser): User|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM users WHERE id_user=:id_user",
-			array("id_user" => intval($idUser))
+			['id_user' =>$idUser]
 		);
 
-		if($rech != null)
-		{
+		if ($rech != null) {
 			$data = $rech->fetch();
 
 			return new User($data);
@@ -248,20 +262,20 @@ class User
 	/**
 	 * Return the list of all useristrators of the website.
 	 * 
-	 * @return array|bool List of the useristrators, else False is the process failed.
+	 * @return array|false List of the useristrators, else False is the process failed.
 	 */
-	static public function GetList(): array|bool
+	public static function GetList(): array|false
 	{
 		$database = new Database();
 
-		$users = $database->Query("SELECT * FROM users");
+		$users = $database->query("SELECT * FROM users");
 
-		if($users != null)
-		{
-			$list = array();
+		if ($users !== null) {
+			$list = [];
 
-			while($data = $users->fetch())
+			while($data = $users->fetch()) {
 				$list[] = new User($data);
+			}
 
 			return $list;
 		}
@@ -272,14 +286,14 @@ class User
 	/**
 	 * Remove an useristrator from the databas.
 	 * 
-	 * @param mixed $idUser Id of the user to remove.
+	 * @param int $idUser Id of the user to remove.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	static public function removeFromDatabase(mixed $idUser): bool
+	static public function removeFromDatabase(int $idUser): bool
 	{
 		$database = new Database();
 
-		return $database->Delete("users", "id_user", intval($idUser));
+		return $database->delete('users', 'id_user', $idUser);
 	}
 
 	/**
@@ -287,25 +301,25 @@ class User
 	 * 
 	 * @param string $login Username or E-mail of the user depending of the configuration.
 	 * @param string $password Password of the user. The password must be correctly hashed.
-	 * @return User|bool Return the user logged, else False if the process failed.
+	 * @return User|false Return the user logged, else False if the process failed.
 	 */
-	static public function login(string $login, string $password): User|bool
+	public static function login(string $login, string $password): User|false
 	{
 		$database = new Database();
 		$rech = $database->query(
 			"SELECT * FROM users WHERE email=:email AND password=:password",
-			array(
-				"email" => $login,
-				"password" => $password,
-			)
+			[
+				'email' => $login,
+				'password' => $password,
+			]
 		);
 		
-		if($rech !== false)
-		{
+		if ($rech !== false) {
 			$data = $rech->fetch();
 			
-			if($data != null) // Connexion réussi
+			if($data !== false) {
 				return new User($data);
+			}
 		}
 
 		return false;

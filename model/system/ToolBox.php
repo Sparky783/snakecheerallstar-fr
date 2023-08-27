@@ -1,5 +1,7 @@
 <?php
 namespace System;
+
+use DateTime;
 use Exception;
 use ErrorException;
 use InvalidArgumentException;
@@ -9,6 +11,7 @@ use InvalidArgumentException;
  */
 class ToolBox
 {
+	// ==== OTHER METHODS ====
 	/**
 	 * Check if the URL file exists. 
 	 * 
@@ -18,7 +21,7 @@ class ToolBox
 	public static function urlExists(string $url): bool
 	{
 		try {
-			if(file_Get_contents($url)) {
+			if (file_Get_contents($url)) {
 				return true;
 			}
 
@@ -26,6 +29,25 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error with the URL for the ToolBox::urlExists() function.');
 		}
+
+		return false;
+	}
+
+	/**
+	 * Remove a file from the server.
+	 * Avoid warning if the file does not exist.
+	 * 
+	 * @param string $filePath Path to th e file to remove.
+	 * @return bool Return True if the file is removed, else False.
+	 */
+	public static function removeFile(string $filePath): bool
+	{
+		if (file_exists($filePath)) {
+			unlink($filePath);
+			return true;
+		}
+
+		return false;
 	}
 	
 	/**
@@ -37,11 +59,11 @@ class ToolBox
 	public static function removeDirectory(string $folderPath): bool
 	{
 		try {
-			if(!self::removeDirectoryContent($folderPath)) {
+			if (!self::removeDirectoryContent($folderPath)) {
 				return false;
 			}
 
-			if(!rmdir($folderPath)) {
+			if (!rmdir($folderPath)) {
 				return false;
 			}
 
@@ -49,6 +71,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error with the function rmdir() in the ToolBox::RemoveDirectory() function.');
 		}
+
+		return false;
 	}
 	
 	/**
@@ -60,17 +84,17 @@ class ToolBox
 	public static function removeDirectoryContent(string $folderPath): bool
 	{
 		try {
-			if($ouverture = opendir($folderPath)) {
-				while(false !== ($file = readdir($ouverture))) {
-					if($file != '.' and $file != '..') {
-						if(is_dir($folderPath . '/' . $file)) {
-							if(self::removeDirectoryContent($folderPath . '/' . $file)) {
+			if ($ouverture = opendir($folderPath)) {
+				while (false !== ($file = readdir($ouverture))) {
+					if ($file != '.' and $file != '..') {
+						if (is_dir($folderPath . '/' . $file)) {
+							if (self::removeDirectoryContent($folderPath . '/' . $file)) {
 								rmdir($folderPath . '/' . $file);
 							} else {
 								return false;
 							}
 						} else {
-							if(!unlink($folderPath . '/' . $file)) {
+							if (!unlink($folderPath . '/' . $file)) {
 								return false;
 							}
 						}
@@ -85,7 +109,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error in the ToolBox::removeDirectoryContent() function.');
 		}
-		
+
+		return false;
 	}
 	
 	/**
@@ -98,10 +123,10 @@ class ToolBox
 	public static function removeDirectoryFiles(string $folderPath, bool $subFolders): bool
 	{
 		try {
-			if($ouverture = opendir($folderPath)) {
-				while(false !== ($file = readdir($ouverture))) {
-					if($file != '.' and $file != '..') {
-						if(is_dir($file . '/' . $file) && $subFolders) {
+			if ($ouverture = opendir($folderPath)) {
+				while (false !== ($file = readdir($ouverture))) {
+					if ($file !== '.' and $file !== '..') {
+						if (is_dir($file . '/' . $file) && $subFolders) {
 							if(!self::removeDirectoryFiles($folderPath . '/' . $file, $subFolders)) {
 								return false;
 							}
@@ -121,6 +146,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error in the ToolBox::removeDirectoryFiles() function.');
 		}
+
+		return false;
 	}
 	
 	/**
@@ -132,8 +159,8 @@ class ToolBox
 	public static function makeDirectory(string $path) : bool
 	{
 		try {
-			if(!is_dir($path)) {
-				if(!mkdir($path, 0777, true)) {
+			if (!is_dir($path)) {
+				if (!mkdir($path, 0777, true)) {
 					return false;
 				}
 			}
@@ -142,6 +169,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error in the ToolBox::makeDirectory() function.');
 		}
+
+		return false;
 	}
 	
 	/**
@@ -154,19 +183,19 @@ class ToolBox
 	public static function copyDirectory(string $source, string $destination): int|bool
 	{
 		try {
-			if($elements = scandir($source)) {
+			if ($elements = scandir($source)) {
 				$nbr_files = 0;
 
-				foreach($elements as $file) {
-					if($file != '.' and $file != '..') {
-						if(is_dir($source . '/' . $file)) {
+				foreach ($elements as $file) {
+					if ($file !== '.' and $file !== '..') {
+						if (is_dir($source . '/' . $file)) {
 							self::makeDirectory($destination . '/' . $file);
 							$nbr_files += self::copyDirectory($source . '/' . $file, $destination . '/'. $file);
 						} else {
-							if(copy($source . '/' . $file, $destination . '/' . $file)) {
+							if (copy($source . '/' . $file, $destination . '/' . $file)) {
 								$nbr_files ++;
 							} else {
-								if(!file_exists($source . '/' . $file)) {
+								if (!file_exists($source . '/' . $file)) {
 									throw new Exception($source . '/' . $file . " doesn't exist!");
 								}
 							}
@@ -181,6 +210,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error in the ToolBox::copyDirectory() function.');
 		}
+
+		return false;
 	}
 	
 	/**
@@ -192,8 +223,7 @@ class ToolBox
 	 */
 	public static function moveDirectory(string $source, string $destination): bool
 	{
-		if(!is_dir($source) ||!is_dir($destination))
-		{
+		if (!is_dir($source) ||!is_dir($destination)) {
 			return false;
 		}
 
@@ -204,17 +234,16 @@ class ToolBox
 	 * Get all file path from a directory. Included files into subfolders.
 	 * 
 	 * @param string $folderPath Path of the folder to scan.
-	 * @return array List of all file paths.
+	 * @return array|false List of all file paths, else False if an error occured.
 	 */
-	public static function getAllPathFilesFromDir(string $folderPath): array
+	public static function getAllPathFilesFromDir(string $folderPath): array|false
 	{
 		try {
 			$filePaths = [];
 			$dir = opendir(realpath($folderPath));
 
-			while($file = readdir($dir))
-			{
-				if($file != '.' && $file != '..') {
+			while ($file = readdir($dir)) {
+				if ($file !== '.' && $file !== '..') {
 					$filePaths[] = realpath($folderPath . '/' . $file);
 				}
 			}
@@ -224,6 +253,8 @@ class ToolBox
 		} catch (Exception $e) {
 			LogManager::addLine('Error : Error in the ToolBox::getAllPathFilesFromDir() function.');
 		}
+
+		return false;
 	}
 	
 	/**
@@ -242,9 +273,9 @@ class ToolBox
 		$isHttps = false;
 		$pageURL = 'http';
 
-		if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+		if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
 			$isHttps = true;
-			$pageURL .= "s";
+			$pageURL .= 's';
 		}
 		
 		$pageURL .= '://';
@@ -271,23 +302,21 @@ class ToolBox
 	 */
 	public static function formatDate(mixed $time = null, bool $displayHour = true): string
 	{
-		if($time == null) {
+		if ($time == null) {
 			$time = time();
 		}
 
-		if(gettype($time) == 'object' && get_class($time) == 'DateTime') {
+		if (gettype($time) === 'object' && get_class($time) === 'DateTime') {
 			$time = $time->format('Y-m-d H:i:s');
 		}
 
-		if(preg_match("#^\d{5,}$#", '' . $time)) {
-			$jour = date("j", intval($time));
-			$mois = date("m", intval($time));
-			$annee = date("Y", intval($time));
-			$heure = date("G", intval($time));
-			$minute = date("i", intval($time));
-		}
-		else if(preg_match("#^\d{4}[/-]\d{2}[/-]\d{2}([T ]\d{2}:\d{2}:\d{2})?#", '' . $time))
-		{
+		if (preg_match("#^\d{5,}$#", '' . $time)) {
+			$jour = date('j', (int)$time);
+			$mois = date('m', (int)$time);
+			$annee = date('Y', (int)$time);
+			$heure = date('G', (int)$time);
+			$minute = date('i', (int)$time);
+		} else if (preg_match("#^\d{4}[/-]\d{2}[/-]\d{2}([T ]\d{2}:\d{2}:\d{2})?#", '' . $time)) {
 			$annee = substr($time, 0, 4);
 			$mois = substr($time, 5, 2);
 			$jour = substr($time, 8, 2);
@@ -295,30 +324,29 @@ class ToolBox
 			$minute = substr($time, 14, 2);
 		}
 
-		if(intval($jour) != 0 && intval($mois) != 0 && intval($annee) != 0)
-		{
+		if ((int)$jour !== 0 && (int)$mois !== 0 && (int)$annee !== 0) {
 			switch($mois) {
-				case '01': $mois = "Janvier"; break;
-				case '02': $mois = "Février"; break;
-				case '03': $mois = "Mars"; break;
-				case '04': $mois = "Avril"; break;
-				case '05': $mois = "Mai"; break;
-				case '06': $mois = "Juin"; break;
-				case '07': $mois = "Juillet"; break;
-				case '08': $mois = "Août"; break;
-				case '09': $mois = "Septembre"; break;
-				case '10': $mois = "Octobre"; break;
-				case '11': $mois = "Novembre"; break;
-				case '12': $mois = "Décembre"; break;
+				case '01': $mois = 'Janvier'; break;
+				case '02': $mois = 'Février'; break;
+				case '03': $mois = 'Mars'; break;
+				case '04': $mois = 'Avril'; break;
+				case '05': $mois = 'Mai'; break;
+				case '06': $mois = 'Juin'; break;
+				case '07': $mois = 'Juillet'; break;
+				case '08': $mois = 'Août'; break;
+				case '09': $mois = 'Septembre'; break;
+				case '10': $mois = 'Octobre'; break;
+				case '11': $mois = 'Novembre'; break;
+				case '12': $mois = 'Décembre'; break;
 				default:
 					throw new ErrorException('The month does not exist.');
 			}
 
-			if(substr($jour, 0, 1) == '0') {
+			if (substr($jour, 0, 1) == '0') {
 				$jour = substr($jour, 1, 1);
 			}
 			
-			if($displayHour && intval($heure) !== false && intval($minute) !== false) {
+			if ($displayHour && (int)$heure !== false && (int)$minute !== false) {
 				return $jour . ' ' . $mois . ' ' . $annee . ' ' . $heure . 'h' . $minute;
 			}
 			
@@ -336,7 +364,7 @@ class ToolBox
 	 */
 	public static function br2nl(string $string): string
 	{
-		return preg_replace("/\<br(\s*)?\/?\>/i", "\n", $string);
+		return preg_replace("/\<br(\s*)?\/?\>/i", '\n', $string);
 	}
 	
 	/**
@@ -349,8 +377,8 @@ class ToolBox
 	public static function stripAccents(string $string): string
 	{
 		return str_replace(
-			array('à','â','ä','á','ã','å','î','ï','ì','í','ô','ö','ò','ó','õ','ø','ù','û','ü','ú','é','è','ê','ë','ç','ý','ÿ','ñ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'),
-			array('a','a','a','a','a','a','i','i','i','i','o','o','o','o','o','o','u','u','u','u','e','e','e','e','c','y','y','n','A','A','A','A','A','C','E','E','E','E','I','I','I','I','N','O','O','O','O','O','U','U','U','U','Y'),
+			['à','â','ä','á','ã','å','î','ï','ì','í','ô','ö','ò','ó','õ','ø','ù','û','ü','ú','é','è','ê','ë','ç','ý','ÿ','ñ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'],
+			['a','a','a','a','a','a','i','i','i','i','o','o','o','o','o','o','u','u','u','u','e','e','e','e','c','y','y','n','A','A','A','A','A','C','E','E','E','E','I','I','I','I','N','O','O','O','O','O','U','U','U','U','Y'],
 			$string
 		);
 	}
@@ -358,33 +386,29 @@ class ToolBox
 	/**
 	 * Determine the age form birthday.
 	 * 
-	 * @param string $birthday Birthday of the person (YYYY-MM-DD).
+	 * @param DateTime $birthday Birthday of the person.
 	 * @return int Age of the person.
 	 */
-	public static function Age(string $birthday): int
+	public static function age(DateTime $birthday): int
 	{
-		list($annee, $mois, $jour) = explode('-', $birthday);
-		$annee = intval($annee);
-		$mois = intval($mois);
-		$jour = intval($jour);
+		$annee = (int)$birthday->format('Y');
+		$mois = (int)$birthday->format('m');
+		$jour = (int)$birthday->format('d');
 
-		$today = array(
-			'jour' => intval(date('d')),
-			'mois' => intval(date('m')),
-			'annee' => intval(date('Y'))
-		);
+		$today = [
+			'jour' => (int)date('d'),
+			'mois' => (int)date('m'),
+			'annee' => (int)date('Y')
+		];
 		
 		$age = $today['annee'] - $annee;
 		
-		if($today['mois'] <= $mois) 
-		{
-			if($mois == $today['mois'])
-			{
-				if($today['jour'] < $jour) {
+		if ($today['mois'] <= $mois) {
+			if ($mois === $today['mois']) {
+				if ($today['jour'] < $jour) {
 					$age--;
 				}
-			}
-			else {
+			} else {
 				$age--;
 			}
 		}
@@ -398,11 +422,11 @@ class ToolBox
 	 * @param string $string Boolean string ("true"/"false", "1"/"0").
 	 * @return bool Corresponding boolean.
 	 */
-	public static function StringToBool(string $string): bool
+	public static function stringToBool(string $string): bool
 	{
 		$string = mb_strtolower($string);
 		
-		if($string == 'true' || $string == '1') {
+		if($string === 'true' || $string === '1') {
 			return true;
 		}
 
@@ -415,9 +439,9 @@ class ToolBox
 	 * @param string $string Boolean to convert.
 	 * @return bool Corresponding boolean string ("true"/"false").
 	 */
-	public static function BoolToString(bool $bool): string
+	public static function boolToString(bool $bool): string
 	{
-		if($bool) {
+		if ($bool) {
 			return 'true';
 		}
 
@@ -434,21 +458,17 @@ class ToolBox
 	 */
 	public static function searchInArray(array $searchArray, array $values, bool $allValues = false): bool
 	{
-		if($allValues)
-		{
+		if ($allValues) {
 			$result = true;
 
-			foreach($values as $value) {
+			foreach ($values as $value) {
 				$result = $result & in_array($value, $searchArray);
 			}
 
 			return $result;
-		}
-		else
-		{
-			foreach($searchArray as $item)
-			{
-				if(in_array($item, $values)) {
+		} else {
+			foreach ($searchArray as $item) {
+				if (in_array($item, $values)) {
 					return true;
 				}
 			}
@@ -465,21 +485,21 @@ class ToolBox
 	 */
 	public static function generatePassword(int $nbChar = 16): string
 	{
-		if($nbChar <= 0)
-		{
+		if ($nbChar <= 0) {
 			throw new InvalidArgumentException("The password's length must be positive.");
 		}
 
-		$chars = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+		$chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
 						'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
 						'0','1','2','3','4','5','6','7','8','9',
-						'!','?','#','-','_');
+						'!','?','#','-','_'];
 
 		$nbChars = count($chars) - 1;
 		$pass = '';
 
-		for($i = 0; $i < $nbChar; $i ++)
+		for ($i = 0; $i < $nbChar; $i ++) {
 			$pass .= $chars[random_int(0, $nbChars)];
+		}
 
 		return $pass;
 	}

@@ -5,17 +5,17 @@ use Snake\SnakeTools;
 
 $session = Session::getInstance();
 
-if(!isset($session->selectedSaison)) {
-	$session->selectedSaison = SnakeTools::GetCurrentSaison();
+if (!isset($session->selectedSaison)) {
+	$session->selectedSaison = SnakeTools::getCurrentSaison();
 }
 
-if(!isset($session->admin_isConnected)) {
+if (!isset($session->admin_isConnected)) {
 	$session->admin_isConnected = false;
 }
 
 $website = new WebSite(ABSPATH. 'admin', true); // true = Enable admin mode
 
-$website->SetPages(array(
+$website->setPages(array(
 	'login',
 	'home',
 	'profil',
@@ -31,6 +31,6 @@ $website->SetPages(array(
 	'admins',
 	'options'
 ));
-$website->DefaultPage("login");
+$website->defaultPage("login");
 
-$website->Run();
+$website->run();

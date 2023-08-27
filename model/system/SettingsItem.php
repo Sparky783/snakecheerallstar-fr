@@ -1,96 +1,164 @@
 <?php
 namespace System;
 
-// ==============================
-// ==== Website setting item ====
-// ==============================
+use DateTime;
+use ErrorException;
+use System\Database;
+use System\ToolBox;
+
+/**
+ * Represent a setting item.
+ */
 class SettingsItem
 {
-    private $id = null;	// ID of the setting item.
-    private $type = null; // Setting type (Boolean, Date, Int, etc ...)
-    private $value = null; // Setting value (save as Text type in database)
+    // ==== ATTRIBUTS ====
+    /**
+     * @var string $_id ID of the setting item.
+     */
+    private string $_id = '';
+    
+    /**
+     * @var string $_type Setting type (Boolean, Date, Int, etc ...)
+     */
+    private string $_type = '';
+    
+    /**
+     * @var mixed $_value Setting value (save as Text type in database)
+     */
+    private mixed $_value = null;
    
-   
-    public function __construct($dbData = null)
+    // ==== CONSTRUCTOR ====
+    /**
+     * Make a new instance of setting item.
+     *
+     * @param array $dbData Data from database to load the setting.
+     */
+    public function __construct($dbData = [])
     {
-        if($dbData != null)
-        {
-            $this->id = $dbData['id_setting'];
-            $this->type = $dbData['type'];
-            $this->SetValue($dbData['value']);
+        if (count($dbData) > 0) {
+            $this->_id = $dbData['id_setting'];
+            $this->_type = $dbData['type'];
+            $this->setValue($dbData['value']);
         }
     }
 
-
-    public function SetValue($value)
+    // == GETTERS ==
+    /**
+     * Get the setting ID.
+     * 
+     * @return string ID of the setting.
+     */
+    public function getId(): string
     {
-        if($this->type != null)
-        {
-            switch($this->type)
-            {
-                case "boolean":
-                    $this->value = Toolbox::StringToBool($value);
-                    break;
+        return $this->_id;
+    }
 
-                case "date":
-                    $this->value = new DateTime($value);
-                    break;
+    /**
+     * Get the setting type.
+     * 
+     * @return string Type of the setting.
+     */
+    public function getType(): string
+    {
+        return $this->_type;
+    }
 
-                default:
-                    $this->value = $value;
-                    break;
-            }
+    /**
+     * Get the setting value.
+     * 
+     * @return mixed Value of the setting.
+     */
+    public function getValue(): mixed
+    {
+        return $this->_value;
+    }
 
-            return true;
+
+    // == SETTERS ==
+    /**
+     * Set the value of the setting depending of the type.
+     * 
+     * @param mixed $value Value to set.
+     * @return bool Return True if the value is set, else False.
+     */
+    public function setValue(mixed $value): bool
+    {
+        if (empty($this->_type)) {
+            return false;
         }
-        
-        return false;
+
+        switch ($this->_type) {
+            case 'int':
+                $this->_value = intval($value);
+                break;
+
+            case 'float':
+                $this->_value = floatval($value);
+                break;
+
+            case 'boolean':
+                $this->_value = Toolbox::StringToBool($value);
+                break;
+
+            case 'date':
+                $this->_value = new DateTime($value);
+                break;
+
+            default:
+                $this->_value = $value;
+                break;
+        }
+
+        return true;
     }
 
-    public function GetId()
+    // == OTHER METHODS ==
+    /**
+     * Prepare the new created setting to be used.
+     * 
+     * @param string $type Type of the setting.
+     * @return void
+     */
+    public function initialize(string $type): void
     {
-        return $this->id;
+        $this->_type = $type;
+        $this->_id = '';
     }
 
-    public function GetType()
+    /**
+	 * Save this setting object into database.
+	 * If this setting is a new one, create id and affect a new ID.
+	 * 
+	 * @return bool Return True if the token was correctly saved, else False.
+	 */
+    public function saveToDatabase()
     {
-        return $this->type;
-    }
+        if (empty($this->_type)) {
+            throw new ErrorException('The type of the setting cannot be null.');
+        }
 
-    public function GetValue()
-    {
-        return $this->value;
-    }
+        if (empty($this->_id)) {
+            return false;
+        }
 
-    // Update database
-    public function SaveToDatabase()
-    {
         $database = new Database();
+        $value = null;
 
-        if($this->id != null && $this->type != null)
-        {
-            $value = null;
-            switch($this->type)
-            {
-                case "boolean":
-                    $value = Toolbox::BoolToString($this->value);
-                    break;
+        switch ($this->_type) {
+            case 'boolean':
+                $value = Toolbox::boolToString($this->_value);
+                break;
 
-                case "date":
-                    $value = $this->value->format("Y-m-d");
-                    break;
+            case 'date':
+                $value = $this->_value->format('Y-m-d');
+                break;
 
-                default:
-                    $value = $this->value;
-                    break;
-            }
-
-            $database->Update("settings", "id_setting", $this->id, array("value" => $value));
-
-            return true;
+            default:
+                $value = $this->_value;
+                break;
         }
 
-        return false;
+        return $database->update('settings', 'id_setting', $this->_id, ['value' => $value]);
     }
 }
 ?>

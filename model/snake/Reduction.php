@@ -40,11 +40,11 @@ class Reduction
 	public function __construct(array $dbData = [])
 	{
 		if (count($dbData) !== 0) {
-			$this->id = (int)$dbData['id_reduction'];
-			$this->id_payment = (int)$dbData['id_payment'];
-			$this->type = (EReductionType)$dbData['type'];
-			$this->value = (float)$dbData['value'];
-			$this->sujet = $dbData['sujet'];
+			$this->_id = (int)$dbData['id_reduction'];
+			$this->_idPayment = (int)$dbData['id_payment'];
+			$this->_type = EReductionType::tryFrom($dbData['type']) ?? EReductionType::None;
+			$this->_value = (float)$dbData['value'];
+			$this->_sujet = $dbData['sujet'];
 		}
 	}
 	
@@ -156,6 +156,16 @@ class Reduction
 	}
 
 	// ==== AUTRES METHODES ====
+	/**
+	 * Retourne les données de la réduction sous forme de tableau.
+	 */
+	public function toArray(): array
+	{
+		return [
+
+		];
+	}
+
 	public function saveToDatabase()
 	{
 		$database = new Database();
@@ -163,25 +173,25 @@ class Reduction
 		if ($this->_idPayment != null) {
 			if ($this->_id == null) { // Insert
 				$id = $database->insert(
-					"reductions",
+					'reductions',
 					[
 						'id_payment' => $this->_idPayment,
-						'type' => $this->_type,
+						'type' => $this->_type->value,
 						'value' => $this->_value,
 						'sujet' => $this->_sujet
 					]
 				);
 
 				if ($id !== false) {
-					$this->id = (int)$id;
+					$this->_id = (int)$id;
 					return true;
 				}
 			} else { // Update
 				return $database->update(
-					"reductions", "id_reduction", $this->id,
+					'reductions', 'id_reduction', $this->_id,
 					[
 						'id_payment' => $this->_idPayment,
-						'type' => $this->_type,
+						'type' => $this->_type->value,
 						'value' => $this->_value,
 						'sujet' => $this->_sujet
 					]
@@ -224,12 +234,12 @@ class Reduction
 	 * @param int $idPayment ID du paiement ou les réduction doivent être récupérées.
 	 * @return array|false Retourne False en cas d'échec.
 	 */
-	public static function getListByIdPayment(int $idPayment): array
+	public static function getListByIdPayment(int $idPayment): array|false
 	{
 		$database = new Database();
 		$reductions = $database->Query(
 			"SELECT * FROM reductions WHERE id_payment=:id_payment",
-			['id_payment' => $id_payment]
+			['id_payment' => $idPayment]
 		);
 
 		if ($reductions !== null) {

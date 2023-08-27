@@ -1,8 +1,9 @@
 <?php
-use Exception;
 use ApiCore\Api;
 use Common\ReCaptcha;
-use Common\EmailTemplates;
+use Snake\EmailTemplates;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 $app->Post("/contact", function($args) {
 	// ReCaptcha

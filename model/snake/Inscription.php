@@ -5,7 +5,8 @@ use System\Database;
 use Snake\Adherent;
 use Snake\Tuteur;
 use Snake\Payment;
-use Snake\EInscriptionStep;
+use Snake\Reduction;
+use Snake\ReductionPack;
 
 /**
  * Outil de gestion d'inscription.
@@ -24,29 +25,18 @@ class Inscription
 	private array $_tuteurs = [];
 	
 	/**
-	 * @var bool $_authorization Informe si les termes d'inscription ont bien été acceptés.
+	 * @var Payment $_payment Paiement généré pour l'inscription.
 	 */
-	private bool $_authorization = false;
+	private Payment $_payment;
 	
-	/**
-	 * @var Payment|null $_adherents Paiement généré pour l'inscription.
-	 */
-	private Payment $_payment = null;
-	
-	/**
-	 * @var EInscriptionStep $_state Etape en cours pour l'inscription.
-	 */
-	private EInscriptionStep $_state;
-	
-
+	// ==== CONSTRUCTOR ====
 	public function __construct()
 	{
 		$this->_payment = new Payment();
-		$this->_state = EInscriptionStep::Adherents;
 	}
 	
 
-	// == Getters / Setters ==
+	// ==== GETTERS ====
 	/**
 	 * Retourne la liste des adhérents à inscrire
 	 * 
@@ -70,46 +60,14 @@ class Inscription
 	/**
 	 * Retourne le paiement généré pour l'inscription.
 	 * 
-	 * @return array
+	 * @return Payment
 	 */
 	public function getPayment(): Payment
 	{
 		return $this->_payment;
 	}
-
-	/**
-	 * Retourne l'état de l'inscription.
-	 * 
-	 * @return EInscriptionStep
-	 */
-	public function getState(): EInscriptionStep
-	{
-		return $this->_state;
-	}
 	
-	/**
-	 * Définie si les termes de l'inscription ont été acceptés ou non.
-	 * 
-	 * @param bool $authorization
-	 * @return void
-	 */
-	public function setAuthorization(bool $authorization): void
-	{
-		$this->_authorization = $authorization;
-	}
-	
-	// ==== AUTRES METHODES ====
-	/**
-	 * Change l'étape de l'inscription.
-	 * 
-	 * @param EInscriptionStep $state Nouvelle étape de l'inscription
-	 * @return void
-	 */
-	public function changeState(EInscriptionStep $state): void
-	{
-		$this->_state = $state;
-	}
-
+	// ==== OTHER METHODS ====
 	/**
 	 * Ajoute un nouvel adhérent à la liste des adhérents à inscrire.
 	 * 
@@ -141,6 +99,17 @@ class Inscription
 	public function addTuteur(Tuteur $tuteur): void
 	{
 		$this->_tuteurs[] = $tuteur;
+	}
+
+	/**
+	 * Ajoute une réduction au paiement lors de l'inscription.
+	 * 
+	 * @param Reduction $reduction.
+	 * @return void
+	 */
+	public function addReduction(Reduction $reduction): void
+	{
+		$this->_payment->addReduction($reduction);
 	}
 	
 	/**
@@ -184,29 +153,53 @@ class Inscription
 	}
 
 	/**
-	 * Calcule le montant total de la cotisation hors réductions (Cotisation + tenues) et l'affecte au paiement.
+	 * Vide l'inscription des informations saisies.
 	 * 
-	 * @return void.
+	 * @return void
 	 */
-	public function computeCotisation(): void
+	public function clear(): void
 	{
+		$this->clearAdherents();
+		$this->clearTuteurs();
+	}
+
+	/**
+	 * Calcule le montant total de à payer pour l'inscription.
+	 * 
+	 * @return float Montant de l'inscription.
+	 */
+	public function computeFinalPrice(): float
+	{
+		$this->_payment->clearReductions();
 		$base_price = 0;
 		$fixed_price = 0;
 		
-		foreach($this->_adherents as $adherent)	{
+		foreach ($this->_adherents as $adherent) {
 			$base_price += $adherent->getSection()->getCotisationPrice();
-			
-			if(!$adherent->getTenue()) {
-				$fixed_price += $adherent->getSection()->getUniformPrice();
-			}
-		}
 
-		if($this->_payment === null) {
-			$this->_payment = new Payment();
+			switch ($adherent->getUniformOption()) {
+				case EUniformOption::Rent:
+					$fixed_price += $adherent->getSection()->getRentUniformPrice();
+					break;
+
+				case EUniformOption::Buy:
+					$fixed_price += $adherent->getSection()->getBuyUniformPrice();
+					break;
+			}
+
+			if ($adherent->hasPassSport()) {
+				$this->_payment->addReduction(ReductionPack::buildPassSportReduction());
+			}
 		}
 		
 		$this->_payment->setBasePrice($base_price);
 		$this->_payment->setFixedPrice($fixed_price);
+
+		if (count($this->_adherents) > 1) {
+			$this->_payment->addReduction(ReductionPack::buildFratrieReduction());
+		}
+		
+		return $this->_payment->getFinalAmount();
 	}
 	
 	/**
@@ -224,10 +217,11 @@ class Inscription
 		// Save payment
 		$this->_payment->saveToDatabase();
 
-		if ($this->_payment->getId() != null) {
+		if ($this->_payment->getId() !== null) {
 			// Save adherents to database.
 			foreach ($this->_adherents as $adherent) {
 				$adherent->setInscriptionDate();
+				$adherent->setPayment($this->_payment);
 
 				if ($adherent->saveToDatabase()) {
 					$idAdherents[] = $adherent->getId();
@@ -246,11 +240,11 @@ class Inscription
 				foreach ($idAdherents as $idA) {
 					foreach ($idTuteurs as $idP) {
 						$database->insert(
-							"adherent_tuteur",
-							array(
-								"id_adherent" => $idA,
-								"id_tuteur" => $idP
-							)
+							'adherent_tuteur',
+							[
+								'id_adherent' => $idA,
+								'id_tuteur' => $idP
+							]
 						);
 					}
 				}

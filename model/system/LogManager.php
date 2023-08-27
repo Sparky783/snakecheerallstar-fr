@@ -13,14 +13,14 @@ class LogManager
 	 * @param string $message Message text to add in log file.
 	 * @return void
 	 */
-	static public function AddLine(string $message): void
+	static public function addLine(string $message): void
 	{
 		// Préparation du fichier
-		$path = ABSPATH . "logs";
+		$path = ABSPATH . 'logs';
 
-		if(ToolBox::makeDirectory($path)) {
-			$file = $path . "/Report " . date("Y") . ".txt";
-			$line = date("Y-m-d H:i:s") . " - " . $message . "\n";
+		if (ToolBox::makeDirectory($path)) {
+			$file = $path . '/Report ' . date("Y") . '.txt';
+			$line = date('Y-m-d H:i:s') . ' - ' . $message . '\n';
 			file_put_contents($file, $line, FILE_APPEND);
 		}
 	}

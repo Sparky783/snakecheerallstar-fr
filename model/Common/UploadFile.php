@@ -1,65 +1,100 @@
 <?php
 namespace Common;
+use InvalidArgumentException;
 
-/*
- *	Gère l'upload de fichier lourd (> 2Mo).
+/**
+ * Tool to manage uplad of big files (> 2Mo).
  */
 class UploadFile
 {
-	private $name;
-	private $tot_parts;
-	private $datas;
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var string $_name Name of the file.
+	 */
+	private string $_name;
 
+	/**
+	 * @var int $_totParts Number part needed.
+	 */
+	private int $_totParts;
 	
-	// Crée un objet de gestion d'upload.
-	// $name : Nom du fichier
-	// $tot_parts : Nombre le block composant le fichier
-	public function __construct($name = "", $tot_parts = 1)
-	{
-		$this->name = $name;
-		$this->tot_parts = $tot_parts;
-		$this->datas = array();
+	/**
+	 * @var array $_name Data parts of the file.
+	 */
+	private $_datas;
 
-		for($i = 0; $i < $tot_parts; $i ++)
-			$this->datas[] = null;
+	// ==== CONSTRUCTOR ====
+	/**
+	 * Create a instance of the upload file manager.
+	 * 
+	 * @param string $name Name of the file.
+	 * @param int $totParts Number of part needed for this file.
+	 */
+	public function __construct(string $name = '', int $totParts = 1)
+	{
+		if ($totParts < 1) {
+			throw new InvalidArgumentException('The number of parts must be superior to 1.');
+		}
+
+		$this->_name = $name;
+		$this->_totParts = $totParts;
+		$this->_datas = [];
+
+		for ($i = 0; $i < $totParts; $i ++) {
+			$this->_datas[] = null;
+		}
 	}
 
-	// Ajout un block au fichier.
-	// $pos_part : Position du block dans le fichier
-	// $data : Données composant le block
-	public function AddPart($pos_part, $data)
+	/**
+	 * Add a new data part.
+	 * 
+	 * @param int $posPart Data part position
+	 * @param string $data Data part
+	 */
+	public function addPart(int $posPart, string $data): void
 	{
-		$pos = intval($pos_part);
-		$this->datas[$pos] = $data;
+		$this->_datas[$posPart] = $data;
 	}
 
-	// Retourn True si le fichier est complet (possède tous ses blocks), sinon False.
-	public function IsComplete()
+	/**
+	 * Return if the file is complete. If it has all data parts.
+	 * 
+	 * @return bool return True if the file is complete, else False.
+	 */
+	public function isComplete(): bool
 	{
-		foreach ($this->datas as $data)
-		{
-			if($data == null)
+		foreach ($this->_datas as $data) {
+			if($data === null) {
 				return false;
+			}
 		}
 
 		return true;
 	}
 	
-	// Retourne le nom du fichier.
-	public function GetName()
+	/**
+	 * Return the file name.
+	 * 
+	 * @return string
+	 */
+	public function getName(): string
 	{
-		return $this->name;
+		return $this->_name;
 	}
 
-	// Retourne le contenu du fichier, sinon False si le fichier n'est pas complet.
-	public function GetFileContent()
+	/**
+	 * Return the file content.
+	 * 
+	 * @return string|false Return False if the file content is not complete.
+	 */
+	public function getFileContent(): string|false
 	{
-		if($this->IsComplete())
-		{
-			$content = "";
+		if ($this->isComplete()) {
+			$content = '';
 
-			foreach ($this->datas as $data)
+			foreach ($this->_datas as $data) {
 				$content .= $data;
+			}
 			
 			return $content;
 		}

@@ -4,45 +4,47 @@ use System\ToolBox;
 use System\Session;
 use System\Database;
 use Snake\Adherent;
+use Snake\EPaymentType;
 use Snake\Section;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
-{
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
 	// Retourne une liste d'adhérent en fonction d'une section donnée.
-	$app->Post("/adherent_list", function($args) {
+	$app->post('/adherent_list', function($args) {
 		global $router;
 
-		$list = array();
-		$session = Session::GetInstance();
-		$adherents = Adherent::GetListBySection($args['id_section']);
+		$list = [];
+		$session = Session::getInstance();
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
 		
-		foreach($adherents as $adherent)
-		{
+		foreach ($adherents as $adherent) {
 			// Status
-			$status = "";
+			$status = '';
 
-			if (!$adherent->GetPayment()->IsDone() ||
-				!$adherent->GetDocIdCard() ||
-				!$adherent->GetDocPhoto() ||
-				!$adherent->GetDocFFFA() ||
-				!$adherent->GetDocSportmut() ||
-				!$adherent->GetDocMedicAuth())
-				$status = "not_complete";
+			if (!$adherent->getPayment()->isDone() ||
+				!$adherent->getDocIdCard() ||
+				!$adherent->getDocPhoto() ||
+				!$adherent->getDocFFFA() ||
+				!$adherent->getDocSportmut() ||
+				!$adherent->getDocMedicAuth())
+			{
+				$status = 'not_complete';
+			}
 
 			// Droits
-			$actions = array();
+			$actions = [];
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
-				$actions[] = "view";
+			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
+				$actions[] = 'view';
+			}
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")) && $status != "")
-				$actions[] = "validate";
+			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster', 'secretaire']) && $status !== '') {
+				$actions[] = 'validate';
+			}
 
-			if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
-			{
-				$actions[] = "surclasser";
-				$actions[] = "sousclasser";
-				$actions[] = "remove";
+			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster'])) {
+				$actions[] = 'surclasser';
+				$actions[] = 'sousclasser';
+				$actions[] = 'remove';
 			}
 
 			$list[] = array(
@@ -55,32 +57,31 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			);
 		}
 
-		API::SendJSON(array(
-			"nbAdherents" => 0,
-			"list" => $list
-		));
+		API::sendJSON([
+			'nbAdherents' => 0,
+			'list' => $list
+		]);
 	});
 
 	// Retourne le formulaire des éléments en attentes.
-	$app->Get("/adherent_validate_form/{id_adherent}", function($args) {
-		$adherent = Adherent::GetById($args['id_adherent']);
-		$missDocHtml = "";
+	$app->get('/adherent_validate_form/{id_adherent}', function($args) {
+		$adherent = Adherent::getById((int)$args['id_adherent']);
+		$missDocHtml = '';
 
-		if(!$adherent->GetPayment()->IsDone())
-		{
-			$priceHtml = "";
-			switch($adherent->GetPayment()->GetMethod())
-			{
-				case Payment::$METHODS['Espece']:
-					$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Espèce";
+		if (!$adherent->getPayment()->isDone()) {
+			$priceHtml = '';
+
+			switch ($adherent->getPayment()->getMethod()) {
+				case EPaymentType::Espece:
+					$priceHtml = $adherent->getPayment()->getFinalAmount() . "€ - Espèce";
 					break;
 
-				case Payment::$METHODS['Cheque']:
-					$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - " . $adherent->GetPayment()->GetNbDeadlines() ." Chèques";
+				case EPaymentType::Cheque:
+					$priceHtml = $adherent->getPayment()->getFinalAmount() . "€ - " . $adherent->getPayment()->getNbDeadlines() ." Chèques";
 					break;
 
-				case Payment::$METHODS['Virement']:
-					$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Virement";
+				case EPaymentType::Virement:
+					$priceHtml = $adherent->getPayment()->getFinalAmount() . "€ - Virement";
 					break;
 			}
 
@@ -92,19 +93,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		if($adherent->GetTenue()) // Acheté
-		{
-			if(!true) {
-				$missDocHtml .= "
-					<div class='custom-control custom-switch'>
-						<input id='customSwitchChqBuyUniform' class='custom-control-input' type='checkbox' name='chqBuyUniform' />
-						<label class='custom-control-label' for='customSwitchChqBuyUniform'>Chèque d'achat de la tenue (" . $adherent->GetSection()->GetPriceUniform() . "€)</label>
-					</div>
-				";
-			}
-		}
-
-		if(!$adherent->GetDocIdCard()) {
+		if (!$adherent->hasDocIdCard()) {
 			$missDocHtml .= "
 				<div class='custom-control custom-switch'>
 					<input id='customSwitchIdCard' class='custom-control-input' type='checkbox' name='idCard' />
@@ -113,7 +102,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		if(!$adherent->GetDocFFFA()) {
+		if (!$adherent->hasDocFffa()) {
 			$missDocHtml .= "
 				<div class='custom-control custom-switch'>
 					<input id='customSwitchFFFA' class='custom-control-input' type='checkbox' name='fffa' />
@@ -122,7 +111,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		if(!$adherent->GetDocMedicAuth()) {
+		if (!$adherent->hasDocMedicAuth()) {
 			$missDocHtml .= "
 				<div class='custom-control custom-switch'>
 					<input id='customSwitchMedic' class='custom-control-input' type='checkbox' name='medic' />
@@ -131,7 +120,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		if(!$adherent->GetDocPhoto()) {
+		if (!$adherent->hasPhoto()) {
 			$missDocHtml .= "
 				<div class='custom-control custom-switch'>
 					<input id='customSwitchPhoto' class='custom-control-input' type='checkbox' name='photo' />
@@ -140,7 +129,7 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		if(!$adherent->GetDocSportmut()) {
+		if (!$adherent->hasDocSportmut()) {
 			$missDocHtml .= "
 				<div class='custom-control custom-switch'>
 					<input id='customSwitchSportmut' class='custom-control-input' type='checkbox' name='sportmut' />
@@ -149,41 +138,64 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 			";
 		}
 
-		API::SendJSON(array(
-			'name' => $adherent->GetFirstname() . " " . $adherent->GetLastname(),
+		API::sendJSON([
+			'name' => "{$adherent->getFirstname()} {$adherent->getLastname()}",
 			'content' => $missDocHtml
-		));
+		]);
 	});
 
 	// Met à jour les éléments attendu pour l'inscription
-	$app->Post("/adherent_validate_update", function($args) {
-		$data = array();
-		if(isset($args['chqBuyUniform'])) $data['chq_buy_uniform'] = ToolBox::StringToBool($args['chqBuyUniform']);
-		if(isset($args['chqRentUniform'])) $data['chq_rent_uniform'] = ToolBox::StringToBool($args['chqRentUniform']);
-		if(isset($args['chqCleanUniform'])) $data['chq_clean_uniform'] = ToolBox::StringToBool($args['chqCleanUniform']);
-		if(isset($args['idCard'])) $data['doc_ID_card'] = ToolBox::StringToBool($args['idCard']);
-		if(isset($args['photo'])) $data['doc_photo'] = ToolBox::StringToBool($args['photo']);
-		if(isset($args['fffa'])) $data['doc_fffa'] = ToolBox::StringToBool($args['fffa']);
-		if(isset($args['sportmut'])) $data['doc_sportmut'] = ToolBox::StringToBool($args['sportmut']);
-		if(isset($args['medic'])) $data['doc_medic_auth'] = ToolBox::StringToBool($args['medic']);
+	$app->post('/adherent_validate_update', function($args) {
+		$data = [];
+
+		if (isset($args['chqBuyUniform'])) {
+			$data['chq_buy_uniform'] = ToolBox::stringToBool($args['chqBuyUniform']);
+		}
+
+		if (isset($args['chqRentUniform'])) {
+			$data['chq_rent_uniform'] = ToolBox::stringToBool($args['chqRentUniform']);
+		}
+
+		if (isset($args['chqCleanUniform'])) {
+			$data['chq_clean_uniform'] = ToolBox::stringToBool($args['chqCleanUniform']);
+		}
+
+		if (isset($args['idCard'])) {
+			$data['doc_ID_card'] = ToolBox::stringToBool($args['idCard']);
+		}
+
+		if (isset($args['photo'])) {
+			$data['doc_photo'] = ToolBox::stringToBool($args['photo']);
+		}
+
+		if (isset($args['fffa'])) {
+			$data['doc_fffa'] = ToolBox::stringToBool($args['fffa']);
+		}
+
+		if (isset($args['sportmut'])) {
+			$data['doc_sportmut'] = ToolBox::stringToBool($args['sportmut']);
+		}
+
+		if (isset($args['medic'])) {
+			$data['doc_medic_auth'] = ToolBox::stringToBool($args['medic']);
+		}
 
 		$database = new Database();
 		$result = true;
-		$result = $result & $database->Update("adherents", "id_adherent", $args['id_adherent'], $data);
+		// TODO: Move this function to Adherent.
+		$result = $result & $database->update('adherents', 'id_adherent', (int)$args['id_adherent'], $data);
 
-		if(isset($args['payment']))
-		{
-			$rech = $database->Query(
+		if (isset($args['payment'])) {
+			$rech = $database->query(
 				"SELECT * FROM adherents WHERE id_adherent=:id_adherent",
-				array("id_adherent" => $args['id_adherent'])
+				['id_adherent' => (int)$args['id_adherent']]
 			);
 
-			if($rech != null)
-			{
+			if ($rech !== null) {
 				$adherent = $rech->fetch();
 
-				$result = $result & $database->Update("payments", "id_payment", $adherent['id_payment'],
-					array("is_done" => ToolBox::StringToBool($args['payment']))
+				$result = $result & $database->update('payments', 'id_payment', (int)$adherent['id_payment'],
+					['is_done' => ToolBox::stringToBool($args['payment'])]
 				);
 			}
 		}
@@ -191,93 +203,88 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "me
 		API::SendJSON($result);
 	});
 
-	$app->Post("/adherent_export_list", function($args) {
+	$app->post('/adherent_export_list', function($args) {
 		$session = Session::GetInstance();
 		$adherents = null;
 
-		if($args['id_section'] == "all")
-			$adherents = Adherent::GetList($session->selectedSaison);
-		else
-			$adherents = Adherent::GetListBySection($args['id_section']);
+		if ($args['id_section'] === "all") {
+			$adherents = Adherent::getList($session->selectedSaison);
+		} else {
+			$adherents = Adherent::getListBySection((int)$args['id_section']);
+		}
 		
-		if($adherents != null)
-		{
-			$fileContent = "";
-			$delimiter = "";
+		if ($adherents !== null) {
+			$fileContent = '';
+			$delimiter = '';
 
-			if($args['delimiter'] == "pointvirgule")
-				$delimiter = ";";
-			else
-				$delimiter = ",";
+			if ($args['delimiter'] === 'pointvirgule') {
+				$delimiter = ';';
+			} else {
+				$delimiter = ',';
+			}
 				
 			$fileContent .= "Nom" . $delimiter . "Prenom" . $delimiter . "Date de naissancce" . $delimiter . "Section\n";
 
-			foreach($adherents as $adherent)
-			{
-				if($args['delimiter'] == ";")
-				{
-					foreach($adherent as &$val)
-						$val = str_replace(";", "_", $val);
-				}
-				else
-				{
-					foreach($adherent as &$val)
-						$val = str_replace(",", ".", $val);
+			foreach ($adherents as $adherent) {
+				if ($args['delimiter'] === ';') {
+					foreach ($adherent as &$val) {
+						$val = str_replace(';', '_', $val);
+					}
+				} else {
+					foreach ($adherent as &$val) {
+						$val = str_replace(',', '.', $val);
+					}
 				}
 
-				$fileContent .= ToolBox::StripAccents($adherent->GetLastname()) . $delimiter;
-				$fileContent .= ToolBox::StripAccents($adherent->GetFirstname()) . $delimiter;
-				$fileContent .= $adherent->GetBirthday()->format("d/m/Y") . $delimiter;
-				$fileContent .= $adherent->GetSection()->GetName();
-				$fileContent .= "\n";
+				$fileContent .= ToolBox::stripAccents($adherent->getLastname()) . $delimiter;
+				$fileContent .= ToolBox::stripAccents($adherent->getFirstname()) . $delimiter;
+				$fileContent .= $adherent->getBirthday()->format('d/m/Y') . $delimiter;
+				$fileContent .= $adherent->getSection()->getName();
+				$fileContent .= '\n';
 			}
 
 			header('Content-Type: text/csv; charset=ansi');
 			echo $fileContent;
 			exit;
+		} else {
+			API::sendJSON('Erreur');
 		}
-		else
-			API::SendJSON("Erreur");
 	});
 
-	$app->Post("/adherent_surclassement", function($args) {
-		$session = Session::GetInstance();
-		$adherent = Adherent::GetById($args['id']);
-		$sections = Section::GetList($session->selectedSaison);
+	$app->post('/adherent_surclassement', function($args) {
+		$session = Session::getInstance();
+		$adherent = Adherent::getById((int)$args['id']);
+		$sections = Section::getList($session->selectedSaison);
 
-		foreach($sections as $section)
-		{
-			if($section->GetMinAge() > $adherent->GetSection()->GetMinAge())
-			{
-				$adherent->SetSection($section);
-				$adherent->SaveToDatabase();
+		foreach ($sections as $section) {
+			if ($section->getMaxYear() < $adherent->getSection()->getMaxYear()) {
+				$adherent->setSection($section);
+				$adherent->saveToDatabase();
 
-				API::SendJSON("L'adhérent à été surclassé en " . $section->GetName());
+				API::sendJSON("L'adhérent à été surclassé en {$section->getName()}");
 				return;
 			}
 		}
 		
-		API::SendJSON("Impossible de surclasser l'adhérent.");
+		API::sendJSON("Impossible de surclasser l'adhérent.");
 	});
 
-	$app->Post("/adherent_sousclassement", function($args) {
-		$session = Session::GetInstance();
-		$adherent = Adherent::GetById($args['id']);
-		$sections = Section::GetList($session->selectedSaison);
+	$app->post('/adherent_sousclassement', function($args) {
+		$session = Session::getInstance();
+		$adherent = Adherent::getById((int)$args['id']);
+		$sections = Section::getList($session->selectedSaison);
 
-		for($i = count($sections) - 1; $i > 0; $i--)
-		{
-			if($sections[$i]->GetMinAge() < $adherent->GetSection()->GetMinAge())
-			{
-				$adherent->SetSection($sections[$i]);
-				$adherent->SaveToDatabase();
+		for ($i = count($sections) - 1; $i > 0; $i--) {
+			if ($sections[$i]->getMaxYear() > $adherent->getSection()->getMaxYear()) {
+				$adherent->setSection($sections[$i]);
+				$adherent->saveToDatabase();
 				
-				API::SendJSON("L'adhérent à été sousclassé en " . $sections[$i]->GetName());
+				API::sendJSON("L'adhérent à été sousclassé en {$sections[$i]->GetName()}");
 				return;
 			}
 		}
 		
-		API::SendJSON("Impossible de sousclasser l'adhérent.");
+		API::sendJSON("Impossible de sousclasser l'adhérent.");
 	});
 }
 ?>

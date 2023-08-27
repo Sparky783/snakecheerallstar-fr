@@ -12,17 +12,20 @@ use System\OptionParam;
  */
 class Options
 {
-    // == ATTRIBUTES ==
-    private array $_options = array();
+    // ==== ATTRIBUTES ====
+	/**
+	 * @var array $_options Options list.
+	 */
+    private array $_options = [];
    
    
-    // == CONSTRUCTORS ==
+    // ==== CONSTRUCTORS ====
     /**
      * Make a new instance of option manager.
      */
     public function __construct() {}
    
-
+    // ==== OTHER METHODS ====
     /**
      * Load all options from database
      * 
@@ -33,7 +36,7 @@ class Options
         $database = new Database();
         $rech = $database->query("SELECT * FROM `options`");
 
-        while($data = $rech->fetch()) {
+        while ($data = $rech->fetch()) {
             $param = new OptionParam($data);
             $this->_options[$param->getId()] = $param;
         }
@@ -48,7 +51,7 @@ class Options
     {
         $result = true;
 
-        foreach($this->_options as $option) {
+        foreach ($this->_options as $option) {
             $result &= $option->saveToDatabase();
         }
 
@@ -56,7 +59,7 @@ class Options
     }
    
 
-    // == OVERRIDE ==
+    // ==== OVERRIDE ====
     // Override Set, Get, Isset and Unset function.
     // That is used to do Options->MyVariable;
 
@@ -69,7 +72,7 @@ class Options
      */
     public function __set(string $name, mixed $value): void
     {
-        if(isset($this->_options[$name])) {
+        if (isset($this->_options[$name])) {
             $this->_options[$name]->setValue($value);
         } else {
             $option = new OptionParam();
@@ -89,11 +92,11 @@ class Options
      */
     public function __get(string $name): mixed
     {
-        if(isset($this->_options[$name])) {
+        if (isset($this->_options[$name])) {
             return $this->_options[$name]->getValue();
         }
 
-        throw new ErrorException('The option ' . $name . ' does not exist.');
+        throw new ErrorException("The option '$name' does not exist.");
     }
    
     /**
@@ -119,7 +122,7 @@ class Options
         unset($this->_options[$name]);
     }
 
-    // == PRIVATE METHODS ==
+    // ==== PRIVATE METHODS ====
     /**
      * Find the type depending of the value.
      * 
@@ -128,18 +131,19 @@ class Options
      */
     private function getTypeFromValue(mixed $value): string
     {
-        // TODO : get class
+        if (is_bool($value)) {
+            return 'boolean';
+        }
 
-        if(is_bool($value))
-            return "boolean";
+        if (is_int($value)) {
+            return 'int';
+        }
 
-        if(is_int($value))
-            return "int";
+        if (is_float($value)) {
+            return 'float';
+        }
 
-        if(is_float($value))
-            return "float";
-
-        return "default"; // Default type.
+        return 'default'; // Default type.
     }
 }
 ?>

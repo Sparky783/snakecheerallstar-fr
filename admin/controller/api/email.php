@@ -2,8 +2,10 @@
 use ApiCore\Api;
 use System\ToolBox;
 use System\Session;
-use Common\EmailTemplates;
+use Snake\EmailTemplates;
 use Snake\Tuteur;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")))
 {

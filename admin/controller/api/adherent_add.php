@@ -5,57 +5,57 @@ use Snake\SnakeTools;
 use Snake\Adherent;
 use Snake\Tuteur;
 use Snake\Reduction;
+use Snake\EReductionType;
 use Snake\Inscription;
+use Snake\EPaymentType;
+use Snake\ReductionPack;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
-{
-	$app->Post("/adherents_add", function($args) {
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
+	$app->post('/adherents_add', function($args) {
 		$inscription = new Inscription();
 		
 		//==== Adhérents ====
-		if(!isset($args['adherents']))
-		{
-			API::SendJSON(array(
-				"result" => false,
-				"message" => "Veuillez ajouter au moins un adhérent."
-			));
+		if (!isset($args['adherents'])) {
+			API::sendJSON([
+				'result' => false,
+				'message' => 'Veuillez ajouter au moins un adhérent.'
+			]);
+
 			return;
 		}
 
-		$listAdherents = array();
-		$nbBySection = SnakeTools::NbBySection();
+		$listAdherents = [];
 
 		// Vérification des adhérents
-		foreach($args['adherents'] as $adherent)
-		{
+		foreach ($args['adherents'] as $adherent) {
 			$adh = new Adherent();
 			
-			if(!$adh->SetInformation($adherent))
-			{
-				API::SendJSON(array(
-					"result" => false,
-					"message" => "L'un des champs n'est pas correctement rempli."
-				));
+			if (!$adh->setInformation($adherent)) {
+				API::sendJSON([
+					'result' => false,
+					'message' => "L'un des champs n'est pas correctement rempli."
+				]);
+
 				return;
 			}
 
 			// Si l'adhérent appartien à une section
-			if($adh->GetSection() == null)
-			{
-				API::SendJSON(array(
-					"result" => false,
-					"message" => "Attention, " . $adh->GetFirstname() . " est trop jeune pour s'inscrire."
-				));
+			if ($adh->getSection() === null) {
+				API::sendJSON([
+					'result' => false,
+					'message' => "Attention, {$adh->getFirstname()} est trop jeune pour s'inscrire."
+				]);
+
 				return;
 			}
 
 			// Si la section n'est pas pleine.
-			if($nbBySection[$adh->GetSection()->GetId()] >= $adh->GetSection()->GetNbMaxMembers())
-			{
-				API::SendJSON(array(
-					"result" => false,
-					"message" => "Attention, la section " . $adh->GetSection()->GetName() . " pour " . $adh->GetFirstname() . " est pleine."
-				));
+			if ($adh->getSection()->getNbMembers() >= $adh->getSection()->getNbMaxMembers()) {
+				API::sendJSON([
+					'result' => false,
+					'message' => "Attention, la section {$adh->getSection()->getName()} pour {$adh->getFirstname()} est pleine."
+				]);
+
 				return;
 			}
 
@@ -63,31 +63,31 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 		}
 
 		// Enregistrement des adhérents dans l'objet inscription
-		foreach($listAdherents as $adherent)
-			$inscription->AddAdherent($adherent);
+		foreach ($listAdherents as $adherent) {
+			$inscription->addAdherent($adherent);
+		}
 
 		//==== Tuteurs ====
-		if(!isset($args['tuteurs']))
-		{
-			API::SendJSON(array(
-				"result" => false,
-				"message" => "Veuillez ajouter au moins un tuteur."
-			));
+		if (!isset($args['tuteurs'])) {
+			API::sendJSON([
+				'result' => false,
+				'message' => 'Veuillez ajouter au moins un tuteur.'
+			]);
+
 			return;
 		}
 
-		$listTuteurs = array();
+		$listTuteurs = [];
 
-		foreach($args['tuteurs'] as $tuteur)
-		{
+		foreach ($args['tuteurs'] as $tuteur) {
 			$tut = new Tuteur();
 			
-			if(!$tut->SetInformation($tuteur))
-			{
-				API::SendJSON(array(
-					"result" => false,
-					"message" => "L'un des champs n'est pas correctement rempli."
-				));
+			if (!$tut->setInformation($tuteur)) {
+				API::sendJSON([
+					'result' => false,
+					'message' => "L'un des champs n'est pas correctement rempli."
+				]);
+
 				return;
 			}
 
@@ -95,83 +95,63 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 		}
 
 		// Enregistrement des tuteurs dans l'objet inscription
-		foreach($listTuteurs as $tuteur)
-			$inscription->AddTuteur($tuteur);
-
-		//==== Proccess ====
-		$inscription->SetAuthorization(true);
-		
-		// Ajout d'une réduction pour les fratries.
-		if(count($inscription->GetAdherents()) > 1)
-		{
-			$reduc = new Reduction();
-			$reduc->SetType(Reduction::$TYPE['Percentage']);
-			$reduc->SetValue(15); // 15%
-			$reduc->SetSujet("Tarif fratrie");
-			
-			$inscription->GetPayment()->AddReduction($reduc);
+		foreach ($listTuteurs as $tuteur) {
+			$inscription->addTuteur($tuteur);
 		}
 
-		$inscription->ComputeCotisation();
+		//==== Proccess ====
+		$inscription->computeFinalPrice();
 
 		//==== Payment ====
 		$payment = $args['payment'];
-		if($payment['mode'] == "espece")
-		{
-			$inscription->GetPayment()->SetMethod(Payment::$METHODS['Espece']);
-		}
-		else if($payment['mode'] == "cheque")
-		{
-			$nbDeadlines = intval($payment['deadlines']);
 
-			if($nbDeadlines >= 1 && $nbDeadlines <= 4)
-			{
-				$inscription->GetPayment()->SetMethod(Payment::$METHODS['Cheque']);
-				$inscription->GetPayment()->SetNbDeadlines($nbDeadlines);
-			}
-			else
-			{
-				API::SendJSON(array(
-					"result" => false,
-					"message" => "Veuillez choisir un nombre d'échéance entre 1 et 4."
-				));
-				return;
-			}
-		}
-		else if($payment['mode'] == "virement")
-		{
-			$inscription->GetPayment()->SetMethod(Payment::$METHODS['Virement']);
-		}
-		else
-		{
-			API::SendJSON(array(
-				"result" => false,
-				"message" => "Veuillez choisir un moyen de paiement."
-			));
-			return;
-		}
+		switch ($payment['mode']) {
+			case 'espece':
+				$inscription->getPayment()->setMethod(EPaymentType::Espece);
+				break;
 
-		// Ajout de la réduction suite au Pass Sport mis en place par le gouvernement
-		if(isset($args['passSport']))
-		{
-			if(ToolBox::StringToBool($args['passSport']))
-			{
-				$reduc = new Reduction();
-				$reduc->SetType(Reduction::$TYPE['Amount']);
-				$reduc->SetValue(50); // 50€
-				$reduc->SetSujet("Pass Sport");
+			case 'cheque':
+				if (!isset($payment['deadlines'])) {
+					API::sendJSON([
+						'result' => false,
+						'message' => "Veuillez choisir un nombre d'échéance entre 1 et 4."
+					]);
+					return;
+				}
 				
-				$inscription->GetPayment()->AddReduction($reduc);
-			}
+				$nbDeadlines = (int)$payment['deadlines'];
+
+				if($nbDeadlines < 1 || $nbDeadlines > 4) {
+					API::sendJSON([
+						'result' => false,
+						'message' => "Veuillez choisir un nombre d'échéance entre 1 et 4."
+					]);
+					return;
+				}
+				
+				$inscription->getPayment()->setMethod(EPaymentType::Cheque);
+				$inscription->getPayment()->setNbDeadlines($nbDeadlines);
+				break;
+
+			case 'virement':
+				$inscription->getPayment()->setMethod(EPaymentType::Virement);
+				break;
+
+			default:
+				API::sendJSON([
+					'result' => false,
+					'message' => 'Veuillez choisir un moyen de paiement.'
+				]);
+				return;
 		}
 		
 		// Sauvegarde en base de donnée de l'inscription
-		$result = $inscription->SaveToDatabase();
+		$result = $inscription->saveToDatabase();
 
-		API::SendJSON(array(
-			"result" => $result,
-			"message" => "L'adhérent à bien été inscrit"
-		));
+		API::sendJSON([
+			'result' => $result,
+			'message' => "L'adhérent à bien été inscrit"
+		]);
 	});
 }
 ?>

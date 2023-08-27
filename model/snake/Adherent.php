@@ -6,6 +6,8 @@ use System\Database;
 use Snake\SnakeTools;
 use Snake\Section;
 use Snake\Payment;
+use Snake\EUniformOption;
+use System\ToolBox;
 
 /**
  * Représente un adhérent
@@ -45,9 +47,9 @@ class Adherent
 
 	/**
 	 * Date de naissance de l'adhérent.
-	 * @var DateTime $_birthday
+	 * @var DateTime|null $_birthday
 	 */
-	private DateTime $_birthday = null;
+	private ?DateTime $_birthday = null;
 
 	/**
 	 * Informe si l'adhérent fait partie d'une fratrie ou non.
@@ -61,10 +63,10 @@ class Adherent
 	private string $_medicineInfo = '';
 
 	/** 
-	 * Informe si l'adhérent à déjà l'uniforme ou non.
-	 * @var bool $_hasUniform
+	 * Informe sur le choix de l'adhérent par rapport à l'uniforme (Achat/Location).
+	 * @var EUniformOption $_uniformOption
 	 */
-	private bool $_hasUniform = false;
+	private EUniformOption $_uniformOption = EUniformOption::None;
 
 	/**
 	 * Informe si l'adhérent a donné le chèque pour l'achat de l'unifome.
@@ -113,24 +115,30 @@ class Adherent
 	 * @var bool $_docMedicAuth
 	 */
 	private bool $_docMedicAuth = false;
+
+	/**
+	 * Informe si l'adhérent a un code pour bénéficier du Pass Sport.
+	 * @var string $_passSport
+	 */
+	private string $_passSport = '';
 	
 	/**
 	 * Date et heure d'inscription de l'adhérent.
-	 * @var DateTime $_inscriptionDate
+	 * @var DateTime|null $_inscriptionDate
 	 */
-	private DateTime $_inscriptionDate = null;
+	private ?DateTime $_inscriptionDate = null;
 
 	/**
 	 * Section de l'adhérent.
-	 * @var Section $_section
+	 * @var Section|null $_section
 	 */
-	private Section $_section = null;
+	private ?Section $_section = null;
 	
 	/**
 	 * Paiement fait par l'adhérent.
-	 * @var Payment $_payment
+	 * @var Payment|null $_payment
 	 */
-	private Payment $_payment = null;
+	private ?Payment $_payment = null;
 	
 	/**
 	 * Liste de tuteurs associés à l'adhérent.
@@ -139,18 +147,18 @@ class Adherent
 	private array $_tuteurs = [];
 	
 	// ==== CONSTRUCTOR ====
-	public function __construct(array $dbData = null)
+	public function __construct(array $dbData = [])
 	{
-		if ($dbData != null) {	
+		if (count($dbData) > 0) {	
 			$this->_id = (int)$dbData['id_adherent'];
 			$this->_idSection = (int)$dbData['id_section'];
-			$this->_idPayment = (int)($dbData['id_payment'];
+			$this->_idPayment = (int)$dbData['id_payment'];
 			$this->_firstname = $dbData['firstname'];
 			$this->_lastname = $dbData['lastname'];
 			$this->_birthday = new Datetime($dbData['birthday']);
-			$this->_siblings = (bool)$dbData['siblings'];
+			$this->_isSiblings = (bool)$dbData['is_sibling'];
 			$this->_medicineInfo = $dbData['medicine_info'];
-			$this->_hasUniform = (bool)$dbData['has_uniform'];
+			$this->_uniformOption = EUniformOption::tryFrom($dbData['uniform_option']) ?? EUniformOption::None;
 			$this->_chqBuyUniform = (bool)$dbData['chq_buy_uniform'];
 			$this->_chqRentUniform = (bool)$dbData['chq_rent_uniform'];
 			$this->_chqCleanUniform = (bool)$dbData['chq_clean_uniform'];
@@ -159,6 +167,7 @@ class Adherent
 			$this->_docFffa = (bool)$dbData['doc_fffa'];
 			$this->_docSportmut = (bool)$dbData['doc_sportmut'];
 			$this->_docMedicAuth = (bool)$dbData['doc_medic_auth'];
+			$this->_passSport = $dbData['pass_sport'];
 			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
 		}
 	}
@@ -189,7 +198,7 @@ class Adherent
 			return $this->_idSection;
 		}
 
-		return null
+		return null;
 	}
 
 	/**
@@ -233,8 +242,9 @@ class Adherent
 	/**
 	 * Retourne la date de naissance de l'adhérent.
 	 * 
+	 * @return DateTime|null
 	 */
-	public function getBirthday(): DateTime
+	public function getBirthday(): DateTime|null
 	{
 		return $this->_birthday;
 	}
@@ -270,13 +280,13 @@ class Adherent
 	}
 
 	/**
-	 * Retourne True si l'adhérent poscède l'uniforme, sinon False.
+	 * Retourne le choix de l'adhérent par rapport à l'uniforme (Achat/Location)
 	 * 
-	 * @return bool
+	 * @return EUniformOption
 	 */
-	public function hasUniform(): bool
+	public function getUniformOption(): EUniformOption
 	{
-		return $this->_hasUniform;
+		return $this->_uniformOption;
 	}
 
 	/**
@@ -330,6 +340,26 @@ class Adherent
 	}
 
 	/**
+	 * Retourne True si l'adhérent bénéficie du Pass Sport, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasPassSport(): bool
+	{
+		return !empty($this->_passSport);
+	}
+
+	/**
+	 * Retourne le code du Pass Sport de l'adhérent.
+	 * 
+	 * @return bool
+	 */
+	public function getPassSport(): string
+	{
+		return $this->_passSport;
+	}
+
+	/**
 	 * Retourne la date d'inscription.
 	 * 
 	 * @return DateTime
@@ -346,8 +376,7 @@ class Adherent
 	 */
 	public function getSection(): Section|null
 	{
-		if($this->_section === null && $this->_idSection !== null)
-		{
+		if ($this->_section === null && $this->_idSection !== null) {
 			$section = Section::getById($this->_idSection);
 
 			if ($section !== false) {
@@ -365,8 +394,7 @@ class Adherent
 	 */
 	public function getPayment(): Payment|null
 	{
-		if($this->_payment === null && $this->_idPayment !== null)
-		{
+		if ($this->_payment === null && $this->_idPayment !== null) {
 			$payment = Payment::getById($this->_idPayment);
 
 			if ($payment !== false) {
@@ -385,18 +413,17 @@ class Adherent
 
 	public function getTuteurs(): array
 	{
-		if($this->id !== null && count($this->tuteurs) === 0)
-		{
+		if ($this->_id !== null && count($this->_tuteurs) === 0) {
 			$database = new Database();
-			$tuteurs = $database->Query(
+			$tuteurs = $database->query(
 				"SELECT * FROM adherent_tuteur JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur WHERE id_adherent=:id_adherent",
-				array("id_adherent" => $this->id)
+				['id_adherent' => $this->_id]
 			);
 
-			if ($tuteurs != null)
-			{
-				while($tuteur = $tuteurs->fetch())
+			if ($tuteurs !== null) {
+				while($tuteur = $tuteurs->fetch()) {
 					$this->_tuteurs[] = new Tuteur($tuteur);
+				}
 			}
 		}
 
@@ -462,9 +489,9 @@ class Adherent
 		//if(preg_match('/^([0-2][0-9]|(3)[0-1])(\/|-)(((0)[0-9])|((1)[0-2]))(\/|-)\d{4}$/i', $birthday)) // jj-mm-aaaa
 		if (preg_match('/^\d{4}(\/|-)(((0)[0-9])|((1)[0-2]))(\/|-)([0-2][0-9]|(3)[0-1])$/i', $birthday)) { // yyyy-mm-dd
 			$this->_birthday = new DateTime($birthday);
-			$section = SnakeTools::findSection($birthday);
+			$section = SnakeTools::findSection($this->_birthday);
 
-			if($section !== false) {
+			if ($section !== false) {
 				$this->_section = $section;
 				$this->_idSection = $section->getId();
 			}
@@ -504,14 +531,14 @@ class Adherent
 	}
 	
 	/**
-	 * Définie si l'adhérent à un uniforme ou non.
+	 * Définie le choix de l'adhérent par rapport à l'uniforme (Achat/Location).
 	 * 
-	 * @param bool $uniform
+	 * @param EUniformOption $uniformOption
 	 * @return void
 	 */
-	public function setUniform(bool $uniform): void
+	public function setUniformOption(EUniformOption $uniformOption): void
 	{
-		$this->_hasUniform = uniform;
+		$this->_uniformOption = $uniformOption;
 	}
 	
 	/**
@@ -526,17 +553,28 @@ class Adherent
 	}
 
 	/**
+	 * Définie le code Pass Sport de l'adhérent.
+	 * 
+	 * @param string $passSport
+	 * @return void
+	 */
+	public function setPassSport(string $passSport): void
+	{
+		$this->_passSport = $passSport;
+	}
+
+	/**
 	 * Définie la date d'inscription de l'adhérent.
 	 * 
 	 * @param string $inscriptionDate Si la date d'inscription est ommise, la date du jour sera mise.
 	 * @return void
 	 */
-	public function setInscriptionDate(?string $inscriptionDate = null): void
+	public function setInscriptionDate(string $inscriptionDate = ''): void
 	{
-		if ($inscriptionDate !== null) {
-			$this->_inscriptionDate = new DateTime();
-		} else {
+		if (!empty($inscriptionDate)) {
 			$this->_inscriptionDate = new DateTime($inscriptionDate);
+		} else {
+			$this->_inscriptionDate = new DateTime();
 		}
 	}
 
@@ -576,23 +614,23 @@ class Adherent
 		$result = true;
 
 		if (isset($infos['firstname'])) {
-			$result &= $this->setFirstname($infos['firstname']);
+			$result = $result && $this->setFirstname($infos['firstname']);
 		}
 		
 		if (isset($infos['lastname'])) {
-			$result &= $this->setLastname($infos['lastname']);
+			$result = $result && $this->setLastname($infos['lastname']);
 		}
 		
 		if (isset($infos['birthday'])) {
-			$result &= $this->setBirthday($infos['birthday']);
+			$result = $result && $this->setBirthday($infos['birthday']);
 		}
 		
 		if (isset($infos['infoMedicine'])) {
 			$this->setMedicineInfo($infos['infoMedicine']);
 		}
-		
-		if (isset($infos['tenue'])) {
-			$result &= $this->setUniform($infos['tenue']);
+
+		if (!empty($infos['passSportCode'])) {
+			$this->setPassSport($infos['passSportCode']);
 		}
 			
 		return $result;
@@ -616,9 +654,9 @@ class Adherent
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
-					'siblings' => $this->_isSiblings,
+					'is_sibling' => $this->_isSiblings,
 					'medicine_info' => $this->_medicineInfo,
-					'has_uniform' => $this->_hasUniform,
+					'uniform_option' => $this->_uniformOption->value,
 					'chq_buy_uniform' => $this->_chqBuyUniform,
 					'chq_rent_uniform' => $this->_chqRentUniform,
 					'chq_clean_uniform' => $this->_chqCleanUniform,
@@ -627,6 +665,7 @@ class Adherent
 					'doc_fffa' => $this->_docFffa,
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
+					'pass_sport' => $this->_passSport,
 					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s')
 				]
 			);
@@ -646,9 +685,9 @@ class Adherent
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
-					'siblings' => $this->_siblings,
+					'is_sibling' => $this->_isSiblings,
 					'medicine_info' => $this->_medicineInfo,
-					'has_uniform' => $this->_hasUniform,
+					'uniform_option' => $this->_uniformOption->value,
 					'chq_buy_uniform' => $this->_chqBuyUniform,
 					'chq_rent_uniform' => $this->_chqRentUniform,
 					'chq_clean_uniform' => $this->_chqCleanUniform,
@@ -657,6 +696,7 @@ class Adherent
 					'doc_fffa' => $this->_docFffa,
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
+					'pass_sport' => $this->_passSport,
 					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s')
 				)
 			);
@@ -689,19 +729,19 @@ class Adherent
 				// Pour chaque tuteurs, on cherche si ils ont des adhérents. Si non, on supprime.
 				foreach ($tuteurs as $tuteur) {
 					if (count($tuteur->getAdherents()) === 0) {
-						$tuteur->removeFromDatabase();
+						Tuteur::removeFromDatabase($tuteur->getId());
 					}
 				}
 
 				// Idem pour le payment, on regarde si le paiement est utilisé par un autre adhérent.
 				$rech = $database->query(
 					"SELECT COUNT(*) AS count FROM adherents WHERE id_payment=:id_payment",
-					array('id_payment' => $this->id_payment)
+					['id_payment' => $this->_idPayment]
 				);
 				$donnees = $rech->fetch();
 
 				if ($donnees !== false && $donnees['count'] === 0) {
-					$payment->removeFromDatabase();
+					Payment::removeFromDatabase($payment->getId());
 				}
 
 				return true;

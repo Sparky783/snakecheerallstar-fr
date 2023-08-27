@@ -1,5 +1,6 @@
 <?php
 namespace System;
+
 use DateTime;
 use ErrorException;
 use System\Database;
@@ -10,30 +11,39 @@ use System\ToolBox;
  */
 class OptionParam
 {
-    // == ATTRIBUTS ==
-    private string $_id = '';	
-    private string $_type = '';  // Option type (Boolean, Date, Int, etc ...)
-    private mixed $_value = null; // Option value (Save as Text type in database)
+    // ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id Option's ID.
+	 */
+    private string $_id = '';
+    
+	/**
+	 * @var string $_type Option's type (Boolean, Date, Int, etc ...).
+	 */	
+    private string $_type = '';
+    
+	/**
+	 * @var mixed $_value Option's value (Save as Text type in database).
+	 */
+    private mixed $_value = null;
    
 
-    // == CONSTRUCTORS ==
+    // ==== CONSTRUCTOR ====
     /**
      * Make a new instance of option.
      *
-     * @param array|null $dbData Data from database to load the option.
+     * @param array $dbData Data from database to load the option.
      */
-    public function __construct(array $dbData = null)
+    public function __construct(array $dbData = [])
     {
-        if($dbData !== null)
-        {
+        if (count($dbData) > 0) {
             $this->_id = $dbData['id_option'];
             $this->_type = $dbData['type'];
             $this->setValue($dbData['value']);
         }
     }
 
-
-    // == GETTERS ==
+    // ==== GETTERS ====
     /**
      * Get the option ID.
      * 
@@ -64,7 +74,7 @@ class OptionParam
         return $this->_value;
     }
 
-    // == SETTERS ==
+    // ==== SETTERS ====
     /**
      * Set the value of the option depending of the type.
      * 
@@ -73,38 +83,36 @@ class OptionParam
      */
     public function setValue(mixed $value): bool
     {
-        if($this->_type != null)
-        {
-            switch($this->_type)
-            {
-                case "int":
-                    $this->_value = intval($value);
-                    break;
-
-                case "float":
-                    $this->_value = floatval($value);
-                    break;
-
-                case "boolean":
-                    $this->_value = Toolbox::StringToBool($value);
-                    break;
-
-                case "date":
-                    $this->_value = new DateTime($value);
-                    break;
-
-                default:
-                    $this->_value = $value;
-                    break;
-            }
-
-            return true;
+        if (empty($this->_type)) {
+            return false;
         }
-        
-        return false;
+
+        switch ($this->_type) {
+            case 'int':
+                $this->_value = intval($value);
+                break;
+
+            case 'float':
+                $this->_value = floatval($value);
+                break;
+
+            case 'boolean':
+                $this->_value = Toolbox::StringToBool($value);
+                break;
+
+            case 'date':
+                $this->_value = new DateTime($value);
+                break;
+
+            default:
+                $this->_value = $value;
+                break;
+        }
+
+        return true;
     }
 
-    // == OTHER METHODS ==
+    // ==== OTHER METHODS ====
     /**
      * Prepare the new created option to be used.
      * 
@@ -125,21 +133,25 @@ class OptionParam
 	 */
     public function saveToDatabase(): bool
     {
-        // Insert must be done manually
+        if ($this->_type == null) {
+            throw new ErrorException('The type of the option cannot be null.');
+        }
+
+        
+        if (empty($this->_id)) {
+            return false;
+        }
+
         $database = new Database();
-
-        if($this->_type == null)
-            throw new ErrorException("The type of the option cannot be null.");
-
         $value = null;
-        switch($this->_type)
-        {
-            case "boolean":
-                $value = Toolbox::BoolToString($this->_value);
+
+        switch ($this->_type) {
+            case 'boolean':
+                $value = Toolbox::boolToString($this->_value);
                 break;
 
-            case "date":
-                $value = $this->_value->format("Y-m-d");
+            case 'date':
+                $value = $this->_value->format('Y-m-d');
                 break;
 
             default:
@@ -147,14 +159,7 @@ class OptionParam
                 break;
         }
 
-        $result = $database->Update(
-            "options", "id_option", $this->_id,
-            array(
-                "value" => $value
-            )
-        );
-
-		return $result;
+        return $database->update('options', 'id_option', $this->_id, ['value' => $value]);
     }
 }
 ?>

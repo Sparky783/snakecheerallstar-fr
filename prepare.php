@@ -5,7 +5,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Force to using HTTPS.
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'on')
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'on')
 {
 	header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 	exit;
@@ -28,8 +28,5 @@ include_once('config.php');
 include_once(ABSPATH . 'model/System/SplClassLoader.php');
 
 $classLoader = new System\SplClassLoader(ABSPATH . 'model');
-$classLoader->register();
-
-$classLoader = new System\SplClassLoader(ABSPATH . 'model/PHPMailer/src');
 $classLoader->register();
 ?>

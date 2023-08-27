@@ -118,7 +118,7 @@ class Candidat
 	public function setLastname(string $lastname): bool
 	{
 		if ($lastname !== '') {
-			$this->lastname = trim(ucwords(mb_strtolower($lastname)));
+			$this->_lastname = trim(ucwords(mb_strtolower($lastname)));
 
 			return true;
 		}
@@ -250,6 +250,6 @@ class Candidat
 	{
 		$database = new Database();
 		
-		return $database->delete('ag_candidats', 'id_candidat', $id_candidat);
+		return $database->delete('ag_candidats', 'id_candidat', $idCandidat);
 	}
 }

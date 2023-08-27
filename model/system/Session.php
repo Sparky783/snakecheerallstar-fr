@@ -8,18 +8,32 @@ use ErrorException;
 class Session
 {
     // States
+	/**
+	 * @var bool SESSION_STARTED Admin's ID.
+	 */
     public const SESSION_STARTED = TRUE;
+
+	/**
+	 * @var bool SESSION_STARTED Admin's ID.
+	 */
     public const SESSION_NOT_STARTED = FALSE;
 
-    // == ATTRIBUTES ==
+    // ==== ATTRIBUTS ====
+	/**
+	 * @var bool $_sessionState Session state.
+	 */
     private bool $_sessionState = self::SESSION_NOT_STARTED; // The state of the session
+
+	/**
+	 * @var Session $_instance Session object.
+	 */
     private static Session $_instance; // THE only instance of the class
 
 
-    // == CONSTRUCTORS ==
+    // ==== CONSTRUCTOR ====
     private function __construct() {}
 
-    // == STATIC METHODS ==
+    // ==== STATIC METHODS ====
     /**
      * Returns THE instance of 'Session'.
      * The session is automatically initialized if it wasn't.
@@ -28,8 +42,9 @@ class Session
      */
     public static function getInstance(): Session
     {
-        if(!isset(self::$_instance))
+        if (!isset(self::$_instance)) {
             self::$_instance = new self;
+        }
        
         self::$_instance->startSession();
        
@@ -44,7 +59,7 @@ class Session
      */
     public function startSession(): bool
     {
-        if ($this->_sessionState == self::SESSION_NOT_STARTED) {
+        if ($this->_sessionState === self::SESSION_NOT_STARTED) {
             $this->_sessionState = session_start();
         }
        
@@ -58,8 +73,7 @@ class Session
      */
     public function destroy(): bool
     {
-        if ($this->_sessionState == self::SESSION_STARTED)
-        {
+        if ($this->_sessionState === self::SESSION_STARTED) {
             $this->_sessionState = !session_destroy();
             unset($_SESSION);
 
@@ -96,11 +110,11 @@ class Session
      */
     public function __get(string $name): mixed
     {
-        if(isset($_SESSION[$name])) {
+        if (isset($_SESSION[$name])) {
             return $_SESSION[$name];
         }
 
-        throw new ErrorException('The setting ' . $name . ' does not exist.');
+        throw new ErrorException("The setting '$name' does not exist.");
     }
 
     /**

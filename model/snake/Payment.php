@@ -2,6 +2,8 @@
 namespace Snake;
 
 use DateTime;
+use ErrorException;
+use InvalidArgumentException;
 use System\Database;
 use Snake\Adherent;
 use Snake\Reduction;
@@ -22,12 +24,12 @@ class Payment
 	/**
 	 * @var float $_basePrice Prix de base du paiement. Ce montant peux évoluer avec les réductions.
 	 */
-	private float $_basePrice = null;
+	private float $_basePrice = 0;
 
 	/**
 	 * @var float $_fixedPrice Prix fixe du paiement. Les réductions n'impact pas ce prix.
 	 */
-	private float $_fixedPrice = null;
+	private float $_fixedPrice = 0;
 
 	/**
 	 * @var EPaymentType|null $_method Méthode de paiement utilisé pour régler la facture.
@@ -37,7 +39,7 @@ class Payment
 	/**
 	 * @var DateTime|null $_paymentDate Date ou le paiement à été réglé.
 	 */
-	private DateTime $_paymentDate = null;
+	private ?DateTime $_paymentDate = null;
 
 	/**
 	 * @var int $_nbDeadlines Nombre d'échéance choisi pour le paiement en plusieur fois.
@@ -63,13 +65,13 @@ class Payment
 	// ==== CONSTRUCTOR ====
 	public function __construct(array $dbData = [])
 	{
-		$this->_paymentDate = date('Y-m-d');
+		$this->_paymentDate = new DateTime();
 
 		if (count($dbData) !== 0) {
 			$this->_id = (int)$dbData['id_payment'];
 			$this->_basePrice = (int)$dbData['base_price'];
 			$this->_fixedPrice = (int)$dbData['fixed_price'];
-			$this->_method = $dbData['method'];
+			$this->_method = self::convertStringToEPaymentType($dbData['method']);
 			$this->_paymentDate = new DateTime($dbData['date_payment']);
 			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
 			$this->_isDone = (bool)$dbData['is_done'];
@@ -80,9 +82,9 @@ class Payment
 	/**
 	 * Retourne l'ID du paiement.
 	 * 
-	 * @return int
+	 * @return int|null
 	 */
-	public function getId(): int
+	public function getId(): int|null
 	{
 		return $this->_id;
 	}
@@ -215,14 +217,14 @@ class Payment
 		
 		// Toujours appliquer les "Pourcentage" avant ...
 		foreach ($this->_reductions as $reduction) {
-			if($reduction->getType() == Reduction::$TYPE['Percentage']) {
+			if ($reduction->getType() == EReductionType::Percentage) {
 				$montant = round($montant * (1 - ($reduction->getValue() / 100)));
 			}
 		}
 		
 		// ... puis appliquer les "Montant".
 		foreach ($this->_reductions as $reduction) {
-			if($reduction->getType() == Reduction::$TYPE['Amount']) {
+			if ($reduction->getType() == EReductionType::Amount) {
 				$montant -= $reduction->GetValue();
 			}
 		}
@@ -276,10 +278,10 @@ class Payment
 	/**
 	 * Définie la methode de paiement.
 	 * 
-	 * @param EPaiementType $method
+	 * @param EPaymentType $method
 	 * @return void
 	 */
-	public function setMethod(EPaiementType $method): void
+	public function setMethod(EPaymentType $method): void
 	{
 		$this->_method = $method;
 	}
@@ -323,25 +325,40 @@ class Payment
 	}
 
 	/**
+	 * Supprime les réductions du paiement.
+	 * 
+	 * @return bool Retourne True si des réductions ont été supprimé, sinon False.
+	 */
+	public function clearReductions(): bool
+	{
+		if (count($this->_reductions) > 0) {
+			$this->_reductions = [];
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Sauvegarde le paiement dans la base de données
 	 * 
-	 * @return void
+	 * @return bool Retourne True en cas de succès, sinon False;
 	 */
-	public function saveToDatabase(): void
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 		$result = false;
 
-		if ($this->_id == null) { // Insert
+		if ($this->_id === null) { // Insert
 			$id = $database->insert(
-				"payments",
+				'payments',
 				[
-					"base_price" => $this->_basePrice,
-					"fixed_price" => $this->_fixedPrice,
-					"method" => $this->_method,
-					"date_payment" => $this->_paymentDate,
-					"nb_deadlines" => $this->_nbDeadlines,
-					"is_done" => $this->_isDone
+					'base_price' => $this->_basePrice,
+					'fixed_price' => $this->_fixedPrice,
+					'method' => $this->_method->value,
+					'date_payment' => $this->_paymentDate->format('Y-m-d H:i:s'),
+					'nb_deadlines' => $this->_nbDeadlines,
+					'is_done' => $this->_isDone
 				]
 			);
 
@@ -351,58 +368,27 @@ class Payment
 			}
 		} else { // Update
 			$result = $database->update(
-				"payments", "id_payment", $this->_id,
+				'payments', 'id_payment', $this->_id,
 				[
-					"base_price" => $this->_basePrice,
-					"fixed_price" => $this->_fixedPrice,
-					"method" => $this->_method,
-					"date_payment" => $this->_paymentDate,
-					"nb_deadlines" => $this->_nbDeadlines,
-					"is_done" => $this->_isDone
+					'base_price' => $this->_basePrice,
+					'fixed_price' => $this->_fixedPrice,
+					'method' => $this->_method->value,
+					'date_payment' => $this->_paymentDate->format('Y-m-d H:i:s'),
+					'nb_deadlines' => $this->_nbDeadlines,
+					'is_done' => $this->_isDone
 				]
 			);
 		}
 
 		// Sauvegarde les réductions.
-		if($id !== false) {
+		if ($this->_id !== null) {
 			foreach ($this->_reductions as $reduction) {
-				$reduction->setIdPayment($this->id);
+				$reduction->setIdPayment($this->_id);
 				$result &= $reduction->saveToDatabase();
 			}
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Charge les infos depuis la base de données.
-	 * 
-	 * @return void
-	 */
-	private function loadFromDatabase(): void
-	{
-		if ($this->_id === null) {
-			return false;
-		}
-
-		$database = new Database();
-		$rech = $database->query(
-			"SELECT * FROM payments WHERE id_payment=:id_payment",
-			['id_payment' => $this->_id]
-		);
-
-		if ($rech !== null) {
-			$dbData = $rech->fetch();
-
-			$this->_basePrice = (int)$dbData['base_price'];
-			$this->_fixedPrice = (int)$dbData['fixed_price'];
-			$this->_method = $dbData['method'];
-			$this->_paymentDate = new DateTime($dbData['date_payment']);
-			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
-			$this->_isDone = (bool)$dbData['is_done'];
-
-			return true;
-		}
 	}
 
 
@@ -421,7 +407,7 @@ class Payment
 
 		$rech = $database->query(
 			"SELECT * FROM payments WHERE id_payment=:id_payment",
-			['id_payment' => $id_payment]
+			['id_payment' => $idPayment]
 		);
 
 		if($rech !== null) {
@@ -439,7 +425,7 @@ class Payment
 	 * @param string $saison
 	 * @return array|false Retourne false en cas d'échec
 	 */
-	public static function getList(string $saison = null): array
+	public static function getList(string $saison = null): array|false
 	{
 		if ($saison === null) {
 			$saison = SnakeTools::getCurrentSaison();
@@ -474,10 +460,27 @@ class Payment
 	 * @param int $id
 	 * @return bool
 	 */
-	public static function removeFromDatabase(int $id): bool
+	public static function removeFromDatabase(int $idPayment): bool
 	{
 		$database = new Database();
-		return $database->delete("payments", "id_payment", $id);
+		return $database->delete('payments', 'id_payment', $idPayment);
 		// Les réductions sont supprimées grâce à la contrainte par clè étrangère de la BDD.
+	}
+
+	/**
+	 * Convertie le type de paiement de string vers EPaymentType.
+	 * 
+	 * 
+	 */
+	private static function convertStringToEPaymentType(string $paymentType): EPaymentType
+	{
+		switch ($paymentType) {
+			case 'espece': return EPaymentType::Espece;
+			case 'cheque': return EPaymentType::Cheque;
+			case 'internet': return EPaymentType::Internet;
+			case 'virement': return EPaymentType::Virement;
+			default:
+				throw new InvalidArgumentException("The payment type ($paymentType) does not exist");
+		}
 	}
 }

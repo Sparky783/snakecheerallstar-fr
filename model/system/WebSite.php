@@ -15,10 +15,30 @@ use System\GetMethodManager;
  */
 class WebSite
 {
-	private array $_pages = []; // Pages list of the website.
-	private string $_defaultPage = ""; // Display page if the request page is null.
-	private string $_websitePath = ""; // Path to the website.
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var array $_pages Pages list of the website.
+	 */
+	private array $_pages = [];
+	
+	/**
+	 * @var string $_defaultPage Default page if the request page is null.
+	 */
+	private string $_defaultPage = '';
+	
+	/**
+	 * @var string $_websitePath Path to the website.
+	 */
+	private string $_websitePath = '';
+	
+	/**
+	 * @var bool $_adminMode Say if the website is in admin mode.
+	 */
 	private bool $_adminMode = false;
+	
+	/**
+	 * @var array $_includes File list to include during loading function.
+	 */
 	private array $_includes = [];
 
 
@@ -75,8 +95,9 @@ class WebSite
 	public function defaultPage(string $page): bool
 	{
 		// Check if the page is registrated
-		if (!in_array($page, $this->_pages))
+		if (!in_array($page, $this->_pages)) {
 			return false;
+		}
 
 		$this->_defaultPage = $page;
 
@@ -109,7 +130,7 @@ class WebSite
 	 */
 	public function run(): void
 	{
-		$this->LoadPage();
+		$this->loadPage();
 	}
 
 
@@ -183,12 +204,10 @@ class WebSite
 
 		// == For administrators ==
 		$session = Session::getInstance();
-
-		if ($this->_adminMode && $page != $this->_defaultPage && !$session->admin_isConnected) {
+		
+		if ($this->_adminMode && $page !== $this->_defaultPage && !$session->admin_isConnected) {
 			$gmm->setValue('page', $this->_defaultPage);
 			$this->loadPage();
-
-			return;
 		}
 		// ========================
 
@@ -211,7 +230,7 @@ class WebSite
 	 * @param GetMethodManager $gmm GetMethodManager object to use to send specific data.
 	 * @return void
 	 */
-	static public function redirect(string $page, bool $isAdmin = false, GetMethodManager $gmm = null): void
+	public static function redirect(string $page, bool $isAdmin = false, GetMethodManager $gmm = null): void
 	{
 		global $router;
 		header('Location: ' . $router->getUrl($page, $gmm));

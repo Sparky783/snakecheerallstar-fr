@@ -7,11 +7,10 @@ use Snake\SnakeTools;
 
 if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 {
-	$app->Post("/apply_options", function($args) {
+	$app->post('/apply_options', function($args) {
 		$session = Session::getInstance();
 		
-		if(isset($session->websiteOptions))
-		{
+		if (isset($session->websiteOptions)) {
 			$options = unserialize($session->websiteOptions);
 
 			// Récupération des données
@@ -19,66 +18,66 @@ if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
 			$options->INSCRIPTION_MIN_DATE = $args['min_date_inscription'];
 			$options->INSCRIPTION_MAX_DATE = $args['max_date_inscription'];
 
-			if($options->SaveToDatabase())
+			if ($options->saveToDatabase()) {
 				$session->websiteOptions = serialize($options);
+			}
 		}
 
 		//API::SendJSON($reponse);
 	});
 
-	$app->Post("/section_list", function($args) {
+	$app->post('/section_list', function($args) {
 		$session = Session::getInstance();
 
-		$sections = Section::GetList($session->selectedSaison);
-		$list = array();
+		$sections = Section::getList($session->selectedSaison);
+		$list = [];
 		
-		foreach($sections as $section)
-		{
-			$list[] = array(
-				"id_section" => $section->GetId(),
-				"name" => $section->GetName(),
-				"min_age" => $section->GetMinAge(),
-				"price_cotisation" => $section->GetPriceCotisation(),
-				"price_uniform" => $section->GetPriceUniform(),
-				"max_members" => $section->GetNbMaxMembers()
-			);
+		foreach ($sections as $section) {
+			$list[] = $section->toArray();
 		}
 
-		API::SendJSON(array(
-			"sections" => $list,
-			"isCurrentSaison" => ($session->selectedSaison == SnakeTools::GetCurrentSaison()),
-			"CurrentSaison" => SnakeTools::GetCurrentSaison()
-		));
+		API::sendJSON([
+			'sections' => $list,
+			'isCurrentSaison' => ($session->selectedSaison == SnakeTools::getCurrentSaison()),
+			'CurrentSaison' => SnakeTools::getCurrentSaison()
+		]);
 	});
 
-	$app->Post("/section_add", function($args) {
+	$app->post('/section_add', function($args) {
 		$section = new Section();
-		$section->SetName($args['name']);
-		$section->SetSaison(SnakeTools::GetCurrentSaison());
-		$section->SetMinAge($args['min_age']);
-		$section->SetPriceCotisation($args['price_cotisation']);
-		$section->SetPriceUniform($args['price_uniform']);
-		$section->SetNbMaxMembers($args['max_members']);
+		$section->setName($args['name']);
+		$section->setSaison(SnakeTools::getCurrentSaison());
+		$section->setMaxYear($args['maxYear']);
+		$section->setCotisationPrice($args['cotisationPrice']);
+		$section->setRentUniformPrice($args['rentUniformPrice']);
+		$section->setCleanUniformPrice($args['cleanUniformPrice']);
+		$section->setBuyUniformPrice($args['buyUniformPrice']);
+		$section->setDepositUniformPrice($args['depositUniformPrice']);
+		$section->setNbMaxMembers($args['maxMembers']);
 		
-		if($section->SaveToDatabase())
-			API::SendJSON($section->GetId());
-		else
-			API::SendJSON(false);
+		if ($section->SaveToDatabase()) {
+			API::sendJSON($section->getId());
+		} else {
+			API::sendJSON(false);
+		}
 	});
 
-	$app->Post("/section_edit", function($args) {
-		$section = Section::GetById($args['id_section']);
-		$section->SetName($args['name']);
-		$section->SetMinAge($args['min_age']);
-		$section->SetPriceCotisation($args['price_cotisation']);
-		$section->SetPriceUniform($args['price_uniform']);
-		$section->SetNbMaxMembers($args['max_members']);
+	$app->post('/section_edit', function($args) {
+		$section = Section::GetById($args['idSection']);
+		$section->setName($args['name']);
+		$section->setMaxYear($args['maxYear']);
+		$section->setCotisationPrice($args['cotisationPrice']);
+		$section->setRentUniformPrice($args['rentUniformPrice']);
+		$section->setCleanUniformPrice($args['cleanUniformPrice']);
+		$section->setBuyUniformPrice($args['buyUniformPrice']);
+		$section->setDepositUniformPrice($args['depositUniformPrice']);
+		$section->setNbMaxMembers($args['maxMembers']);
 
-		API::SendJSON($section->SaveToDatabase());
+		API::SendJSON($section->saveToDatabase());
 	});
 
-	$app->Post("/sections_remove", function($args) {
-		API::SendJSON(Section::RemoveFromDatabase($args['id_section']));
+	$app->post('/section_remove', function($args) {
+		API::sendJSON(Section::removeFromDatabase($args['idSection']));
 	});
 }
 ?>

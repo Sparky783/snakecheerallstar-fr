@@ -25,10 +25,10 @@ if($nbSections === 0) {
 
 		if ($i === $nbSections - 1) {
 			// Pour la dernière section
-			$ages = $section->getMinAge() . ' ans et +';
+			$ages = $section->getMaxYear() . ' ans et +';
 		} else {
 			// Pour les autres sections
-			$ages = $section->getMinAge() . ' à ' . ($sections[$i + 1]->getMinAge() - 1) . ' ans';
+			$ages = $section->getMaxYear() . ' à ' . ($sections[$i + 1]->getMaxYear() - 1) . ' ans';
 		}
 
 		$horaires = '';
@@ -57,7 +57,7 @@ if($nbSections === 0) {
 			HTML;
 
 		$htmlPricesBody .= <<<HTML
-			<td class="text-center">{$section->getPriceCotisation()} €</td>
+			<td class="text-center">{$section->getCotisationPrice()} €</td>
 			HTML;
 	}
 }

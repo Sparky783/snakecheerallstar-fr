@@ -51,8 +51,7 @@ class RememberMe
      */
 	public static function removeCookie(string $cookieName): void
 	{
-		if (isset($_COOKIE['']))
-		{
+		if (isset($_COOKIE[''])) {
 			unset($_COOKIE[$cookieName]); 
 			setcookie($cookieName, null, -1, '/'); 
 		}

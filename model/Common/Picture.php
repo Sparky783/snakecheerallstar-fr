@@ -1,105 +1,159 @@
 <?php
 namespace Common;
-use \imagecreatefromstring;
 
-// ===================================================
-//  Utilitaire pour télécharger et modifier une image
-// ===================================================
+use GdImage;
 
+/**
+ * Tools to transform pictures.
+ */
 class Picture
 {
-	// == ATTRIBUTS ==
-	private $path = "";
-	private $name = "";
-	private $ext = ""; // Extension
-	private $source = null; // Contenu du fichier
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var string $_path Path of the picture.
+	 */
+	private string $_path = '';
+	
+	/**
+	 * @var string $_name Name of the file without extension.
+	 */
+	private string $_name = '';
+	
+	/**
+	 * @var string $_ext Extension of the file.
+	 */
+	private string $_ext = '';
+	
+	/**
+	 * @var GdImage|null $_source Content (source) of the picture.
+	 */
+	private ?GdImage $_source = null;
 	
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct()
+	// ==== GETTER ====
+	/**
+	 * Return the content of the picture.
+	 * 
+	 * @return GdImage|false Return False if the content is empty.
+	 */
+	public function getSource(): GdImage|false
 	{
-	}
-	
-	// == PUBLIC METHODS ==
-	public function GetSource()
-	{
-		if($this->source != null)
-			return $this->source;
+		if ($this->_source !== null) {
+			return $this->_source;
+		}
 		
 		return false;
 	}
 	
-	public function GetWidth()
+	/**
+	 * Return the width of the picture.
+	 * 
+	 * @return int|false Return False if the file is not define.
+	 */
+	public function getWidth(): int|false
 	{
-		if($this->source != null)
-			return imagesx($this->source);
+		if ($this->_source !== null) {
+			return imagesx($this->_source);
+		}
 
 		return false;
 	}
 	
-	public function GetHeight()
+	/**
+	 * Return the height of the picture.
+	 * 
+	 * @return int|false Return False if the file is not define.
+	 */
+	public function getHeight(): int|false
 	{
-		if($this->source != null)
-			return imagesy($this->source);
+		if ($this->_source !== null) {
+			return imagesy($this->_source);
+		}
 
 		return false;
 	}
 
-	public function GetFullpath()
+	/**
+	 * Return the full path of the picture.
+	 * 
+	 * @return int|false Return False if the path cannot be build.
+	 */
+	public function getFullpath(): string|false
 	{
-		if($this->path != "" && $this->name != null && $this->ext != null)
-			return $this->path . "/" . $this->name . $this->ext;
+		if ($this->_path !== '' && $this->_name !== null && $this->_ext !== null) {
+			return $this->_path . '/' . $this->_name . $this->_ext;
+		}
 
 		return false;
 	}
 
-	// == AUTRES METHODES ==
-	// Charge une image depuis un fichier
-	public function LoadFromFilePath($path)
+	// ==== SETTER ====
+	/**
+	 * Define if the picture must be interlace or not.
+	 * 
+	 * @param bool $isInterlace
+	 * @return bool Return True if the process succeed, else False.
+	 */
+	public function setInterlace(bool $isInterlace): bool
 	{
-		$this->ReadPath($path);
+		if ($this->_source !== null) {
+			return imageinterlace($this->_source, $isInterlace);
+		}
 
-		switch($this->ext)
-		{
-			case ".bmp":
-				$this->source = imagecreatefrombmp($path);
+		return false;
+	}
+
+	// ==== PUBLIC METHODS ====
+	/**
+	 * Load the picture from a file.
+	 * 
+	 * @param string $path Path of the file to load.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function loadFromFilePath(string $path): bool
+	{
+		$this->readPath($path);
+
+		switch ($this->_ext) {
+			case '.bmp':
+				$this->_source = imagecreatefrombmp($path);
 				break;
 				
-			case ".wbmp":
-				$this->source = imagecreatefromwbmp($path);
+			case '.wbmp':
+				$this->_source = imagecreatefromwbmp($path);
 				break;
 			
-			case ".png":
-				$this->source = imagecreatefrompng($path);
+			case '.png':
+				$this->_source = imagecreatefrompng($path);
 				break;
 				
-			case ".jpg":
-			case ".jpeg":
-				$this->source = imagecreatefromjpeg($path);
+			case '.jpg':
+			case '.jpeg':
+				$this->_source = imagecreatefromjpeg($path);
 				break;
 				
-			case ".gif":
-				$this->source = imagecreatefromgif($path);
+			case '.gif':
+				$this->_source = imagecreatefromgif($path);
 				break;
 			
-			case ".gd":
-				$this->source = imagecreatefromgd($path);
+			case '.gd':
+				$this->_source = imagecreatefromgd($path);
 				break;
 				
-			case ".gd2":
-				$this->source = imagecreatefromgd2($path);
+			case '.gd2':
+				$this->_source = imagecreatefromgd2($path);
 				break;
 				
-			case ".webp":
-				$this->source = imagecreatefromwebp($path);
+			case '.webp':
+				$this->_source = imagecreatefromwebp($path);
 				break;
 				
-			case ".xbm":
-				$this->source = imagecreatefromxbm($path);
+			case '.xbm':
+				$this->_source = imagecreatefromxbm($path);
 				break;
 				
-			case ".xpm":
-				$this->source = imagecreatefromxpm($path);
+			case '.xpm':
+				$this->_source = imagecreatefromxpm($path);
 				break;
 
 			default:
@@ -109,186 +163,226 @@ class Picture
 		return true;
 	}
 	
-	public function LoadFromFileContent($content)
+	/**
+	 * Load the picture from a content string.
+	 * 
+	 * @param string $content Raw data of the file in string.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function loadFromFileContent(string $content): bool
 	{
 		$source = imagecreatefromstring($content);
 
-		if($source === false)
+		if ($source === false) {
 			return false;
+		}
 		
-		$this->source = $source;
+		$this->_source = $source;
 		return true;
 	}
 
-	public function SetInterlace($bool)
+	/**
+	 * Save the picture into a file.
+	 * 
+	 * @param string $ouputPath Path where the file must be saved.
+	 * @param int $quality Quality of the picture (compression) if the file must be a JPG (from 0 to 100).
+	 * @return bool Return True if the save succeed, else False.
+	 */
+	public function savePicture(string $ouputPath, int $quality = 100): bool
 	{
-		if($this->source != null)
-			return (bool)imageinterlace($this->source, (int)$bool);
+		$this->readPath($ouputPath);
+		
+		if ($this->_source === null) {
+			return false;
+		}
+
+		switch ($this->_ext) {
+			case ".bmp":
+				return imagebmp($this->_source, $ouputPath);
+				
+			case ".wbmp":
+				return imagewbmp($this->_source, $ouputPath);
+			
+			case ".png":
+				return imagepng($this->_source, $ouputPath, $quality);
+				
+			case ".jpg":
+			case ".jpeg":
+				return imagejpeg($this->_source, $ouputPath, $quality);
+				
+			case ".gif":
+				return imagegif($this->_source, $ouputPath);
+				
+			case ".gd":
+				return imagegd($this->_source, $ouputPath);
+				
+			case ".gd2":
+				return imagegd2($this->_source, $ouputPath);
+				
+			case ".webp":
+				return imagewebp($this->_source, $ouputPath);
+				
+			case ".xbm":
+				return imagexbm($this->_source, $ouputPath);
+
+			default:
+				return false;
+		}
+	}
+	
+	/**
+	 * Resize the picture proportionnaly to its width.
+	 * 
+	 * @param int $newWidth New width for the picture.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function resizeWidth(int $newWidth): bool
+	{
+		if ($this->_source === null) {
+			return false;
+		}
+
+		$currentWidth = imagesx($this->_source);
+		$currentHeight = imagesy($this->_source);
+		
+		$newHeight = $currentHeight * $newWidth / $currentWidth;
+		
+		return $this->resize($newWidth, (int)$newHeight);
+	}
+	
+	/**
+	 * Resize the picture proportionnaly to its height.
+	 * 
+	 * @param int $newHeight New height for the picture.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function resizeHeight(int $newHeight): bool
+	{
+		if ($this->_source === null) {
+			return false;
+		}
+
+		$currentWidth = imagesx($this->_source);
+		$currentHeight = imagesy($this->_source);
+		
+		$newWidth = $currentWidth * $newHeight / $currentHeight;
+		
+		return $this->resize((int)$newWidth, $newHeight);
+
+	}
+	
+	/**
+	 * Resize the picture.
+	 * 
+	 * @param int $newWidth New height for the picture.
+	 * @param int $newHeight New height for the picture.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function resize(int $newWidth, int $newHeight): bool
+	{
+		if ($this->_source === null) {
+			return false;
+		}
+
+		$currentWidth = imagesx($this->_source);
+		$currentHeight = imagesy($this->_source);
+		
+		$image_finale = imagecreatetruecolor($newWidth, $newHeight);
+		imagealphablending($image_finale, false);
+		imagesavealpha($image_finale, true);
+		
+		$transparent = imagecolorallocatealpha($image_finale, 255, 255, 255, 127);
+		imagefilledrectangle($image_finale, 0, 0, $newWidth, $newHeight, $transparent);
+		
+		if (imagecopyresampled($image_finale, $this->_source, 0, 0, 0, 0, $newWidth, $newHeight, $currentWidth, $currentHeight)) {
+			$this->_source = $image_finale;
+			return true;
+		}
 
 		return false;
 	}
-	
-	// Sauvegarde la photo dans un fichier.
-	public function SavePicture($path, $quality = 100)
+
+	/**
+	 * Add an image on the picture.
+	 * The image mus be smaller than the picture.
+	 * 
+	 * @param GdImage $newImageSource Image to add.
+	 * @param int|null $top Top position of the image. If Null is set, the image is place on the top of the picture.
+	 * @param int|null $right Right position of the image. If Null is set, the image width is concerved.
+	 * @param int|null $bottom Bottom position of the image. If Null is set, the image height is concerved.
+	 * @param int|null $left Left position of the image. If Null is set, the image is place on the left of the picture.
+	 * @return bool Return True if the load succeed, else False.
+	 */
+	public function insertImage(GdImage $newImageSource, ?int $top = null, ?int $right = null, ?int $bottom = null, ?int $left = null): bool
 	{
-		$this->ReadPath($path);
+		if ($this->_source === null) {
+			return false;
+		}
+
+		$newImage = $newImageSource;
+		$largeur_source = imagesx($this->_source);
+		$hauteur_source = imagesy($this->_source);
+		$largeur_image = imagesx($newImage);
+		$hauteur_image = imagesy($newImage);
 		
-		if($this->source != null)
-		{
-			switch($this->ext)
-			{
-				case ".bmp":
-					return imagebmp($this->source, $path);
-					
-				case ".wbmp":
-					return imagewbmp($this->source, $path);
-				
-				case ".png":
-					return imagepng($this->source, $path, $quality);
-					
-				case ".jpg":
-				case ".jpeg":
-					return imagejpeg($this->source, $path, $quality);
-					
-				case ".gif":
-					return imagegif($this->source, $path);
-					
-				case ".gd":
-					return imagegd($this->source, $path);
-					
-				case ".gd2":
-					return imagegd2($this->source, $path);
-					
-				case ".webp":
-					return imagewebp($this->source, $path);
-					
-				case ".xbm":
-					return imagexbm($this->source, $path);
+		if ($largeur_image > $largeur_source || $hauteur_image > $hauteur_source) {
+			return false;
+		}
+
+		// Placement de la nouvelle image par rapport à l'ancienne.
+		$pos_x = 0;
+		$pos_y = 0;
+		
+		if ($top !== null) {
+			$pos_y = $top;
+		} elseif ($bottom !== null) {
+			$pos_y = $hauteur_source - $hauteur_image - $bottom;
+		}
+		
+		if ($left !== null) {
+			$pos_x = $left;
+		} elseif ($right !== null) {
+			$pos_x = $largeur_source - $largeur_image - $right;
+		}
+
+		// On met le logo (source) dans l'image de destination (la photo)
+		return imagecopy($this->_source, $newImage, $pos_x, $pos_y, 0, 0, $largeur_image, $hauteur_image);
+	}
+
+	/**
+	 * Save a copy of the picture
+	 * 
+	 * @param string $ouputPath Path where the file must be saved.
+	 * @param int|null $maxSize Define the max size of the output picture.
+	 * @param int $quality Quality of the picture (compression) if the file must be a JPG (from 0 to 100).
+	 * @return bool Return True if the save succeed, else False.
+	 */
+	public function saveCopy(string $outputPath, ?int $maxSize = null, int $quality = 100): bool
+	{
+		$copy = clone $this;
+		
+		if ($maxSize !== null) {
+			if ($copy->getWidth() > $copy->getHeight()) {
+				$copy->resizeWidth($maxSize);
+			} else {
+				$copy->resizeHeight($maxSize);
 			}
 		}
 
-		return false;
+		return $copy->savePicture($outputPath, $quality);
 	}
 	
-	// Redimentionne l'image de manière proportionnelle.
-	// La largeur est définie.
-	public function ResizeWidth($newWidth)
+	// ==== PRIVATE METHODS ====
+	/**
+	 * Read the path of a file to extract informations.
+	 * 
+	 * @param string $fullpath Path to analyse.
+	 * @return void
+	 */
+	private function readPath(string $fullpath): void
 	{
-		if($this->source != null)
-		{
-			$currentWidth = imagesx($this->source);
-			$currentHeight = imagesy($this->source);
-			
-			$newHeight = $currentHeight * $newWidth / $currentWidth;
-			
-			return $this->Resize($newWidth, $newHeight);
-		}
-		
-		return false;
-	}
-	
-	// Redimentionne l'image de manière proportionnelle.
-	// La hauteur est définie.
-	public function ResizeHeight($newHeight)
-	{
-		if($this->source != null)
-		{
-			$currentWidth = imagesx($this->source);
-			$currentHeight = imagesy($this->source);
-			
-			$newWidth = $currentWidth * $newHeight / $currentHeight;
-			
-			return $this->Resize($newWidth, $newHeight);
-		}
-
-		return false;
-	}
-	
-	// Redimentionne l'image à la taille voulue.
-	public function Resize($newWidth, $newHeight)
-	{
-		if($this->source != null)
-		{
-			$currentWidth = imagesx($this->source);
-			$currentHeight = imagesy($this->source);
-			
-			$image_finale = imagecreatetruecolor($newWidth, $newHeight);
-			imagealphablending($image_finale, false);
-			imagesavealpha($image_finale, true);
-			
-			$transparent = imagecolorallocatealpha($image_finale, 255, 255, 255, 127);
-			imagefilledrectangle($image_finale, 0, 0, $newWidth, $newHeight, $transparent);
-			
-			if(imagecopyresampled($image_finale, $this->source, 0, 0, 0, 0, $newWidth, $newHeight, $currentWidth, $currentHeight))
-			{
-				$this->source = $image_finale;
-				
-				return true;
-			}
-		}
-
-		return false;
-	}
-	
-	// Ajoute le image à la photo. L'image doit être plus petite que la photo.
-	public function InsertImage($new_image_source, $top = null, $right = null, $bottom = null, $left = null)
-	{
-		if($this->source != null)
-		{
-			$new_image = $new_image_source;
-			$largeur_source = imagesx($this->source);
-			$hauteur_source = imagesy($this->source);
-			$largeur_image = imagesx($new_image);
-			$hauteur_image = imagesy($new_image);
-			
-			if($largeur_image <= $largeur_source and $hauteur_image <= $hauteur_source)
-			{
-				// Placement de la nouvelle image par rapport à l'ancienne.
-				$pos_x = 0;
-				$pos_y = 0;
-				
-				if($top != null)
-					$pos_y = $top;
-				else if($bottom != null)
-					$pos_y = $hauteur_source - $hauteur_image - $bottom;
-				
-				if($left != null)
-					$pos_x = $left;
-				else if($right != null)
-					$pos_x = $largeur_source - $largeur_image - $right;
-
-				// On met le logo (source) dans l'image de destination (la photo)
-				if(imagecopy($this->source, $new_image, $pos_x, $pos_y, 0, 0, $largeur_image, $hauteur_image))
-					return true;
-			}
-		}
-		
-		return false;
-	}
-
-	// Savegarde une copy de l'image
-	public function SaveCopy($path, $maxSize = null, $quality = 100)
-	{
-		$obj = $this;
-		$copy = clone $obj;
-		
-		if($maxSize != null)
-		{
-			if($copy->GetWidth() > $copy->GetHeight())
-				$copy->ResizeWidth($maxSize);
-			else
-				$copy->ResizeHeight($maxSize);
-		}
-
-		return $copy->SavePicture($path, $quality);
-	}
-	
-	// == PRIVATE METHODS ==
-	// Lit les informations depuis le chemin du fichier
-	private function ReadPath($fullpath)
-	{
-		$this->name = strrchr($fullpath, '/');
-		$this->path = str_replace("/" . $this->name, "", $fullpath);
-		$this->ext = mb_strtolower(strrchr($this->name, '.'));
+		$this->_name = strrchr($fullpath, '/');
+		$this->_path = str_replace("/" . $this->_name, "", $fullpath);
+		$this->_ext = mb_strtolower(strrchr($this->_name, '.'));
 	}
 }

@@ -7,12 +7,19 @@ use System\GetMethodManager;
  */
 class Router
 {
-    // == ATTRIBUTES ==
+    // ==== ATTRIBUTES ====
+	/**
+	 * @var bool $_adminMode Say if the rooter is in admin mode.
+	 */
 	private bool $_adminMode;
-	private string $_defaultPage = ''; // Display page if the request page is null.
+	
+	/**
+	 * @var string $_defaultPage Default page.
+	 */
+	private string $_defaultPage = '';
 
 
-    // == CONSTRUCTORS ==
+    // ==== CONSTRUCTOR ====
 	/**
 	 * Create routing system.
 	 * 
@@ -23,16 +30,7 @@ class Router
 		$this->_adminMode = $isAdmin;
 	}
 
-	/**
-	 * Set the default page dislayed if the resquest page is empty.
-	 * 
-	 * @param string $page Default page that must be display if no one else are selected.
-	 */
-	public function setDefaultPage(string $page): void
-	{
-		$this->_defaultPage = $page;
-	}
-
+	// ==== GETTERS ====
 	/**
 	 * Get the selected page. this information is present into GET method.
 	 * 
@@ -42,8 +40,9 @@ class Router
 	{
 		$gmm = new GetMethodManager();
 
-		if ($gmm->getValue('page') !== false)
+		if ($gmm->getValue('page') !== false) {
 			return $gmm->getValue('page');
+		}
 
 		return $this->_defaultPage; // default page
 	}
@@ -57,15 +56,43 @@ class Router
 	 */
 	public function getUrl(string $page, GetMethodManager $gmm = null): string
 	{
-		if ($gmm === null)
+		if ($gmm === null) {
 			$gmm = new GetMethodManager();
+		}
 
-		$gmm->setValue("page", $page);
+		$gmm->setValue('page', $page);
 
-		if ($this->_adminMode)
-			return URL . "/admin.php" . $gmm->getString();
-		else
-			return URL . "/index.php" . $gmm->getString();
+		if ($this->_adminMode) {
+			return URL . '/admin.php' . $gmm->getString();
+		} else {
+			return URL . '/index.php' . $gmm->getString();
+		}
+	}
+
+	/**
+	 * Get the API URL with the wanted request.
+	 * 
+	 * @param string $request Request to send to the API.
+	 * @return string URL to the API.
+	 */
+	public function getApi(string $request = ''): string
+	{
+		if ($this->_adminMode) {
+			return URL . '/admin-api.php?request=' . $request;
+		}
+
+		return URL . '/api.php?request=' . $request;
+	}
+	
+	// ==== SETTERS ====
+	/**
+	 * Set the default page dislayed if the resquest page is empty.
+	 * 
+	 * @param string $page Default page that must be display if no one else are selected.
+	 */
+	public function setDefaultPage(string $page): void
+	{
+		$this->_defaultPage = $page;
 	}
 
 	/**
@@ -79,25 +106,12 @@ class Router
 		$gmm = new GetMethodManager();
 
 		if (count($options) > 0) {
-			foreach ($options as $key => $value)
+			foreach ($options as $key => $value) {
 				$gmm->setValue($key, $value);
+			}
 		}
 
 		echo $this->getUrl($page, $gmm);
-	}
-
-	/**
-	 * Get the API URL with the wanted request.
-	 * 
-	 * @param string $request Request to send to the API.
-	 * @return string URL to the API.
-	 */
-	public function getApi(string $request = ''): string
-	{
-		if ($this->_adminMode)
-			return URL . '/admin-api.php?request=' . $request;
-
-		return URL . '/api.php?request=' . $request;
 	}
 
 	/**

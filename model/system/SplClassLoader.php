@@ -6,8 +6,13 @@ namespace System;
  */
 class SplClassLoader
 {
+    // ==== ATTRIBUTS ====
+	/**
+	 * @var string $_classFolder Folder where classes are contents.
+	 */
     private string $_classFolder;
 
+	// ==== CONSTRUCTOR ====
     /**
      * Creates a new <tt>SplClassLoader</tt> that loads classes.
      * 
@@ -18,6 +23,7 @@ class SplClassLoader
         $this->_classFolder = $folder . '/';
     }
 
+	// ==== OTHER METHODS ====
     /**
      * Installs this class loader on the SPL autoload stack.
      */

@@ -7,17 +7,13 @@ namespace System;
  */
 class Sitemap
 {
-	public $pages = []; // List of page of reference.
-
+	// ==== ATTRIBUTS ====
 	/**
-	 * Make a new instance of <tt>Sitemap</tt>.
+	 * @var array $pages List of page of reference.
 	 */
-	public function __construct() {}
+	public array $pages = [];
 
-
-	// =========================
-	// ==== PUBLIC METHODS =====
-	// =========================
+	// ==== OTHER METHODS ====
 	/**
 	 * Add a page to the sitemap.
 	 * 
@@ -29,7 +25,7 @@ class Sitemap
 	 */
 	public function addPage(string $loc, string $changeFreq = null, string $lastmod = null, string $priority = null): bool
 	{
-		if(isset($loc)) {
+		if (isset($loc)) {
 			$this->pages[] = [
 				'loc' => $loc,
 				'lastmod' => $lastmod,
@@ -56,15 +52,15 @@ class Sitemap
 			$xml .= '<url>';
 			$xml .= '<loc>' .  $page['loc'] . '</loc>';
 
-			if(isset($page['lastmod']) && $page['lastmod'] != null) {
+			if (isset($page['lastmod']) && $page['lastmod'] !== null) {
 				$xml .= '<lastmod>' .  $page['lastmod'] . '</lastmod>';
 			}
 
-			if(isset($page['changefreq']) && $page['changefreq'] != null) {
+			if (isset($page['changefreq']) && $page['changefreq'] !== null) {
 				$xml .= '<changefreq>' .  $page['changefreq'] . '</changefreq>';
 			}
 
-			if(isset($page['priority']) && $page['priority'] != null) {
+			if(isset($page['priority']) && $page['priority'] !== null) {
 				$xml .= '<priority>' .  $page['priority'] . '</priority>';
 			}
 

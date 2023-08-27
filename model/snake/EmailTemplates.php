@@ -4,6 +4,7 @@ namespace Snake;
 use System\ToolBox;
 use Snake\Payment;
 use Snake\Tuteur;
+use Snake\EReductionType;
 
 /**
  * Templates des E-mail pour la communication du club.
@@ -192,8 +193,8 @@ class EmailTemplates
 										$html .= "<tr>
 											<td width='100px' bgcolor='#fff' align='center'>1</td>
 											<td width='400px' bgcolor='#fff' style='padding-top:5px; padding-bottom:5px;'>Inscription annnuelle pour la saison " . $adherent->getSection()->getSaison() . " (Section " . $adherent->getSection()->getName() . ") - " . $adherent->getFirstname() . " " . $adherent->getLastname() . "</td>
-											<td width='100px' bgcolor='#fff' align='right'>" . $adherent->getSection()->getPriceCotisation() . " €</td>
-											<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>" . $adherent->getSection()->getPriceCotisation() . " €</td>
+											<td width='100px' bgcolor='#fff' align='right'>" . $adherent->getSection()->getCotisationPrice() . " €</td>
+											<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>" . $adherent->getSection()->getCotisationPrice() . " €</td>
 										</tr>";
 									}
 									
@@ -215,14 +216,14 @@ class EmailTemplates
 											foreach ($payment->getReductions() as $reduction) {
 												$has_reduction = true;
 
-												if ($reduction->getType() === Reduction::$TYPE['Percentage']) {
+												if ($reduction->getType() === EReductionType::Percentage) {
 													$html .= "<tr>
 														<td width='600px' bgcolor='#fff' align='right'>" . $reduction->getSujet() . "</td>
 														<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>- " . $reduction->getValue() . " %</td>
 													</tr>";
 												}
 												
-												if ($reduction->getType() === Reduction::$TYPE['Amount']) {
+												if ($reduction->getType() === EReductionType::Amount) {
 													$html .= "<tr>
 														<td width='600px' bgcolor='#fff' align='right'>" . $reduction->getSujet() . "</td>
 														<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>- " . $reduction->getValue() . " €</td>
@@ -245,7 +246,7 @@ class EmailTemplates
 
 						$has_uniforms = false;
 						foreach ($adherents as $adherent) {
-							if (!$adherent->hasUniform()) {
+							if ($adherent->getUniformOption() !== EUniformOption::None) {
 								$has_uniforms = true;
 								break;
 							}
@@ -265,13 +266,24 @@ class EmailTemplates
 									<tbody>";
 
 										foreach ($adherents as $adherent) {
-											if (!$adherent->hasUniform()) {
-												$html .= "<tr>
-													<td width='100px' bgcolor='#fff' align='center'>1</td>
-													<td width='400px' bgcolor='#fff' style='padding-top:5px; padding-bottom:5px;'>Uniforme de cheerleading (Section " . $adherent->getSection()->getName() . ") - " . $adherent->getFirstname() . " " . $adherent->getLastname() . "</td>
-													<td width='100px' bgcolor='#fff' align='right'>" . $adherent->getSection()->getPriceUniform() . " €</td>
-													<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>" . $adherent->getSection()->getPriceUniform() . " €</td>
-												</tr>";
+											switch ($adherent->getUniformOption()) {
+												case EUniformOption::Rent:
+													$html .= "<tr>
+														<td width='100px' bgcolor='#fff' align='center'>1</td>
+														<td width='400px' bgcolor='#fff' style='padding-top:5px; padding-bottom:5px;'>Location de l'uniforme de cheerleading (Section " . $adherent->getSection()->getName() . ") - " . $adherent->getFirstname() . " " . $adherent->getLastname() . "</td>
+														<td width='100px' bgcolor='#fff' align='right'>" . $adherent->getSection()->getRentUniformPrice() . " €</td>
+														<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>" . $adherent->getSection()->getRentUniformPrice() . " €</td>
+													</tr>";
+													break;
+											
+												case EUniformOption::Buy:
+													$html .= "<tr>
+														<td width='100px' bgcolor='#fff' align='center'>1</td>
+														<td width='400px' bgcolor='#fff' style='padding-top:5px; padding-bottom:5px;'>Uniforme de cheerleading (Section " . $adherent->getSection()->getName() . ") - " . $adherent->getFirstname() . " " . $adherent->getLastname() . "</td>
+														<td width='100px' bgcolor='#fff' align='right'>" . $adherent->getSection()->getBuyUniformPrice() . " €</td>
+														<td width='100px' bgcolor='#fff' align='right' style='padding:5px'>" . $adherent->getSection()->getBuyUniformPrice() . " €</td>
+													</tr>";
+													break;
 											}
 										}
 										

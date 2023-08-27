@@ -10,24 +10,32 @@ use System\Erreur;
  */
 class Database
 {
-	private PDO $_bdd;
-	private $_error;
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var PDO|null $_bdd Object to manage database.
+	 */
+	private ?PDO $_bdd = null;
 	
+	/**
+	 * @var array $_error Last error.
+	 */
+	private array $_error;
 
-	// == CONSTRUCTOR ==
+	// ==== CONSTRUCTOR ====
 	public function __construct()
 	{
-		try
-		{
-			$this->_bdd = new PDO("mysql:host=" . DB_HOST . "; dbname=" . DB_NAME, DB_USER, DB_PASSWORD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '" . DB_CHARSET . "'"));
-		}
-		catch(Exception $e)
-		{
+		try {
+			$this->_bdd = new PDO(
+				'mysql:host=' . DB_HOST . '; dbname=' . DB_NAME,
+				DB_USER,
+				DB_PASSWORD,
+				[PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '" . DB_CHARSET . "'"]
+			);
+		} catch(Exception $e) {
 			var_dump($e->getMessage());
 			new Erreur($e);
 		}
 	}
-
 	
 	// == GETTERS ==
 	/**
@@ -56,30 +64,28 @@ class Database
 	 * 
 	 * @param string Query to send.
 	 * @param array List of data to send into the query.
-	 * @return PDOStatement|bool Result of the query, or False if an error occured.
+	 * @return PDOStatement|false Result of the query, or False if an error occured.
 	 */
-	public function query(string $requete, array $variables = array()): PDOStatement|bool
+	public function query(string $requete, array $variables = []): PDOStatement|false
 	{
-		if($this->_bdd !== null && !empty($requete))
-		{
+		if($this->_bdd !== null && !empty($requete)) {
 			// Prepare variables
-			foreach($variables as &$variable)
-			{
-				if(is_bool($variable))
-					$variable = intval($variable);
+			foreach ($variables as &$variable) {
+				if (is_bool($variable)) {
+					$variable = (int)$variable;
+				}
 			}
 
 			try {
 				$req = $this->_bdd->prepare($requete);
 				$req->execute($variables);
 
-				if($req->errorCode() === '00000')
+				if ($req->errorCode() === '00000') {
 					return $req;
-				else
+				} else {
 					$this->_error = $req->errorInfo();
-			}
-			catch(Exception $e)
-			{
+				}
+			} catch(Exception $e) {
 				var_dump($e->getMessage());
 				new Erreur($e);
 			}
@@ -93,32 +99,34 @@ class Database
 	 * 
 	 * @param string $tableName Table into insert data.
 	 * @param array $variables Associative array with columns (keys) and data (values).
-	 * @return int|bool Return the created ID if the process succeed, else return False.
+	 * @return int|false Return the created ID if the process succeed, else return False.
 	 */
-	public function insert(string $tableName, array $variables): int|bool
+	public function insert(string $tableName, array $variables): int|false
 	{
-		$requete = "INSERT INTO `" . $tableName . "` (";
+		$requete = "INSERT INTO `$tableName` (";
 
-		foreach ($variables as $key => $value)
-			$requete .= "`" . $key . "`,";
+		foreach ($variables as $key => $value) {
+			$requete .= "`$key`,";
+		}
 
 		$requete = substr($requete, 0, strlen($requete) - 1);
-		$requete .= ") VALUES (";
+		$requete .= ') VALUES (';
 
-		foreach ($variables as $key => $value)
-			$requete .= ":" . $key . ",";
+		foreach ($variables as $key => $value) {
+			$requete .= ":$key,";
+		}
 
 		$requete = substr($requete , 0, strlen($requete) - 1);
-		$requete .= ");";
+		$requete .= ');';
 
 		$result = $this->query($requete, $variables);
 
-		if($result !== false)
-		{
-			if($result->errorCode() === '00000')
+		if ($result !== false) {
+			if($result->errorCode() === '00000') {
 				return $this->_bdd->lastInsertId();
-			else
+			} else {
 				$this->_error = $result->errorInfo();
+			}
 		}
 
 		return false;
@@ -133,26 +141,27 @@ class Database
 	 * @param array $variables List of values to update. ID cannot be modify.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	public function Update(string $tableName, string $idColumnName, int $idValue, array $variables): bool
+	public function update(string $tableName, string $idColumnName, int $idValue, array $variables): bool
 	{
-		$requete = "UPDATE `" . $tableName . "` SET";
+		$requete = "UPDATE `$tableName` SET";
 
-		foreach ($variables as $key => $value)
-			$requete .= "`" . $key . "`=:" . $key . ",";
+		foreach ($variables as $key => $value) {
+			$requete .= "`$key`=:$key,";
+		}
 
 		$requete = substr($requete , 0, strlen($requete) - 1);
-		$requete .= " WHERE `" . $idColumnName . "`=:" . $idColumnName . ";";
+		$requete .= " WHERE `$idColumnName`=:$idColumnName;";
 
 		$variables[$idColumnName] = $idValue;
 		
 		$result = $this->query($requete, $variables);
 
-		if($result !== false)
-		{
-			if($result->errorCode() === '00000')
+		if ($result !== false) {
+			if($result->errorCode() === '00000') {
 				return true;
-			else
+			} else {
 				$this->_error = $result->errorInfo();
+			}
 		}
 
 		return false;
@@ -168,17 +177,17 @@ class Database
 	 */
 	public function delete(string $tableName, string $idColumnName, int $idValue): bool
 	{
-		$requete = "DELETE FROM `" . $tableName . "` WHERE `" . $idColumnName . "`=:value;";
-		$variables = array('value' => $idValue);
+		$requete = "DELETE FROM `$tableName` WHERE `$idColumnName`=:value;";
+		$variables = ['value' => $idValue];
 
 		$result = $this->query($requete, $variables);
 
-		if($result !== false)
-		{
-			if($result->errorCode() === '00000')
+		if ($result !== false) {
+			if($result->errorCode() === '00000') {
 				return true;
-			else
+			} else {
 				$this->_error = $result->errorInfo();
+			}
 		}
 
 		return false;
@@ -193,12 +202,13 @@ class Database
 	 */
 	public function saveDatabase(string $filePath, array $excludedTables = array()): bool|int
 	{
-		$result = $this->_bdd->query("SHOW TABLES");
-		$tables = array();
+		$result = $this->_bdd->query('SHOW TABLES');
+		$tables = [];
 
-		while($row = $result->fetch()) {
-			if(!in_array($row[0], $excludedTables))
+		while ($row = $result->fetch()) {
+			if (!in_array($row[0], $excludedTables)) {
 				$tables[] = $row[0];
+			}
 		}
 		
 		$result->closeCursor();
@@ -213,39 +223,39 @@ class Database
 		$code .= "START TRANSACTION;";
 		$code .= "\n\n";
 
-		foreach($tables as $table)
-		{			
+		foreach ($tables as $table) {			
 			// We drop the current table. To be sure.
-			$code .= "DROP TABLE IF EXISTS `" . $table . "`;\n";
+			$code .= "DROP TABLE IF EXISTS `$table`;\n";
 
 			// We generate table structure.
-			$result = $this->_bdd->query("SHOW CREATE TABLE " . $table);
+			$result = $this->_bdd->query("SHOW CREATE TABLE $table");
 			$retour = $result->fetch(PDO::FETCH_ASSOC);
-			$code .= $retour['Create Table'].";\n\n";
+			$code .= "{$retour['Create Table']};\n\n";
 			$result->closeCursor();
 			
 			// We write all data contains into the table.
-			$result = $this->_bdd->query("SELECT * FROM " . $table);
-			while($row = $result->fetch(PDO::FETCH_ASSOC))
-			{				
-				$code .= "INSERT INTO `" . $table . "` VALUES(";
+			$result = $this->_bdd->query("SELECT * FROM $table");
+
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {				
+				$code .= "INSERT INTO `$table` VALUES(";
 
 				// And for each row, we take all columns.
-				foreach($row as $fieldValue)
-				{
+				foreach ($row as $fieldValue) {
 					// On purifie la valeur du champ
 					$fieldValue = addslashes($fieldValue);
 					$fieldValue = preg_replace("/\r\n/", "\\r\\n", $fieldValue);
 
-					if(is_null($fieldValue))
+					if (is_null($fieldValue)) {
 						$code .= 'NULL';
-					else
-						$code .= '"'.$fieldValue.'", ';
+					} else {
+						$code .= '"' . $fieldValue . '", ';
+					}
 				}
 
 				// We remove the last ',' at the and of the line.
 				$code = mb_substr($code, 0, -2) . ");\n";
 			}
+
 			$result->closeCursor();
 			$code .= "\n";
 		}

@@ -10,14 +10,12 @@ $errorHtml = "";
 
 $session = Session::getInstance();
 
-if($session->admin_isConnected)
-{
-	if(isset($_GET['logout']) && $_GET['logout'] == "true")
-	{
+if ($session->admin_isConnected) {
+	if (isset($_GET['logout']) && $_GET['logout'] === "true") {
 		$session->admin_isConnected = false;
 
 		// Supprimer le token de la BDD s'il existe.
-		if($session->user_idToken > -1) {
+		if($session->admin_idToken > -1) {
 			AdminToken::removeFromDatabase($session->admin_idToken);
 
 			// On supprime le cookie de connexion
@@ -25,19 +23,14 @@ if($session->admin_isConnected)
 		}
 
 		$session->destroy();
-	}
-	else
-	{
+	} else {
 		WebSite::redirect("home", true);
 	}
-}
-else
-{
+} else {
 	// Vérifie si l'option Remember Me est active
 	$cookie = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : false;
 
-	if ($cookie)
-	{
+	if ($cookie) {
 		list ($idToken, $tokenKey, $mac) = explode('-', $cookie);
 		
 		// Vérification de la correspondant avec le mac.
@@ -46,36 +39,31 @@ else
 		}
 		
 		$token = AdminToken::getById($idToken);
-			
-		if($token != null) // Remember Me option trouvé
-		{
-			if (hash_equals($token->getValue(), $tokenKey))
-			{
+
+		// Remember Me option trouvé
+		if ($token !== false) {
+			if (hash_equals($token->getValue(), $tokenKey)) {
 				$admin = Admin::getById($token->getIdAdmin());
 				saveAdminInSession($admin, $token->getId());
-				WebSite::redirect("home", true);
+				WebSite::redirect('home', true);
 			}
 		}
     }
 
 	// Sinon on tente de connecter la personne.
-	if(isset($_POST['email']) && isset($_POST['password']))
-	{
+	if (isset($_POST['email']) && isset($_POST['password'])) {
 		$email = strip_tags($_POST['email']);
 		$password = strip_tags($_POST['password']);
 		
-		if($email != "" && $password != "")
-		{
+		if ($email !== '' && $password !== '') {
 			$password = sha1(sha1(AUTH_SALT) . sha1($password));
-			$admin = Admin::Login($email, $password);
+			$admin = Admin::login($email, $password);
 			
-			if($admin != null) // Connexion réussi
-			{
+			if ($admin !== false) { // Connexion réussi
 				$idToken = -1;
 
 				// Ajoute le cookie si souhaité
-				if(isset($_POST[$cookieName]) && $_POST[$cookieName] == "on")
-				{
+				if (isset($_POST[$cookieName]) && $_POST[$cookieName] === "on") {
 					$tokenKey = AdminToken::generateRandomToken();
 
 					$token = new AdminToken();
@@ -89,15 +77,11 @@ else
 				}
 
 				saveAdminInSession($admin, $idToken);
-				WebSite::redirect("home", true);
-			}
-			else  // Connexion échoué
-			{
+				WebSite::redirect('login', true);
+			} else {  // Connexion échoué
 				$errorHtml = "L'E-mail ou le mot de passe est incorrect.";
 			}
-		}
-		else
-		{
+		} else {
 			$errorHtml = "L'un des champs est vide.";
 		}
 	}

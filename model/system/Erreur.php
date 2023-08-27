@@ -6,10 +6,10 @@ namespace System;
  */
 class Erreur
 {
-	// == ATTRIBUTS ==
+	// ==== ATTRIBUTS ====
 	private string $error;
 
-	// == CONSTRUCTOR ==
+	// ==== CONSTRUCTOR ====
 	/**
 	 * Create a new error instance.
 	 */
@@ -20,7 +20,7 @@ class Erreur
 		}
 	}
 	
-	// == GETTERS ==
+	// ==== GETTERS ====
 	/**
 	 * Get the error.
 	 * 
@@ -31,7 +31,7 @@ class Erreur
 		return $this->error;
 	}
 	
-	// == SETTERS ==
+	// ==== SETTERS ====
 	/**
 	 * Define the error.
 	 * 

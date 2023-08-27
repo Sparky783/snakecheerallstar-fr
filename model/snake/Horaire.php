@@ -18,12 +18,12 @@ class Horaire
     /**
      * @var DateTime $_startTime Heure de début de l'entrainement.
      */
-	private DateTime $_startTime = null;
+	private DateTime $_startTime;
     
     /**
      * @var DateTime $_endTime Heure de fin de l'entrainement.
      */
-	private DateTime $_endTime = null;
+	private DateTime $_endTime;
     
     /**
      * @var string $_place Lieux de l'entrainement.

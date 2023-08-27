@@ -4,27 +4,28 @@ use System\ToolBox;
 use System\Options;
 
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
-	WebSite::Redirect("login", true);
+if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
+	WebSite::redirect('login', true);
+}
 // =========================
 
-if(!isset($session->websiteOptions))
-{
+unset($session->websiteOptions);
+
+if (!isset($session->websiteOptions)) {
 	$options = new Options();
-	$options->LoadFromDatabase();
+	$options->loadFromDatabase();
 	$session->websiteOptions = serialize($options);
-}
-else
-{
+} else {
 	$options = unserialize($session->websiteOptions);
 }
 
 // Liste des options à afficher
-$cbOpenInscriptionValue = "";
-if($options->IS_OPEN_INSCRIPTION)
-	$cbOpenInscriptionValue = "checked";
+$cbOpenInscriptionValue = '';
 
-$tbMinDateIscriptionValue = $options->INSCRIPTION_MIN_DATE->format("Y-m-d");
+if($options->IS_OPEN_INSCRIPTION) {
+	$cbOpenInscriptionValue = 'checked';
+}
 
-$tbMaxDateInscriptionValue = $options->INSCRIPTION_MAX_DATE->format("Y-m-d");
+$tbMinDateIscriptionValue = $options->INSCRIPTION_MIN_DATE->format('Y-m-d');
+$tbMaxDateInscriptionValue = $options->INSCRIPTION_MAX_DATE->format('Y-m-d');
 ?>

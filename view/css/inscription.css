@@ -11,34 +11,38 @@
 	text-align: center;
 }
 
+/* ==== Steps ==== */
 #steps {
 	width: 100%;
 	margin-top: 70px;
-	margin-bottom: 70px;
+	margin-bottom: 35px;
 }
 
-#steps .step-line {
+#steps .steps-line {
 	position: absolute;
-	display: block;
-	padding: 0 40px;
-	top: 50%;
+	top: 0;
 	left: 0;
+	display: flex;
 	width: 100%;
-	margin-top: -2px;
+    height: 50%;
+	padding: 0 90px;
 }
 
-#steps .step-line:after {
-	content: '';
+#steps .steps-line span {
 	display: block;
-	border: solid 2px #bbbbbb;
+	width: 100%;
+	border-bottom: solid 3px #bbbbbb;
 }
 
-#steps .step {
-	float: left;
+#steps .steps-blocks {
+	display: flex;
+}
+
+#steps .steps-blocks .step {
 	width: 20%;
 }
 
-#steps .step span {
+#steps .steps-blocks .step span {
 	display: block;
 	background-color: white;
 	width: 150px;
@@ -49,7 +53,11 @@
 	text-align: center;
 }
 
-#steps .step span.active {
+#steps .steps-blocks .step span:hover {
+	cursor: pointer;
+}
+
+#steps .steps-blocks .step.active span {
 	background-color: #2f832f;
 	color: white;
 	border-color: #454545;
@@ -73,8 +81,8 @@
 	right: 15px;
 }
 
-#nextButton {
-	padding-bottom: 30px;
+.nextButton {
+	padding: 15px 0 30px;
 }
 
 /* Guide */
@@ -88,6 +96,13 @@
 }
 
 /* Adherents Step */
+.inscription-menu {
+    display: flex;
+    justify-content: space-between;
+	align-items: center;
+	padding-bottom: 15px;
+}
+
 .adherent {
 	margin-bottom: 20px;
 	border-color: #cccccc;
@@ -95,10 +110,9 @@
 
 .adherent .card-header {
 	background-color: #ededed;
-}
-
-.adherent .card-header button {
-	float: right;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 /* Tuteurs Step */
@@ -109,6 +123,9 @@
 
 .tuteur .card-header {
 	background-color: #ededed;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .tuteur .tuteur-title {
