@@ -162,7 +162,11 @@ class Reduction
 	public function toArray(): array
 	{
 		return [
-
+			'idReduction' => $this->_id,
+			'idPayment' => $this->_idPayment,
+			'type' => $this->_type->value,
+			'value' => $this->_value,
+			'sujet' => $this->_sujet
 		];
 	}
 

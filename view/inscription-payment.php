@@ -50,13 +50,10 @@ global $router;
 				<i>Ce montant comprend le prix de la tenue</i>
 			</p>
 			<p class='text-center'>
-				<span class='price'><span class='price-amount'>185</span>€ à payer</span>
+				<span class='price'><span class='price-amount'></span>€ à payer</span>
 			</p>
 			<div id='paymentreductions'><span class='title'>Réduction(s) appliquée(s) :</span>
-				<ul>
-					<li class='reduction'>-50€ : pour tatata</li>
-					<li class='reduction'>-10%  : pour tototo</li>
-				</ul>
+				<ul></ul>
 			</div>
 		</div>
 
@@ -104,44 +101,10 @@ global $router;
 				<script src='https://www.paypal.com/sdk/js?client-id=<?= PAYPAL_CLIENT_ID ?>&currency=EUR'></script>
 				<script>
 					paypal.Buttons({
-						createOrder: function(data, actions) {
-							return actions.order.create({
-								purchase_units: [{
-									amount: {
-										currency_code: 'EUR',
-										value: '185'
-									},
-									description: 'Cotisation Snake Cheer All Star saison <?= SnakeTools::getCurrentSaison() ?>'
-								}]
-							});
-						},
-
-						onApprove: function(data, actions) {
-							return actions.order.capture().then(function(details) {
-								$('#paymentWaitting').modal();
-								$.ajax({
-									url: '<?= $router->getApi('approve_paypal_order') ?>',
-									type: 'POST',
-									data: {
-										orderID: data.orderID
-									},
-									success: function(response) {
-										InscriptionPaymentResponse(response);
-									}
-								});
-							});
-						}
+						createOrder: InscriptionManager.payPalCreateOrder,
+						onApprove: InscriptionManager.payPalOnApporve
 					}).render('#paypal-button-container');
 				</script>
-
-				<div id='paymentWaitting' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='paymentWaitting' aria-hidden='true'>
-					<div class='modal-dialog modal-dialog-centered' role='document'>
-						<p class='text-center'>
-							<span class='spinner-border text-light' role='status'></span><br />
-							Validation en cours ...
-						</p>
-					</div>
-				</div>
 
 				<div id='paymentResult'></div>
 			</div>
@@ -154,3 +117,14 @@ global $router;
 		</div>
 	</div>
 </section>
+
+<div id='paymentPayPalWaitting' class='modal fade' tabindex='-1' aria-labelledby='paymentPayPalWaitting' aria-hidden='true'>
+	<div class='modal-dialog' role='document'>
+		<div class="modal-content">
+			<p class='text-center'>
+				<span class='spinner-border text-light' role='status'></span><br />
+				Validation en cours ...
+			</p>
+		</div>
+	</div>
+</div>

@@ -27,6 +27,7 @@ let InscriptionManager = {
 	tuteurIndex: 0,
 	hasChanged: true,
 	isPayed: false,
+	amountToPay: 100,
 
 	init: function () {
 		$('#tuteurs').hide();
@@ -246,7 +247,7 @@ let InscriptionManager = {
 		if (this.isPayed) {
 			state = 'validation';
 		}
-
+		
 		$('#steps .step').removeClass('active');
 		$('#adherents').hide();
 		$('#tuteurs').hide();
@@ -307,7 +308,6 @@ let InscriptionManager = {
 			authorisation: authorisationData,
 			passSport: $("#passSportReduction").is(":checked"),
 		};
-		console.log(data);
 
 		$.ajax({
 			url: urlApi + 'inscription-set-informations',
@@ -315,6 +315,14 @@ let InscriptionManager = {
 			data: data,
 			success: function(response) {
 				if (response.result) {
+					InscriptionManager.amountToPay = response.amountToPay;
+					$("#paymentPrice .price-amount").html(response.amountToPay);
+					$("#paymentreductions ul").html("");
+
+					response.reductions.forEach(function(reduction){
+						$("#paymentreductions ul").append("<li class='reduction'>-" + reduction.value + (reduction.type === 1 ? "%" : "€") + " : " + reduction.sujet + "</li>");
+					});
+
 					InscriptionManager.changeStep('payment');
 				} else {
 					alert(response.message);
@@ -360,6 +368,36 @@ let InscriptionManager = {
 		});
 	},
 
+	payPalCreateOrder: function(data, actions) {
+		console.log("Call create function");
+		return actions.order.create({
+			purchase_units: [{
+				amount: {
+					currency_code: 'EUR',
+					value: InscriptionManager.amountToPay
+				},
+				description: 'Cotisation Snake Cheer All Star saison <?= SnakeTools::getCurrentSaison() ?>'
+			}]
+		});
+	},
+
+	payPalOnApporve: function(data, actions) {
+		return actions.order.capture().then(function(details) {
+			$('#paymentPayPalWaitting').modal();
+
+			$.ajax({
+				url: urlApi + 'approve_paypal_order',
+				type: 'POST',
+				data: {
+					orderID: data.orderID
+				},
+				success: function(response) {
+					InscriptionManager.validPaypalPayment(response);
+				}
+			});
+		});
+	},
+
 	validPaypalPayment: function (response) {
 		if (response.result) {
 			$('#paymentOptions').hide();
@@ -371,6 +409,6 @@ let InscriptionManager = {
 			alert('Error');
 		}
 	
-		$('#paymentWaitting').modal('hide');
+		$('#paymentPayPalWaitting').modal('hide');
 	}
 };
