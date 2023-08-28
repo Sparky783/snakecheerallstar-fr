@@ -67,18 +67,10 @@
 	width: 100%;
 }
 
-#inscriptionMenu {
-	margin-bottom: 30px;
-}
 
-#inscriptionMenu div {
-	border-bottom: solid 1px #bbbbbb;
-}
-
-#inscriptionMenu button {
-	position: absolute;
-	top: 15px;
-	right: 15px;
+.inscription-menu {
+	align-items: center;
+	padding-bottom: 15px;
 }
 
 .nextButton {
@@ -86,23 +78,20 @@
 }
 
 /* Guide */
-#guide .title {
+.guide h4 {
+    margin: 6px 0;
+}
+
+.guide .title {
 	font-weight: bold;
 	font-style: italic;
 	font-size: 1.1em;
 }
-#guide .card-body p:last-child {
+.guide .card-body p:last-child {
 	margin-bottom: 0;
 }
 
 /* Adherents Step */
-.inscription-menu {
-    display: flex;
-    justify-content: space-between;
-	align-items: center;
-	padding-bottom: 15px;
-}
-
 .adherent {
 	margin-bottom: 20px;
 	border-color: #cccccc;
@@ -113,6 +102,14 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+}
+
+.passSportCodeInput {
+	display: none;
+}
+
+.passSportCodeInput.active {
+	display: inherit;
 }
 
 /* Tuteurs Step */
@@ -128,11 +125,13 @@
 	align-items: center;
 }
 
-.tuteur .tuteur-title {
+.tuteur .tuteur-header {
 	vertical-align: sub;
 }
 
-.tuteur .tuteur-title select {
+.tuteur .tuteur-header select {
+	display: inline-block;
+    width: auto;
 	vertical-align: middle;
 }
 
@@ -147,6 +146,16 @@
 
 .authorization-validation {
 	margin-top: 50px;
+}
+
+.authorization-validation input {
+	width: 2rem;
+    height: 2rem;
+    vertical-align: middle;
+}
+
+.authorization-validation label {
+    vertical-align: sub;
 }
 
 /* Payment Step */
@@ -168,8 +177,12 @@
 	text-align: center;
 }
 
+#paymentOptions button {
+	width: 100%;
+}
+
 #paymentOptions,
-#selectDetails > div {
+#paymentDetails > div {
 	display: block;
     width: 100%;
 	padding: 1rem 1rem;
@@ -184,15 +197,15 @@
 	transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
-#selectOption .btn-snake {
+#paymentOptions .btn-snake {
 	background-color: #454545;
 }
 
-#selectOption .btn-snake.active {
+#paymentOptions .btn-snake.active {
 	background-color: #2f832f;
 }
 
-#paypal-button-container {
+#paypalButtonContainer {
 	width: 50%;
 	margin: 20px auto 0;
 }
@@ -208,9 +221,16 @@
 }
 
 /* Confirmation Step */
+#confirmation .check i,
+#confirmation .check svg {
+	width: 5rem;
+	height: 5rem;
+	color: #2f832f;
+}
+
 #confirmBox {
 	font-size: 1.5rem;
-	margin: 50px;
+	margin: 35px 50px;
 }
 
 @media (max-width: 768px) {
@@ -252,7 +272,7 @@
 		margin-bottom: 0;
 	}
 
-	#paypal-button-container {
+	#paypalButtonContainer {
 		width: 100%;
 	}
 

@@ -28,12 +28,15 @@ let InscriptionManager = {
 	hasChanged: true,
 	isPayed: false,
 	amountToPay: 100,
+	paymenbtWaittingModal: null,
 
 	init: function () {
 		$('#tuteurs').hide();
 		$('#authorisation').hide();
 		$('#payment').hide();
 		$('#validation').hide();
+
+		this.paymenbtWaittingModal = new bootstrap.Modal("#paymentPayPalWaitting");
 
 		this.initStepButtons();
 		this.initAdherents();
@@ -68,7 +71,7 @@ let InscriptionManager = {
 			InscriptionManager.addAdherentDom();
 		});
 
-		$('#adherents .nextButton button').click(function(){
+		$('#adherents .next-button').click(function(){
 			InscriptionManager.changeStep('tuteurs');
 		});
 		
@@ -80,7 +83,7 @@ let InscriptionManager = {
 			InscriptionManager.addTuteurDom();
 		});
 
-		$('#tuteurs .nextButton button').click(function(){
+		$('#tuteurs .next-button').click(function(){
 			InscriptionManager.changeStep('authorisation');
 		});
 		
@@ -88,26 +91,35 @@ let InscriptionManager = {
 	},
 
 	initAuthorisation: function () {
-		$('#authorisation .nextButton button').click(function(){
+		$('#authorisation .next-button').click(function(){
 			InscriptionManager.validInformation();
 		});
 	},
 
 	initPayment: function () {
 		$('#paymentDetails .paymentOption').hide();
-		$('#paymentOptions button').removeClass('active');
 
 		$('#paymentOptions button').click(function(){
+			let target = $(this).data('target');
+
+			if(target === 'optionEnLigne') {
+				$('#payment .next-button').attr('disabled', true);
+			} else {
+				$('#payment .next-button').attr('disabled', false);
+			}
+
 			$('#paymentDetails .paymentOption').hide();
-			$('#' + $(this).data('target')).show();
+			$('#' + target).show();
+			$('#paymentOptions button').removeClass('active');
 			$(this).addClass('active');
 		});
 
 		$('#paymentResult').hide();
 
-		$('#payment .nextButton button').click(function(){
+		$('#payment .next-button').click(function(){
 			InscriptionManager.validPayment();
 		});
+		$('#payment .next-button').attr('disabled', true);
 	},
 
 	addAdherentDom: function () {
@@ -118,36 +130,33 @@ let InscriptionManager = {
 					<button class='remove-button btn btn-danger' type='button'><i class='fas fa-trash'></i></button>
 				</div>
 				<div class='row card-body'>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6 mb-3'>
 						<label for='nomInput'>Nom</label>
 						<input class='form-control' name='lastname' type='text'>
 					</div>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6 mb-3'>
 						<label for='prenomInput'>Prénom</label>
 						<input class='form-control' name='firstname' type='text'>
 					</div>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6 mb-3'>
 						<label for='birthdayInput'>Date de naissance</label>
 						<input class='form-control' name='birthday' type='date'>
 					</div>
-					<div class='clearfix'></div>
-					<div class='col-sm-6 form-group'>
-						<div class='form-check form-check-inline'>
-							<label class='form-check-label'>Traitement médical :</label>
-							<input class='form-control' name='medecineInfo' type='text'>
-						</div>
+					<div class='col-sm-6 mb-3'>
+						<labelfor='medecineInfoInput'>Traitement médical :</label>
+						<input class='form-control' name='medecineInfo' type='text'>
 					</div>
-					<div class='col-sm-12 form-group'>
-						<div class='custom-control custom-switch'>
-							<input id='passSportInput_` + this.adherentIndex + `' class='custom-control-input' type='checkbox' name='passSport' />
-							<label class='custom-control-label' for='passSportInput_` + this.adherentIndex + `'>Pass Sport <small>(Sous présentation d'un justificatif obligatoire)</small></label>
-							<input id='passSportCodeInput_` + this.adherentIndex + `' class='form-control' name='passSportCode' type='text'>
+					<div class='col-sm-12 mb-3'>
+						<div class='form-check form-switch'>
+							<input id='passSportInput_` + this.adherentIndex + `' class='form-check-input' type='checkbox' name='passSport' role="switch" />
+							<label class='form-check-label' for='passSportInput_` + this.adherentIndex + `'>Pass Sport <small>(Sous présentation d'un justificatif obligatoire)</small></label>
+							<input id='passSportCodeInput_` + this.adherentIndex + `' class='form-control passSportCodeInput' name='passSportCode' type='text'>
 						</div>
 						<small class='form-text text-muted'>
 							
 						</small>
 					</div>
-					<!--<div class='col-sm-12 form-group'>
+					<!--<div class='col-sm-12 mb-3'>
 						<div class='form-check form-check-inline'>
 							<label class='form-check-label'>Adhésion Sportmut (optionnel) :</label>
 						</div>
@@ -186,6 +195,19 @@ let InscriptionManager = {
 			$(this).closest('.adherent').remove();
 		});
 
+		let currentIndex = this.adherentIndex;
+		let passSportSwitch = newDom.find('#passSportInput_' + this.adherentIndex);
+
+		passSportSwitch.change(function() {
+			let passSportCode = $('#passSportCodeInput_' + currentIndex);
+
+			if($(this).is(":checked")) {
+				passSportCode.addClass('active');
+			} else {
+				passSportCode.removeClass('active');
+			}
+		});
+
 		$('#adherentsList').append(newDom);
 
 		this.adherentIndex ++;
@@ -195,9 +217,9 @@ let InscriptionManager = {
 		let dom = `
 			<form class='tuteur card'>
 				<div class='card-header'>
-					<span class='tuteur-title'>
+					<span class='tuteur-header'>
 						Statut :
-						<select class='tuteur-title' name='status'>
+						<select class='form-select' name='status'>
 							<option value='adherent'>Adhérent</option>
 							<option value='father'>Père</option>
 							<option value='mother'>Mère</option>
@@ -207,19 +229,19 @@ let InscriptionManager = {
 					<button class='remove-button btn btn-danger' type='button'><i class='fas fa-trash'></i></button>
 				</div>
 				<div class='row card-body'>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6  mb-3'>
 						<label for='nomInput'>Nom</label>
 						<input class='form-control' name='lastname' type='text'>
 					</div>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6  mb-3'>
 						<label for='prenomInput'>Prénom</label>
 						<input class='form-control' name='firstname' type='text'>
 					</div>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6  mb-3'>
 						<label for='emailInput'>E-mail</label>
 						<input class='form-control' name='email' type='email'>
 					</div>
-					<div class='col-sm-6 form-group'>
+					<div class='col-sm-6  mb-3'>
 						<label for='phoneInput'>Téléphone</label>
 						<input class='form-control' name='phone' type='text'>
 					</div>
@@ -247,7 +269,7 @@ let InscriptionManager = {
 		if (this.isPayed) {
 			state = 'validation';
 		}
-		
+
 		$('#steps .step').removeClass('active');
 		$('#adherents').hide();
 		$('#tuteurs').hide();
@@ -286,19 +308,19 @@ let InscriptionManager = {
 		if(!this.hasChanged) {
 			InscriptionManager.changeStep('payment');
 		}
-
+		
 		// Adherents
 		let adherentsData = [];
 		$('#adherentsList form').each(function () {
 			adherentsData.push(serializeForm($(this)));
 		});
-
+		
 		// Tuteurs
 		let tuteursData = [];
 		$('#tuteursList form').each(function () {
 			tuteursData.push(serializeForm($(this)));
 		});
-
+		
 		// Authorisation
 		let authorisationData = serializeForm($('#authorisationForm'));
 
@@ -344,14 +366,10 @@ let InscriptionManager = {
 		};
 
 		let nbDeadlines = $("#optionCheque input[name='deadlinesInput']:checked").val();
-		
-		console.log(nbDeadlines);
 
 		if(nbDeadlines !== undefined) {
 			data.deadlines = nbDeadlines;
 		}
-
-		console.log(data);
 
 		$.ajax({
 			url: urlApi + 'inscription-validate-payment',
@@ -369,21 +387,22 @@ let InscriptionManager = {
 	},
 
 	payPalCreateOrder: function(data, actions) {
-		console.log("Call create function");
+		console.log('payPalCreateOrder');
 		return actions.order.create({
 			purchase_units: [{
 				amount: {
 					currency_code: 'EUR',
 					value: InscriptionManager.amountToPay
 				},
-				description: 'Cotisation Snake Cheer All Star saison <?= SnakeTools::getCurrentSaison() ?>'
+				description: 'Cotisation Snake Cheer All Star saison ' + saison
 			}]
 		});
 	},
 
 	payPalOnApporve: function(data, actions) {
+		console.log('payPalOnApporve');
 		return actions.order.capture().then(function(details) {
-			$('#paymentPayPalWaitting').modal();
+			InscriptionManager.paymenbtWaittingModal.show();
 
 			$.ajax({
 				url: urlApi + 'approve_paypal_order',
@@ -392,6 +411,7 @@ let InscriptionManager = {
 					orderID: data.orderID
 				},
 				success: function(response) {
+					console.log(response);
 					InscriptionManager.validPaypalPayment(response);
 				}
 			});
@@ -401,14 +421,14 @@ let InscriptionManager = {
 	validPaypalPayment: function (response) {
 		if (response.result) {
 			$('#paymentOptions').hide();
-			$('#selectDetails').hide();
+			$('#paypalButtonContainer').hide();
 			$('#paymentResult').html('<div class="alert alert-success text-center"><i class="fas fa-check-circle"></i> ' + response.message + '</div>');
-			$('#payment .nextButton button').attr('disabled', false);
+			$('#payment .next-button').attr('disabled', false);
 		} else {
-			$('#paymentResult').html('<div class="alert alert-danger text-center"><i class="fas fa-check-circle"></i> ' + response.message + '</div>');
-			alert('Error');
+			$('#paymentResult').html('<div class="alert alert-danger text-center"><i class="fas fa-exclamation-triangle"></i> ' + response.message + '</div>');
 		}
-	
-		$('#paymentPayPalWaitting').modal('hide');
+
+		$('#paymentResult').show();
+		this.paymenbtWaittingModal.hide();
 	}
 };

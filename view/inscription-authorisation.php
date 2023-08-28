@@ -1,11 +1,9 @@
 <?php global $router; ?>
 
 <section id="authorisation" class="row">
-	<div id="authorisationMenu" class="col-md-12">
-		<div>
-			<h2>Autorisations</h2>
-			<span>Droits à l'image et autres éléments.</span>
-		</div>
+	<div id="authorisationMenu" class="col-md-12 inscription-menu">
+		<h2>Autorisations</h2>
+		<span>Droits à l'image et autres éléments.</span>
 	</div>
 
 	<div class="col-md-4 guide">
@@ -45,16 +43,14 @@
 				</p>
 				
 				<div class="authorization-validation text-center">
-					<input class="form-control" name="acceptTermes" type="checkbox">
+					<input class="form-check-input" name="acceptTermes" type="checkbox">
 					<label for="validInput">En cochant cette case, j"accèpte les termes ci-dessus.</label>
 				</div>
 			</div>
 		</div>
-	</form>
 
-	<div class="col-md-12 nextButton">
 		<div class="text-center">
-			<button id="validButton" class="btn btn-primary">Valider et continuer</button>
+			<button class="next-button btn btn-primary btn-lg mt-4 mb-4" type='button'>Valider et continuer</button>
 		</div>
-	</div>
+	</form>
 </section>

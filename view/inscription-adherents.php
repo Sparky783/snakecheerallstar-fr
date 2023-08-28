@@ -1,10 +1,8 @@
 <?php global $router; ?>
 <section id="adherents" class="row">
-	<div id='adherentsMenu' class='inscription-menu col-md-12'>
-		<div class='inscription-menu-text'>
-			<h2>Liste des adhérents à inscrire</h2>
-			<span>Liste des adhérents d'une même famille</span>
-		</div>
+	<div id='adherentsMenu' class='col-md-12 inscription-menu'>
+		<h2>Liste des adhérents à inscrire</h2>
+		<span>Liste des adhérents d'une même famille</span>
 	</div>
 
 	<div class='col-md-4 guide'>
@@ -22,7 +20,7 @@
 					Veuillez simplement remplir le formulaire ci-contre correspondant à un adhérent.
 				</p>
 				<p class='alert alert-info'>
-					Pour inscrire plusieurs adhérents, veuillez cliquer sur le bouton <span class='adherentsAddBtn btn btn-primary'><i class='fas fa-user-plus'></i> Ajouter un adhérent</span> en haut à droite de la page.<br />
+					Pour inscrire plusieurs adhérents, veuillez cliquer sur le bouton <span class='adherentsAddBtn btn btn-outline-secondary bg-white'><i class='fas fa-user-plus'></i> Ajouter un adhérent</span> en haut à droite de la page.<br />
 					Le tarif fratrie sera appliqué suivant le nombre d'adhérent inscrit sur cette page.
 				</p>
 				<p class='alert alert-danger'>
@@ -34,14 +32,13 @@
 
 	<div class='col-md-8'>
 		<div id='adherentsList'></div>
-		<button class='adherentsAddBtn btn btn-primary' type='button'>
-			<i class='fas fa-user-plus'></i> Ajouter un adhérent
-		</button>
-	</div>
-
-	<div class='col-md-12 nextButton'>
+		<div class="text-center">
+			<button class='adherentsAddBtn btn btn-outline-secondary' type='button'>
+				<i class='fas fa-user-plus'></i> Ajouter un adhérent
+			</button>
+		</div>
 		<div class='text-center'>
-			<button class='btn btn-primary'>Valider et continuer</button>
+			<button class='next-button btn btn-primary btn-lg mt-4 mb-4' type='button'>Valider et continuer</button>
 		</div>
 	</div>
 </section>

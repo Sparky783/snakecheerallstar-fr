@@ -4,8 +4,15 @@ $(document).ready(function(){
 
 var Adherents = {
 	selectedId: null,
+	validateModal: null,
+	removeModal: null,
+	exportModal: null,
 
 	Init: function () {
+		this.validateModal = new bootstrap.Modal('#validateModal'),
+		this.removeModal = new bootstrap.Modal('#removeModal'),
+		this.exportModal = new bootstrap.Modal('#exportModal'),
+
 		this.InitAjax();
 
 		$("#selectedSection").change(function(){
@@ -18,7 +25,7 @@ var Adherents = {
 
 	InitAjax: function () {
 		$('#validateModal').find("form").submit(function(){
-			var data = {}
+			let data = {}
 
 			$(this).find(".custom-control-input").each(function(){
 				data[$(this).attr("name")] = $(this).is(":checked");
@@ -32,7 +39,7 @@ var Adherents = {
 				data: data,
 				success: function() {
 					Adherents.SelectSection($("#selectedSection").val());
-					$('#validateModal').modal('hide');
+					Adherents.validateModal.hide();
 				}
 			});
 	
@@ -49,7 +56,7 @@ var Adherents = {
 				},
 				success: function() {
 					Adherents.SelectSection($("#selectedSection").val());
-					$('#removeModal').modal('hide');
+					Adherents.removeModal.hide();
 				}
 			});
 	
@@ -83,7 +90,7 @@ var Adherents = {
 		dom.append("<td>" + data_adherent.lastname + "</td>");
 		dom.append("<td>" + data_adherent.firstname + "</td>");
 		
-		var actions = $("<td class='text-right'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
+		var actions = $("<td class='text-right'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
 		
 		data_adherent.actions.forEach(action => {
 			var button = null;
@@ -139,7 +146,7 @@ var Adherents = {
 			success: function(response) {
 				$('#validateModal').find("#editModalTitle").html("Validation " + response.name);
 				$('#validateModal').find(".modal-body").html(response.content);
-				$('#validateModal').modal();
+				Adherents.validateModal.show();
 			}
 		});
 	},
@@ -178,7 +185,7 @@ var Adherents = {
 		this.selectedId = id_adherent;
 		
 		$("#removeModal").find("#nameAdherent").html(name);
-		$('#removeModal').modal();
+		Adherents.removeModal.show();
 	},
 
 	InitExportList: function () {
@@ -191,8 +198,8 @@ var Adherents = {
 					delimiter: $("#exportDelimiter").val()
 				},
 				success: function(response) {
-					var filename = "Export_List_Adherents.csv";
-					var blob;
+					let filename = "Export_List_Adherents.csv";
+					let blob;
 					
 					if (typeof File === 'function') {
 						try {
@@ -230,7 +237,7 @@ var Adherents = {
 						setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
 					}
 
-					$('#exportModal').modal('toggle');
+					Adherents.exportModal.show();
 				}
 			});
 

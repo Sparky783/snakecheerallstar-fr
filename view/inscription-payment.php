@@ -5,10 +5,8 @@ global $router;
 ?>
 
 <section id='payment' class='row'>
-	<div id='paymentMenu' class='col-md-12'>
-		<div>
-			<h2>Paiement de la cotisation</h2>
-		</div>
+	<div id='paymentMenu' class='col-md-12 inscription-menu'>
+		<h2>Paiement de la cotisation</h2>
 	</div>
 
 	<div class='col-md-4 guide'>
@@ -96,24 +94,23 @@ global $router;
 				Payez par carte bancaire directement depuis notre site internet.<br />
 				Système sécurisé par PayPal.
 
-				<div id='paypal-button-container'></div>
+				<div id='paypalButtonContainer'></div>
 
 				<script src='https://www.paypal.com/sdk/js?client-id=<?= PAYPAL_CLIENT_ID ?>&currency=EUR'></script>
 				<script>
+					let saison = <?= SnakeTools::getCurrentSaison() ?>
 					paypal.Buttons({
 						createOrder: InscriptionManager.payPalCreateOrder,
 						onApprove: InscriptionManager.payPalOnApporve
-					}).render('#paypal-button-container');
+					}).render('#paypalButtonContainer');
 				</script>
 
 				<div id='paymentResult'></div>
 			</div>
 		</div>
-	</div>
 
-	<div class='col-md-12 nextButton'>
 		<div class='text-center'>
-			<button class='btn btn-primary'>Valider et continuer</button>
+			<button class='next-button btn btn-primary btn-lg mt-4 mb-4' type='button'>Valider et continuer</button>
 		</div>
 	</div>
 </section>

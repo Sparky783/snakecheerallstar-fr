@@ -58,24 +58,29 @@ $app->post("/approve_paypal_order", function($args) {
 	]);
 	
 	$response = $paypal->showOrderDetails($args['orderID']);
+	$purchaseUnit = $response->purchase_units[0];
 
-	$amount = $response->purchase_units[0]->payments->captures[0]->amount;
+	$currency = $purchaseUnit->payments->captures[0]->amount->currency_code;
+	$amount = $purchaseUnit->payments->captures[0]->amount->value;
+	$status = $purchaseUnit->payments->captures[0]->status;
+
+	$amountExpected = number_format($session->inscription->getPayment()->getFinalAmount(), 2);
 
 	$result = true;
 	$message = '';
 	
 	// Valide le paiement PayPal
 	$validPayment = true;
-	$validPayment = $validPayment && $amount->currency_code === 'EUR';
-	$validPayment = $validPayment && (int)$amount->value === $session->inscription->getPayment()->getFinalAmount();
-	$validPayment = $validPayment && $response->status === 'COMPLETED';
+	$validPayment = $validPayment && $currency === 'EUR';
+	$validPayment = $validPayment && $amount === $amountExpected;
+	$validPayment = $validPayment && $status === 'COMPLETED';
 
 	if ($validPayment) {
 		$session->inscription->getPayment()->setIsDone(true);
 		$message = 'Le paiement à bien été effectué.';
 	} else {
 		$result = false;
-		$message = 'Le paiement ne correspond pas à la cotisation.';
+		$message = 'Les informations de paiement ne correspondent pas aux information de la cotisation.<br />Le paiement à été annulé.';
 	}
 
 	API::SendJSON([

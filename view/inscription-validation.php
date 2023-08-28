@@ -1,18 +1,21 @@
 <?php global $router; ?>
 
 <section id="validation">
-	<div id='inscriptionMenu' class='col-md-12'>
-		<div>
-			<h2>Confirmation de l'inscription</h2>
-		</div>
+	<div id='inscriptionMenu' class='col-md-12 inscription-menu'>
+		<h2>Confirmation de l'inscription</h2>
 	</div>
 
 	<div id='inscription' class='col-md-12'>
 		<div id='confirmation'>
+			<p class='text-center check'>
+				<i class="fas fa-check-circle"></i>
+			</p>
 			<p id='confirmBox' class='alert alert-success text-center'>
-				<i class='fas fa-thumbs-up'></i>
-				<span>Votre inscription à bien été prise en compte !</span><br />
-				Vous avez presque fini
+				<span>Votre inscription à bien été prise en compte !</span>
+				
+			</p>
+			<p class='text-center'>
+				<b>Vous avez presque fini</b>
 			</p>
 			<p>
 				Afin que les membres du bureau puissent valider votre inscription, veuillez fournir auprès d'un des coachs ou d'un membre du conseil les éléments qui vous ont été envoyés par mail.

@@ -57,7 +57,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 id="editModalTitle" class="modal-title"></h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -65,7 +65,7 @@
 							
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button id="accepteEditButton" class="btn btn-primary" type="submit">Modifier</button>
 						</div>
 					</form>
@@ -79,7 +79,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 class="modal-title" id="exampleModalLabel">Supprimer un adhérent</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -87,7 +87,7 @@
 							Voulez-vous vraiment supprimer "<span id="nameAdherent"></span>" des adhérents ?
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
 							<button class="btn btn-primary" type="submit">Oui</button>
 						</div>
 					</form>
@@ -101,7 +101,7 @@
 					<form id="exportForm">
 						<div class="modal-header">
 							<h5 class="modal-title">Exporter la liste</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -122,7 +122,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="btn btn-primary" type="submit">Exporter</button>
 						</div>
 					</form>
