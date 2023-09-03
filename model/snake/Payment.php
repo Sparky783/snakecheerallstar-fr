@@ -217,15 +217,15 @@ class Payment
 		
 		// Toujours appliquer les "Pourcentage" avant ...
 		foreach ($this->_reductions as $reduction) {
-			if ($reduction->getType() == EReductionType::Percentage) {
+			if ($reduction->getType() === EReductionType::Percentage) {
 				$montant = round($montant * (1 - ($reduction->getValue() / 100)));
 			}
 		}
 		
 		// ... puis appliquer les "Montant".
 		foreach ($this->_reductions as $reduction) {
-			if ($reduction->getType() == EReductionType::Amount) {
-				$montant -= $reduction->GetValue();
+			if ($reduction->getType() === EReductionType::Amount) {
+				$montant -= $reduction->getValue();
 			}
 		}
 		
@@ -411,6 +411,30 @@ class Payment
 		);
 
 		if($rech !== null) {
+			$data = $rech->fetch();
+
+			return new Payment($data);
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Retourne un paiement à l'aide de sa clé.
+	 * 
+	 * @param string $key
+	 * @return Payment|false Retourne false en cas d'échec
+	 */
+	public static function getBykey(string $key): Payment|false
+	{
+		$database = new Database();
+
+		$rech = $database->query(
+			"SELECT * FROM payments WHERE uniqueKey=:uniqueKey",
+			['uniqueKey' => $key]
+		);
+
+		if ($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Payment($data);

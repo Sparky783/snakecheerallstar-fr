@@ -7,7 +7,6 @@ use Snake\SnakeTools;
 use Snake\Section;
 use Snake\Payment;
 use Snake\EUniformOption;
-use System\ToolBox;
 
 /**
  * Représente un adhérent
@@ -129,6 +128,30 @@ class Adherent
 	private ?DateTime $_inscriptionDate = null;
 
 	/**
+	 * Numéro de sécurité sociale de l'adhérent.
+	 * @var string $_socialSecurityNumber
+	 */
+	private string $_socialSecurityNumber = '';
+
+	/**
+	 * Nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * @var string $_nameEmergencyContact
+	 */
+	private string $_nameEmergencyContact = '';
+
+	/**
+	 * Numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * @var string $_phoneEmergencyContact
+	 */
+	private string $_phoneEmergencyContact = '';
+
+	/**
+	 * Nom du médecin traitant pour l'adhérent.
+	 * @var string $_doctorName
+	 */
+	private string $_doctorName = '';
+
+	/**
 	 * Section de l'adhérent.
 	 * @var Section|null $_section
 	 */
@@ -169,6 +192,10 @@ class Adherent
 			$this->_docMedicAuth = (bool)$dbData['doc_medic_auth'];
 			$this->_passSport = $dbData['pass_sport'];
 			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
+			$this->_socialSecurityNumber = $dbData['social_security_number'];
+			$this->_nameEmergencyContact = $dbData['name_emergency_contact'];
+			$this->_phoneEmergencyContact = $dbData['phone_emergency_contact'];
+			$this->_doctorName = $dbData['doctor_name'];
 		}
 	}
 	
@@ -367,6 +394,46 @@ class Adherent
 	public function getInscriptionDate(): DateTime
 	{
 		return $this->_inscriptionDate;
+	}
+
+	/**
+	 * Retourne le numéro de sécurité sociale de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getSocialSecurityNumber(): string
+	{
+		return $this->_socialSecurityNumber;
+	}
+
+	/**
+	 * Retourne le nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getNameEmergencyContact(): string
+	{
+		return $this->_nameEmergencyContact;
+	}
+
+	/**
+	 * Retourne le numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getPhoneEmergencyContact(): string
+	{
+		return $this->_phoneEmergencyContact;
+	}
+
+	/**
+	 * Retourne le nom du médecin traitant de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getDoctorName(): string
+	{
+		return $this->_doctorName;
 	}
 
 	/**
@@ -579,6 +646,70 @@ class Adherent
 	}
 
 	/**
+	 * Définie le numéro de sécurité sociale de l'adhérent.
+	 * 
+	 * @param string $socialSecurityNumber
+	 * @return bool
+	 */
+	public function setSocialSecurityNumber(string $socialSecurityNumber): bool
+	{
+		if (empty(trim($socialSecurityNumber))) {
+			return false;
+		}
+
+		$this->_socialSecurityNumber = $socialSecurityNumber;
+		return true;
+	}
+
+	/**
+	 * Définie le nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setNameEmergencyContact(string $nameEmergencyContact): bool
+	{
+		if (empty(trim($nameEmergencyContact))) {
+			return false;
+		}
+
+		$this->_nameEmergencyContact = $nameEmergencyContact;
+		return true;
+	}
+
+	/**
+	 * Définie le numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setPhoneEmergencyContact(string $phoneEmergencyContact): bool
+	{
+		if (empty(trim($phoneEmergencyContact))) {
+			return false;
+		}
+
+		$this->_phoneEmergencyContact = $phoneEmergencyContact;
+		return true;
+	}
+
+	/**
+	 * Définie le nom du médecin traitant de l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setDoctorName(string $doctorName): bool
+	{
+		if (empty(trim($doctorName))) {
+			return false;
+		}
+
+		$this->_doctorName = $doctorName;
+		return true;
+	}
+
+	/**
 	 * Définie la section de l'adhérent.
 	 * 
 	 * @param Section $section
@@ -625,12 +756,28 @@ class Adherent
 			$result = $result && $this->setBirthday($infos['birthday']);
 		}
 		
-		if (isset($infos['infoMedicine'])) {
-			$this->setMedicineInfo($infos['infoMedicine']);
+		if (isset($infos['medicineInfo'])) {
+			$this->setMedicineInfo($infos['medicineInfo']);
 		}
 
 		if (!empty($infos['passSportCode'])) {
 			$this->setPassSport($infos['passSportCode']);
+		}
+
+		if (!empty($infos['socialSecurityNumber'])) {
+			$this->setSocialSecurityNumber($infos['socialSecurityNumber']);
+		}
+
+		if (!empty($infos['nameEmergencyContact'])) {
+			$this->setNameEmergencyContact($infos['nameEmergencyContact']);
+		}
+
+		if (!empty($infos['phoneEmergencyContact'])) {
+			$this->setPhoneEmergencyContact($infos['phoneEmergencyContact']);
+		}
+
+		if (!empty($infos['doctorName'])) {
+			$this->setDoctorName($infos['doctorName']);
 		}
 			
 		return $result;
@@ -666,7 +813,11 @@ class Adherent
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
 					'pass_sport' => $this->_passSport,
-					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s')
+					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+					'social_security_number' => $this->_socialSecurityNumber,
+					'name_emergency_contact' => $this->_nameEmergencyContact,
+					'phone_emergency_contact' => $this->_phoneEmergencyContact,
+					'doctor_name' => $this->_doctorName
 				]
 			);
 
@@ -697,7 +848,11 @@ class Adherent
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
 					'pass_sport' => $this->_passSport,
-					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s')
+					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+					'social_security_number' => $this->_socialSecurityNumber,
+					'name_emergency_contact' => $this->_nameEmergencyContact,
+					'phone_emergency_contact' => $this->_phoneEmergencyContact,
+					'doctor_name' => $this->_doctorName
 				)
 			);
 

@@ -4,13 +4,22 @@ $(document).ready(function(){
 
 var AdminManager = {
 	admins: null,
-	selectedAdmin : null,
+	selectedAdmin: null,
+	addAdminModal: null,
+	editAdminModal: null,
+	reinitAdminPasswordModal: null,
+	removeAdminModal: null,
 
-	Init: function () {		
+	Init: function () {
+		this.addAdminModal = new bootstrap.Modal('#addAdminModal');
+		this.editAdminModal = new bootstrap.Modal('#editAdminModal');
+		this.reinitAdminPasswordModal = new bootstrap.Modal('#reinitAdminPasswordModal');
+		this.removeAdminModal = new bootstrap.Modal('#removeAdminModal');
+
 		$("#addAdminButton").click(function(){
 			AdminManager.selectedAdmin = null;
 			$('#addAdminModal').find("input, textarea, select").val("");
-			$('#addAdminModal').modal();
+			AdminManager.addAdminModal.show();
 		});
 		
 		$('#addAdminModal').find("form").submit(function(){
@@ -24,7 +33,7 @@ var AdminManager = {
 				},
 				success: function() {
 					AdminManager.Refresh();
-					$('#addAdminModal').modal('hide');
+					AdminManager.addAdminModal.hide();
 				}
 			});
 	
@@ -43,7 +52,7 @@ var AdminManager = {
 				},
 				success: function() {
 					AdminManager.Refresh();
-					$('#editAdminModal').modal('hide');
+					AdminManager.editAdminModal.hide();
 				}
 			});
 	
@@ -59,7 +68,7 @@ var AdminManager = {
 				},
 				success: function() {
 					AdminManager.Refresh();
-					$('#reinitAdminPasswordModal').modal('hide');
+					AdminManager.reinitAdminPasswordModal.hide();
 				}
 			});
 	
@@ -75,7 +84,7 @@ var AdminManager = {
 				},
 				success: function() {
 					AdminManager.Refresh();
-					$('#removeAdminModal').modal('hide');
+					AdminManager.removeAdminModal.hide();
 				}
 			});
 	
@@ -115,19 +124,19 @@ var AdminManager = {
 			$('#editAdminModal').find("#emailInput").val(AdminManager.selectedAdmin.email);
 			$('#editAdminModal').find("#rolesInput").val(AdminManager.selectedAdmin.roles);
 			
-			$('#editAdminModal').modal();
+			AdminManager.editAdminModal.show();
 		});
 
 		actions.find(".reinit-admin-password").click(function(){
 			AdminManager.selectedAdmin = admin;
 			$("#reinitAdminPasswordModal").find("#nameAdmin").html(AdminManager.selectedAdmin.name);
-			$('#reinitAdminPasswordModal').modal();
+			AdminManager.reinitAdminPasswordModal.show();
 		});
 		
 		actions.find(".remove-admin").click(function(){
 			AdminManager.selectedAdmin = admin;
 			$("#removeAdminModal").find("#nameAdmin").html(AdminManager.selectedAdmin.name);
-			$('#removeAdminModal').modal();
+			AdminManager.removeAdminModal.show();
 		});
 	
 		var row = $("<tr></tr>");

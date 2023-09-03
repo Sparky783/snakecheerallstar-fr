@@ -201,11 +201,11 @@ class SnakeTools
 	/**
 	 * Envoie le récapitulatif d'inscription au tuteur sélectionné.
 	 * 
-	 * @param Payment $payment Paiement pour l'inscription.
+	 * @param Inscription $inscription Informations de l'inscription.
 	 * @param Tuteur|null $tuteur Tuteur à qui envoyer le mail. Si le tuteur n'est pas précisé, le mail sera envoyé au bureau du club.
 	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
 	 */
-	public static function sendRecap(Payment $payment, Tuteur $tuteur = null): bool
+	public static function sendRecap(Inscription $inscription, Tuteur $tuteur = null): bool
 	{
 		// Destinataire
 		if($tuteur === null) {
@@ -215,68 +215,108 @@ class SnakeTools
 			$tuteur->setPhone('00 00 00 00 00');
 		}
 
-		// E-mail Facture
-		$list = '';
-
 		// Détail du paiement de la cotisation
-		switch ($payment->getMethod()) {
-			case EPaymentType::Espece:
-				$list .= "<p>Paiement cotisation en espèce (En totalité, soit " . $payment->getFinalAmount() . " €).</p>";
-				break;
+		$payment = $inscription->getPayment();
+		$paymentContent = '';
 
-			case EPaymentType::Cheque:
-				if ($payment->getNbDeadlines() > 1) {
-					$list .= "<p>Paiement cotisation en " . $payment->getNbDeadlines() . " fois par chèque (Veuillez apporter l'ensemble des chèques) :</p>";
-					$list .= "<ul>";
+		if ($payment->getMethod() !== EPaymentType::Internet) {
+			$amount = $payment->getFinalAmount();
+			$paymentContent = "<p>Le paiement de la cotisation d'un montant de {$amount} €";
 
-					$i = 1;
-					foreach ($payment->getDeadlines() as $deadline) {
-						$list .= "<li>Chèque " . $i . " de " . $deadline . " €</li>";
-						$i ++;
+			switch ($payment->getMethod()) {
+				case EPaymentType::Espece:
+					$paymentContent .= " à régler en espèce et en <b>totalité</b>.</p>";
+					break;
+	
+				case EPaymentType::Cheque:
+					$amountWords = SnakeTools::convertPaymentAmountToWords($payment->getFinalAmount());
+
+					if ($payment->getNbDeadlines() > 1) {
+						$nombres = ['deux', 'trois', 'quatre'];
+						$mot = $nombres[$payment->getNbDeadlines() - 2];
+
+						if ((int)date('d') > 15) {
+							$startMonthNumber = (int)date('m') + 1;
+						} else {
+							$startMonthNumber = (int)date('m');
+						}
+
+
+						$paymentContent .= " à régler par chèque en " . $mot . " fois, soit:</p>";
+						$paymentContent .= "<ul>";
+	
+						$i = 1;
+						foreach ($payment->getDeadlines() as $deadline) {
+							$deadlineWords = SnakeTools::convertPaymentAmountToWords($deadline);
+							$monthWord = ToolBox::monthToWord($startMonthNumber);
+							$paymentContent .= "<li>Chèque n°{$i} de {$deadline} € ({$deadlineWords}) avec inscrit \"{$monthWord}\" au dos.</li>";
+
+							$startMonthNumber ++;
+							$i ++;
+						}
+	
+						$paymentContent .= "</ul>";
+					} else {
+						$paymentContent .= " à régler par chèque en une fois, soit {$amount} € ({$amountWords}).</p>";
 					}
 
-					$list .= "</ul>";
-				} else {
-					$list .= "<p>Paiement cotisation par chèque en une fois, soit " . $payment->getFinalAmount() . " €.</p>";
-				}
-				break;
+					$paymentContent .= "<p>Merci de bien vouloir mettre les chèques à l'ordre de \"Snake Cheer All Star\".</p>";
+					break;
+			}
+
+			$paymentContent = "</p>";
 		}
 		
-		$adherents = $tuteur->getAdherents();
+		// Documents poour les adhérents
+		$adherents = $inscription->getAdherents();
+		$adherentsContent = '';
 
 		if ($adherents !== null) {
 			foreach ($adherents as $adherent) {
-				$list .= "<p>Pour " . $adherent->getFirstname() . " " . $adherent->getLastname() . " :</p><ul>";
+				$adherentsContent .= "<p>Pour {$adherent->getFirstname()} {$adherent->getLastname()} :</p><ul>";
 
 				if ($adherent->hasMedicine()) {
-					$list .= "<li>Formulaire d'autorisation médical pour " . $adherent->getFirstname() . " à remplir <a href='" . URL . "/content/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
+					$adherentsContent .= "<li>Formulaire d'autorisation médical à remplir <a href='{URL}/content/dossier_inscription/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
 				}
 
 				// Questionnaire de santé en fonction de l'age
 				$age = ToolBox::age($adherent->getBirthday());
+				
 				if ($age < 18) {
-					$list .= "<li>Questionnaire de santé (Mineur) <a href='" . URL . "/content/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+					$adherentsContent .= "<li>Questionnaire de santé (Mineur) <a href='{URL}/content/dossier_inscription/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 				} else {
-					$list .= "<li>Questionnaire de santé (Majeur) <a href='" . URL . "/content/questionnaire_sante_majeur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+					$adherentsContent .= "<li>Questionnaire de santé (Majeur) <a href='{URL}/content/dossier_inscription/questionnaire_sante_majeur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 				}
 
-				$list .= "</ul><br /><br />";
+				$adherentsContent .= "</ul><br /><br />";
 			}
 		}
 
-		$list = "<p>Afin de finaliser l'inscription de votre/vos adhérent pour la saison de cheerleading, veuillez nous fournir les documents suivants :</p>";
-		$list .= "<p>Pour chaque adhérent, veuillez fournir les éléments suivants :</p>";
-		$list .= "<ul>";
-		$list .= "<li>Formulaire de la FFFA <a href='" . URL . "/content/licence_FFFA.pdf' title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>";
-		$list .= "<li>Autorisation parentale en cas d'accident <a href='" . URL . "/content/autorisation_parentale.pdf' title='' target='_blank'>disponible ici</a></li>";
-		$list .= "<li>Formulaire de Sportmut <a href='" . URL . "/content/sportmut.pdf' title='' target='_blank'>disponible ici</a> (même si vous n'y adhérez pas)</li>";
-		$list .= "<li>Déclaration d'accident MDS <a href='" . URL . "/content/declaration_accident.pdf' title='' target='_blank'>disponible ici</a></li>";
-		$list .= "<li>Photocopie de la pièce d'identité</li>";
-		$list .= "<li>Photo d'identité</li>";
-		$list .= "</ul>";
-		$list .= "<p>Veuillez remettre l'ensemble des éléments ci-dessus aux coachs ou aux membres du bureau présents pendant les cours.</p>";
-		$list .= "<p>Merci de bien vouloir mettre les chèques à l'ordre de Snake Cheer All Star.</p>";
-		$list .= "<p><br /><br />Cordialement,<br />" . TITLE . "</p>";
+		$saison = $adherents[0]->getSection()->getSaison();
+
+		$mailContent = <<<HTML
+			<p>
+				Bonjour,
+				<br /><br />
+				Afin de finaliser votre inscription pour la saison de cheerleading {$saison}, veuillez remettre les éléments suivants à votre coach ou à l'un des membres du bureau :
+			</p>
+			{$paymentContent}
+			<p>
+				Pour chaque adhérent, veuillez fournir les éléments suivants :
+			</p>
+			<ul>
+				<li>Formulaire de la FFFA <a href='{URL}/content/dossier_inscription/licence_FFFA.pdf' title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>
+				<li>Autorisation parentale en cas d'accident <a href='{URL}/content/dossier_inscription/autorisation_parentale.pdf' title='' target='_blank'>disponible ici</a></li>
+				<li>Formulaire de Sportmut <a href='{URL}/content/dossier_inscription/sportmut.pdf' title='' target='_blank'>disponible ici</a> (même si vous n'y adhérez pas)</li>
+				<li>Photocopie de la pièce d'identité</li>
+				<li>Photo d'identité</li>
+			</ul>
+			<p>
+				<br /><br />
+				Cordialement,<br />
+				{TITLE}
+			</p>
+		HTML;
 
 		$sujet = "Récapitulatif d'inscription " . TITLE;
 			
@@ -310,7 +350,7 @@ class SnakeTools
 			//Content
 			$mail->isHTML(true); // Set email format to HTML
 			$mail->Subject = $sujet;
-			$mail->Body    = EmailTemplates::standardHTML($sujet, $list);
+			$mail->Body    = EmailTemplates::standardHTML($sujet, $mailContent);
 			$mail->AltBody = EmailTemplates::standardText($sujet);
 			$mail->send();
 			
@@ -319,5 +359,20 @@ class SnakeTools
 		catch (Exception $e) { }
 
 		return false;
+	}
+
+	public static function convertPaymentAmountToWords(float $amount): string
+	{
+		$entier = floor($amount);
+		$decimal = $amount - floor($amount);
+
+		$price = ToolBox::convertNumberToString($entier) . ' euros';
+
+		if ($decimal > 0) {
+			$decimal = floor($decimal * 100);
+			$price .= ' ' . ToolBox::convertNumberToString($decimal) . ' cts';
+		}
+
+		return $price;
 	}
 }

@@ -16,6 +16,14 @@ section h2 {
 	padding-top: 20px;
 }
 
+.horaire-list {
+    justify-content: center;
+}
+
+.horaire-list .card {
+	margin-bottom: 20px;
+}
+
 .plage {
 	display: block;
 }

@@ -331,6 +331,16 @@ class Section
 	}
 
 	/**
+	 * Supprime toute les horaires d'entrainement de la section.
+	 * 
+	 * @return void
+	 */
+	public function clearHoraire(): void
+	{
+		$this->_horaires = [];
+	}
+
+	/**
 	 * Retourne les donnnées de la section sous forme de tableau.
 	 */
 	public function toArray(): array

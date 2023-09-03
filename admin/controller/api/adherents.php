@@ -21,11 +21,11 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 			$status = '';
 
 			if (!$adherent->getPayment()->isDone() ||
-				!$adherent->getDocIdCard() ||
-				!$adherent->getDocPhoto() ||
-				!$adherent->getDocFFFA() ||
-				!$adherent->getDocSportmut() ||
-				!$adherent->getDocMedicAuth())
+				!$adherent->hasDocIdCard() ||
+				!$adherent->hasDocPhoto() ||
+				!$adherent->hasDocFFFA() ||
+				!$adherent->hasDocSportmut() ||
+				!$adherent->hasDocMedicAuth())
 			{
 				$status = 'not_complete';
 			}
@@ -33,28 +33,28 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 			// Droits
 			$actions = [];
 
-			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
+			if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
 				$actions[] = 'view';
 			}
 
-			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster', 'secretaire']) && $status !== '') {
+			if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'secretaire']) && $status !== '') {
 				$actions[] = 'validate';
 			}
 
-			if (ToolBox::SearchInArray($session->admin_roles, ['admin', 'webmaster'])) {
+			if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 				$actions[] = 'surclasser';
 				$actions[] = 'sousclasser';
 				$actions[] = 'remove';
 			}
 
-			$list[] = array(
-				"id" => $adherent->GetId(),
-				"firstname" => $adherent->GetFirstname(),
-				"lastname" => $adherent->GetLastname(),
-				"status" => $status,
-				"actions" => $actions,
-				"link" => $router->GetURL("adherent-info") . "&id=" . $adherent->GetId()
-			);
+			$list[] = [
+				'id' => $adherent->getId(),
+				'firstname' => $adherent->getFirstname(),
+				'lastname' => $adherent->getLastname(),
+				'status' => $status,
+				'actions' => $actions,
+				'link' => $router->getURL('adherent-info') . '&id=' . $adherent->getId()
+			];
 		}
 
 		API::sendJSON([

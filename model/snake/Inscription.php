@@ -30,9 +30,24 @@ class Inscription
 	private Payment $_payment;
 	
 	// ==== CONSTRUCTOR ====
-	public function __construct()
+	public function __construct(Payment $payment = null)
 	{
-		$this->_payment = new Payment();
+		// Si un paiement est définie c'est que l'inscription a déjà été faite, dans ce cas on charge les données.
+		if ($payment !== null) {
+			$this->_payment = $payment;
+
+			foreach ($payment->getAdherents() as $adherent) {
+				$this->addAdherent($adherent);
+			}
+
+			$tuteurs = $payment->getAdherents()[0]->getTuteurs();
+	
+			foreach ($tuteurs as $tuteur) {
+				$this->addTuteur($tuteur);
+			}
+		} else {
+			$this->_payment = new Payment();
+		}
 	}
 	
 
@@ -85,7 +100,7 @@ class Inscription
 		// Met à jour si c'est une fratrie ou non.
 		if (count($this->_adherents) >= 2) {
 			foreach ($this->_adherents as $adherent) {
-				$adherent->setSiblings(true);
+				$adherent->setIsSiblings(true);
 			}
 		}
 	}
@@ -254,5 +269,27 @@ class Inscription
 		}
 
 		return false;
+	}
+
+	/**
+	 * Retourne une inscription en fonction du payment.
+	 *
+	 * @param int $idPayment
+	 * @return Inscription
+	 */
+	public static function getByPaymentId(int $idPayment): Inscription
+	{
+		return new Inscription(Payment::getById($idPayment));
+	}
+
+	/**
+	 * Retourne une inscription en fonction de la clé (fournis au tuteurs).
+	 *
+	 * @param string $key
+	 * @return Inscription
+	 */
+	public static function getByKey(string $key): Inscription
+	{
+		return new Inscription(Payment::getByKey($key));
 	}
 }

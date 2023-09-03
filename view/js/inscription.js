@@ -143,22 +143,38 @@ let InscriptionManager = {
 						<input class='form-control' name='birthday' type='date'>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<labelfor='medecineInfoInput'>Traitement médical :</label>
-						<input class='form-control' name='medecineInfo' type='text'>
+						<label for='medicineInfoInput'>Traitement médical</label>
+						<input class='form-control' name='medicineInfo' type='text' placeolder="si nécessaire">
 					</div>
 					<div class='col-sm-12 mb-3'>
 						<div class='form-check form-switch'>
 							<input id='passSportInput_` + this.adherentIndex + `' class='form-check-input' type='checkbox' name='passSport' role="switch" />
 							<label class='form-check-label' for='passSportInput_` + this.adherentIndex + `'>Pass Sport <small>(Sous présentation d'un justificatif obligatoire)</small></label>
-							<input id='passSportCodeInput_` + this.adherentIndex + `' class='form-control passSportCodeInput' name='passSportCode' type='text'>
+							<input id='passSportCodeInput_` + this.adherentIndex + `' class='form-control passSportCodeInput' name='passSportCode' type='text' placeholder="Entrer le code">
 						</div>
 						<small class='form-text text-muted'>
-							
 						</small>
 					</div>
+					<div class='col-sm-6 mb-3'>
+						<label for='socialSecurityNumberInput'>Numéro de sécurité sociale</label>
+						<input class='form-control' name='socialSecurityNumber' type='text'>
+					</div>
+					<div class='col-sm-6 mb-3'>
+						<label for='doctorNameInput'>Nom du édecine traitant</label>
+						<input class='form-control' name='doctorName' type='text'>
+					</div>
+					<div class='col-sm-6 mb-3'>
+						<label for='nameEmergencyContactInput'>Nom de la personne à contacter en cas d'urgence</label>
+						<input class='form-control' name='nameEmergencyContact' type='text'>
+					</div>
+					<div class='col-sm-6 mb-3'>
+						<label for='phoneEmergencyContactInput'>Numéro de la personne à contacter en cas d'urgence</label>
+						<input class='form-control' name='phoneEmergencyContact' type='text'>
+					</div>
+
 					<!--<div class='col-sm-12 mb-3'>
 						<div class='form-check form-check-inline'>
-							<label class='form-check-label'>Adhésion Sportmut (optionnel) :</label>
+							<label class='form-check-label'>Adhésion Sportmut (optionnel)</label>
 						</div>
 						<div class='form-check form-check-inline'>
 							<input class='form-check-input inputRadioSportmut1' name='sportmut' type='radio' value='yes'>
@@ -268,6 +284,7 @@ let InscriptionManager = {
 	changeStep: function (state) {
 		if (this.isPayed) {
 			state = 'validation';
+			return;
 		}
 
 		$('#steps .step').removeClass('active');
@@ -379,6 +396,7 @@ let InscriptionManager = {
 				if (response.result) {
 					$('#validationEmailMessage').html(response.message);
 					InscriptionManager.changeStep('validation');
+					InscriptionManager.isPayed = true;
 				} else {
 					alert(response.message);
 				}

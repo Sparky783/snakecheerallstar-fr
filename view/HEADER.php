@@ -14,22 +14,22 @@
 			<div class="collapse navbar-collapse navbar-right" id="navbarSupportedContent">
 				<ul class="navbar-nav mr-auto">
 					<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("accueil"); ?>>Accueil</a>
+						<a class="nav-link" href=<?php $router->url('accueil'); ?>>Accueil</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("club"); ?>>Le Club</a>
+						<a class="nav-link" href=<?php $router->url('club'); ?>>Le Club</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("cours"); ?>>Les Cours</a>
+						<a class="nav-link" href=<?php $router->url('cours'); ?>>Les Cours</a>
 					</li>
 					<!--<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("galerie"); ?>>Galerie</a>
+						<a class="nav-link" href=<?php $router->url('galerie'); ?>>Galerie</a>
 					</li>-->
 					<li class="nav-item">
-						<a class="nav-link" href=<?php $router->Url("contact"); ?>>Nous contacter</a>
+						<a class="nav-link" href=<?php $router->url('contact'); ?>>Nous contacter</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link btn btn-snake" href=<?php $router->Url("inscription"); ?>>Inscription</a>
+						<a class="nav-link btn btn-snake" href=<?php $router->url('inscription'); ?>>Inscription</a>
 					</li>
 				</ul>
 			</div>

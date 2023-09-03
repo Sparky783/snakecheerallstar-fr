@@ -20,11 +20,15 @@
 				</p>
 			</section>
 			
-			<section id="horaires" class="row">
-				<div class="col-sm-12">
-					<h2>Horaires</h2>
+			<section id="horaires">
+				<div class="row">
+					<div class="col-sm-12">
+						<h2>Horaires</h2>
+					</div>
 				</div>
-				<?= $htmlHoraires ?>
+				<div class="row horaire-list">
+					<?= $htmlHoraires ?>
+				</div>
 			</section>
 			
 			<section id="lieux">

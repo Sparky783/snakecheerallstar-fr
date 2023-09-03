@@ -3,24 +3,24 @@
 // ==== Controleur Inscription ====
 // ================================
 
-use System\Session;
 use Snake\Section;
+use Snake\SnakeTools;
 
-$sections = Section::getList("2021-2022");
+$sections = Section::getList(SnakeTools::getCurrentSaison());
 $nbSections = count($sections);
 
 $htmlHoraires = '';
 $htmlPricesHeader = '';
 $htmlPricesBody = '';
 
-if($nbSections === 0) {
+if ($nbSections === 0) {
 	$htmlHoraires = <<<HTML
 	<div class="col-sm-12">
 		<p class="text-center">Aucune section n'est disponible pour le moment, celà sera disponible très rapidement.</p>
 	</div>
 	HTML;
 } else {
-	for($i = 0; $i < $nbSections; $i++) {
+	for ($i = 0; $i < $nbSections; $i++) {
 		$section = $sections[$i];
 
 		if ($i === $nbSections - 1) {
@@ -35,7 +35,7 @@ if($nbSections === 0) {
 
 		foreach ($section->getHoraires() as $horaire) {
 			$horaires .= <<<HTML
-				<span class="plage">{$horaire->getDay()} de {$horaire->getStartTime()->format('Hhi')} à {$horaire->getEndTime()->format('Hhi')} ({$horaire->getPlace()})</span>
+				<span class="plage">{$horaire->getDay()->value} de {$horaire->getStartTime()->format('H\hi')} à {$horaire->getEndTime()->format('H\hi')} ({$horaire->getPlace()})</span>
 				HTML;
 		}
 

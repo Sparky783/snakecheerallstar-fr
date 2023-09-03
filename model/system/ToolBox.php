@@ -514,5 +514,88 @@ class ToolBox
 	{
 		return $phone;
 	}
+
+	/**
+	 * Convert an integer to words.
+	 * Ex: 1232 => "mille deux cent trente deux"
+	 */
+	public static function convertNumberToString(int $number): string
+	{
+		$lettresUnite = array('', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf');
+		$lettresDizaine = array('', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix');
+	
+		if ($number === 0) {
+            return 'zéro';
+        }
+
+		if ($number < 0) {
+            return 'moins ' . self::convertNumberToString(abs($number));
+        }
+
+        if ($number < 20) {
+            return $lettresUnite[$number];
+        } elseif ($number < 70) {
+            $dizaine = floor($number / 10);
+            $unite = $number % 10;
+            $lettreDizaine = $lettresDizaine[$dizaine];
+
+            if ($unite == 1 || $unite == 11) {
+                $lettreUnite = 'et ' . $lettresUnite[$unite];
+            } else {
+                $lettreUnite = $lettresUnite[$unite];
+            }
+
+            return $lettreDizaine . '-' . $lettreUnite;
+        } elseif ($number < 100) {
+            $dizaine = floor($number / 10);
+            $unite = $number % 10;
+            $lettreDizaine = $lettresDizaine[$dizaine];
+            $lettreUnite = $lettresUnite[$unite];
+
+            return $lettreDizaine . ($unite > 0 ? '-' . $lettreUnite : '');
+        } elseif ($number < 1000) {
+            $centaine = floor($number / 100);
+            $reste = $number % 100;
+            $lettreCentaine = $lettresUnite[$centaine] . ' cent';
+
+            return $lettreCentaine . ($reste > 0 ? ' ' . self::convertNumberToString($reste) : '');
+        } else {
+            $suffixes = array('', 'mille', 'million', 'milliard', 'billion', 'billiard', 'trillion'); // Continuer pour d'autres échelles
+
+            foreach ($suffixes as $exposant => $suffixe) {
+                $base = pow(1000, $exposant + 1);
+
+                if ($number < $base * 1000) {
+                    $partieEntiere = floor($number / $base);
+                    $reste = $number % $base;
+                    $partieEnLettres = self::convertNumberToString($partieEntiere) . ' ' . $suffixe;
+
+                    return $partieEnLettres . ($reste > 0 ? ' ' . self::convertNumberToString($reste) : '');
+                }
+            }
+        }
+
+        return "Nombre non pris en charge";
+	}
+
+	public static function monthToWord(int $monthNumber): string
+	{
+		switch($monthNumber) {
+			case 1: return 'Janvier';
+			case 2: return 'Février';
+			case 3: return 'Mars';
+			case 4: return 'Avril';
+			case 5: return 'Mai';
+			case 6: return 'Juin';
+			case 7: return 'Juillet';
+			case 8: return 'Août';
+			case 9: return 'Septembre';
+			case 10: return 'Octobre';
+			case 11: return 'Novembre';
+			case 12: return 'Décembre';
+			default:
+				throw new ErrorException('The month does not exist.');
+		}
+	}
 }
 ?>

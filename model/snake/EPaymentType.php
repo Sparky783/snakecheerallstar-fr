@@ -4,10 +4,11 @@ namespace Snake;
 /**
  * Méthodes de paiement possible.
  */
-enum EPaymentType: string
+enum EPaymentType: int
 {
-	case Espece = 'espece';
-	case Cheque = 'cheque';
-	case Internet = 'internet';
-	case Virement = 'virement';
+	case None = 0;
+	case Espece = 1;
+	case Cheque = 2;
+	case Internet = 3;
+	case Virement = 4;
 }

@@ -176,7 +176,7 @@ $app->post('/inscription-validate-payment', function($args) {
 	$emails = [];
 
 	foreach ($session->inscription->getTuteurs() as $tuteur) {
-		SnakeTools::sendRecap($payment, $tuteur);
+		SnakeTools::sendRecap($session->inscription, $tuteur);
 		SnakeTools::sendBill($payment, $tuteur);
 		$emails[] = $tuteur->getEmail();
 	}

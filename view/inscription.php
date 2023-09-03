@@ -22,6 +22,9 @@
 			<?php if ($allowAccess) { ?>
 				<div class="row">
 					<div class="col-sm-12">
+						<div id="inscription-paper">
+							<a href=<?php $router->url('inscription-paper'); ?> title="">Inscription papier <i class="fas fa-chevron-right"></i></a>
+						</div>
 						<div id="steps">
 							<div class="steps-line">
 								<span></span>

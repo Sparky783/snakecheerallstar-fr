@@ -10,6 +10,7 @@ $website->SetPages(array(
 	"actualites",
 	"club",
 	"cours",
+	"inscription-paper",
 	"inscription",
 	"galerie",
 	"contact",

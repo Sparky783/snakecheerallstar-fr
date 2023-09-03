@@ -1,0 +1,30 @@
+@charset "utf-8";
+
+#messageInscription {
+	width: 100%;
+}
+
+#messageInscription div {
+	display: block;
+	width: 50%;
+	margin: 50px auto;
+	text-align: center;
+}
+
+#inscription-online {
+	margin: 20px 0;
+	text-align: right;
+}
+
+#inscription-online a {
+	text-decoration: none;
+}
+
+.card {
+	margin-bottom: 30px;
+	box-shadow: 2px 2px 5px #dddddd;
+}
+
+.card p:last-child {
+	margin-bottom: 0;
+}

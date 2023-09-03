@@ -98,7 +98,7 @@ global $router;
 
 				<script src='https://www.paypal.com/sdk/js?client-id=<?= PAYPAL_CLIENT_ID ?>&currency=EUR'></script>
 				<script>
-					let saison = <?= SnakeTools::getCurrentSaison() ?>
+					let saison = '<?= SnakeTools::getCurrentSaison() ?>';
 					paypal.Buttons({
 						createOrder: InscriptionManager.payPalCreateOrder,
 						onApprove: InscriptionManager.payPalOnApporve

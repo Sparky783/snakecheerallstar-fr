@@ -5,40 +5,40 @@ namespace Snake;
 /**
  * Represent days of the week
  */
-enum EDay
+enum EDay: string
 {
     /**
      * Lundi
      */
-	case Monday;
+	case Monday = 'Lundi';
 
     /**
      * Mardi
      */
-	case Tuesday;
+	case Tuesday = 'Mardi';
     
     /**
      * Mercredi
      */
-	case Wednesday;
+	case Wednesday = 'Mercredi';
     
     /**
      * Jeudi
      */
-	case Thursday;
+	case Thursday = 'Jeudi';
     
     /**
      * Vendredi
      */
-	case Friday;
+	case Friday = 'Vendredi';
     
     /**
      * Samedi
      */
-	case Saturday;
+	case Saturday = 'Samedi';
     
     /**
      * Dimanche
      */
-	case Sunday;
+	case Sunday = 'Dimanche';
 }

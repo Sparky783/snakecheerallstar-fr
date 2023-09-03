@@ -15,7 +15,7 @@
 
 		<section id="welcome" class="container-fluid">
 			<div class="bg">
-				<video class="img-responsive" autoplay="" loop="" poster="/view/img/parallax-home.jpg">
+				<video class="img-responsive" autoplay muted loop poster="/view/img/parallax-home.jpg">
 					<source src="view/vids/PresentationHome.mp4" type="video/mp4">
 				</video>
 				<div class="bg-black home"></div>
@@ -29,7 +29,8 @@
 				</div>
 			</div>
 		</section>
-		<div class="container-fluid">
+
+		<div class="container snake-body">
 			<section id="intro" class="row">
 				<div class="container">
 					<h1 class="text-center">Snake Cheer All Star équipe de cheerleading sur Pau<br />rejoignez-nous!</h1>

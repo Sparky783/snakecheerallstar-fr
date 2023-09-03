@@ -1,9 +1,12 @@
 @charset "utf-8";
 
+
+
 /* ==== Entête ====*/
 #welcome {
 	width: 100%;
 	margin-top: -57px;
+	border-bottom: solid 1px #595959;
 	color: white;
 	overflow: hidden;
 }
@@ -43,23 +46,22 @@
 }
 
 /* ==== Content ==== */
+.snake-body {
+	margin-top: 0;
+}
+
 #intro {
-	background-color: #ffffff;
 	padding: 50px 0;
 }
 
 #presentation {
-	background-color: #999999;
 	padding: 50px 0;
 }
 
 #informations {
-	background-color: #2f832f;
 	padding: 50px 0;
-	color: #ffffff;
 }
 
 #partenariats {
-	background-color: #ffffff;
 	padding: 50px 0;
 }

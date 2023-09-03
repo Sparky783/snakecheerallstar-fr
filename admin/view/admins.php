@@ -48,7 +48,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 class="modal-title">Ajouter un administrateur</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -74,7 +74,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="accepteButton btn btn-primary" type="submit">Ajouter</button>
 						</div>
 					</form>
@@ -88,7 +88,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 class="modal-title">Modifier un administrateur</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -114,7 +114,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="accepteButton btn btn-primary" type="submit">Modifier</button>
 						</div>
 					</form>
@@ -128,7 +128,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 class="modal-title">Réinitiliser le mot de passe</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -136,7 +136,7 @@
 							Voulez-vous vraiment réinitialiser le mot de passe de "<span id="nameAdmin"></span>"?
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
 							<button class="btn btn-primary" type="submit">Oui</button>
 						</div>
 					</form>
@@ -150,7 +150,7 @@
 					<form action="" method="post">
 						<div class="modal-header">
 							<h5 class="modal-title">Supprimer un administrateur</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -158,7 +158,7 @@
 							Voulez-vous vraiment supprimer l'administrateur "<span id="nameAdmin"></span>"?
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
 							<button class="btn btn-primary" type="submit">Oui</button>
 						</div>
 					</form>

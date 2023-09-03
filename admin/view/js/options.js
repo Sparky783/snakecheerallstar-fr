@@ -24,9 +24,16 @@ function serializeForm(form) {
 let Options = {
 	isCurrentSaison: false,
 	sections: null,
-	selectedSection : null,
+	selectedSection: null,
+	addSectionModal: null,
+	editSectionModal: null,
+	removeSectionModal: null,
 
 	Init: function () {
+		this.addSectionModal = new bootstrap.Modal('#addSectionModal');
+		this.editSectionModal = new bootstrap.Modal('#editSectionModal');
+		this.removeSectionModal = new bootstrap.Modal('#removeSectionModal');
+
 		// Partie inscription
 		$("#applyBlock button").click(function(){
 			$.ajax({
@@ -46,7 +53,7 @@ let Options = {
 		$("#addSectionButton").click(function(){
 			Options.selectedSection = null;
 			$('#addSectionModal').find("input, textarea, select").val("");
-			$('#addSectionModal').modal();
+			Options.addSectionModal.show();
 		});
 		
 		$('#addSectionModal').find("form").submit(function(){
@@ -56,7 +63,7 @@ let Options = {
 				data: serializeForm($("#addSectionModal form")),
 				success: function() {
 					Options.RefreshSection();
-					$('#addSectionModal').modal('hide');
+					Options.addSectionModal.hide();
 				}
 			});
 	
@@ -73,7 +80,7 @@ let Options = {
 				data: dataForm,
 				success: function() {
 					Options.RefreshSection();
-					$('#editSectionModal').modal('hide');
+					Options.editSectionModal.hide();
 				}
 			});
 	
@@ -89,7 +96,7 @@ let Options = {
 				},
 				success: function() {
 					Options.RefreshSection();
-					$('#removeSectionModal').modal('hide');
+					Options.removeSectionModal.hide();
 				}
 			});
 	
@@ -140,13 +147,13 @@ let Options = {
 			$('#editSectionModal').find("#depositUniformPriceInput").val(Options.selectedSection.depositUniformPrice);
 			$('#editSectionModal').find("#maxMembersInput").val(Options.selectedSection.maxMembers);
 			
-			$('#editSectionModal').modal();
+			Options.editSectionModal.show();
 		});
 		
 		actions.find(".remove-section").click(function(){
 			Options.selectedSection = section;
 			$("#removeSectionModal").find("#sectionName").html(Options.selectedSection.name);
-			$('#removeSectionModal').modal();
+			Options.removeSectionModal.show();
 		});
 	
 		var row = $("<tr></tr>");
@@ -159,10 +166,11 @@ let Options = {
 		row.append("<td>" + section.depositUniformPrice + " €</td>");
 		row.append("<td>" + section.maxMembers + "</td>");
 
-		if(Options.isCurrentSaison)
+		if (Options.isCurrentSaison) {
 			row.append(actions);
-		else
+		} else {
 			row.append("<td></td>");
+		}
 		
 		$("#sectionList tbody").append(row);
 	},
