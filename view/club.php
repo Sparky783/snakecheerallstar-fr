@@ -40,9 +40,9 @@
 						</div>
 						<div class="col-sm-2">
 							<div class="card card-green">
-								<img class="card-img-top" src="view/img/julie_darbarry.jpg" alt="...">
+								<img class="card-img-top" src="view/img/julie_darbary.jpg" alt="...">
 								<div class="card-body">
-									<p class="coach-name">Julie Darbarry</p>
+									<p class="coach-name">Julie Darbary</p>
 								</div>
 							</div>
 						</div>

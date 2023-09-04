@@ -268,6 +268,7 @@ class SnakeTools
 		}
 		
 		// Documents poour les adhérents
+		$url = URL;
 		$adherents = $inscription->getAdherents();
 		$adherentsContent = '';
 
@@ -276,16 +277,16 @@ class SnakeTools
 				$adherentsContent .= "<p>Pour {$adherent->getFirstname()} {$adherent->getLastname()} :</p><ul>";
 
 				if ($adherent->hasMedicine()) {
-					$adherentsContent .= "<li>Formulaire d'autorisation médical à remplir <a href='{URL}/content/dossier_inscription/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
+					$adherentsContent .= "<li>Formulaire d'autorisation médical à remplir <a href='{$url}/content/dossier_inscription/afld.pdf' title='' target='_blank'>disponible ici</a></li>";
 				}
 
 				// Questionnaire de santé en fonction de l'age
 				$age = ToolBox::age($adherent->getBirthday());
 				
 				if ($age < 18) {
-					$adherentsContent .= "<li>Questionnaire de santé (Mineur) <a href='{URL}/content/dossier_inscription/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+					$adherentsContent .= "<li>Questionnaire de santé (Mineur) <a href='{$url}/content/dossier_inscription/questionnaire_sante_mineur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 				} else {
-					$adherentsContent .= "<li>Questionnaire de santé (Majeur) <a href='{URL}/content/dossier_inscription/questionnaire_sante_majeur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
+					$adherentsContent .= "<li>Questionnaire de santé (Majeur) <a href='{$url}/content/dossier_inscription/questionnaire_sante_majeur.pdf' title='' target='_blank'>disponible ici</a> (obligatoire)</li>";
 				}
 
 				$adherentsContent .= "</ul><br /><br />";
@@ -294,6 +295,7 @@ class SnakeTools
 
 		$saison = $adherents[0]->getSection()->getSaison();
 
+		$signature = TITLE;
 		$mailContent = <<<HTML
 			<p>
 				Bonjour,
@@ -305,16 +307,17 @@ class SnakeTools
 				Pour chaque adhérent, veuillez fournir les éléments suivants :
 			</p>
 			<ul>
-				<li>Formulaire de la FFFA <a href='{URL}/content/dossier_inscription/licence_FFFA.pdf' title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>
-				<li>Autorisation parentale en cas d'accident <a href='{URL}/content/dossier_inscription/autorisation_parentale.pdf' title='' target='_blank'>disponible ici</a></li>
-				<li>Formulaire de Sportmut <a href='{URL}/content/dossier_inscription/sportmut.pdf' title='' target='_blank'>disponible ici</a> (même si vous n'y adhérez pas)</li>
+				<li>Dossier d'inscription <a href="{$url}/content/dossier_inscription/dossier_snake.pdf" title='' target='_blank'>disponible ici</a></li>
+				<li>Formulaire de la FFFA <a href="{$url}/content/dossier_inscription/licence_FFFA.pdf" title='' target='_blank'>disponible ici</a> <b>(Attention le certificat médical doit être rempli sur cette feuille par le médecin)</b></li>
+				<li>Autorisation parentale en cas d'accident <a href="{$url}/content/dossier_inscription/autorisation_parentale.pdf" title='' target='_blank'>disponible ici</a></li>
+				<li>Formulaire de Sportmut <a href="{$url}/content/dossier_inscription/sportmut.pdf" title='' target='_blank'>disponible ici</a> (même si vous n'y adhérez pas)</li>
 				<li>Photocopie de la pièce d'identité</li>
 				<li>Photo d'identité</li>
 			</ul>
 			<p>
 				<br /><br />
 				Cordialement,<br />
-				{TITLE}
+				{$signature}
 			</p>
 		HTML;
 

@@ -17,7 +17,7 @@ var Presences = {
 		$("#tableAdherents tbody").html("");
 
 		$.ajax({
-			url: api_url + "presences_get_list/" + id_section,
+			url: api_url + "presences_list/" + id_section,
 			type: "GET",
 			success: function(data) {
 				$("#content").html(data.html);

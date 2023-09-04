@@ -1,14 +1,10 @@
 <?php
 use ApiCore\Api;
 use System\ToolBox;
-use Snake\SnakeTools;
 use Snake\Adherent;
 use Snake\Tuteur;
-use Snake\Reduction;
-use Snake\EReductionType;
 use Snake\Inscription;
 use Snake\EPaymentType;
-use Snake\ReductionPack;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 	$app->post('/adherents_add', function($args) {

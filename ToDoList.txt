@@ -1,22 +1,19 @@
-Choses à faire:
- - Créer un bouton "Candidater pour l'AG" dans l'espace admin (droit: administrateur)
-	- Affichage, ajout, modif et suppréssion des candidats.
- - Créer un bouton "Appliquer une réduction" dans l'espace admin (droit: trésorier)
-	- Permet d'ajouter une réduction à une personne en particulier (basé sur la liste des personnes de la saison précédente)
-	- Permet d'ajouter une réduction à tous les membres d'une section ou du club (basé sur la liste des personnes de la saison précédente)
- - Vérifier l'envoie automatique d'une facture (soit "Payé", soit "En attente de paiement") à la fin de chaque inscription.
- - Créer un bouton réinitialiser le mot de passe pour l'administrateur (Dans la gestion des utilisateurs)
+- CrÃ©er une table "inscription" puis lier les adhÃ©rent les tuteurs et les paiements avec cette table.
+- Traiter les TODO.
+- Ajouter la possibiliter de mettre une photo d'identiter
+- GÃ©nÃ©rer les fichiers PDF pour l'inscription (CrÃ©er un PDF a partir d'une image du PDF d'origine).  
+
+
+Choses ï¿½ faire:
+ - Crï¿½er un bouton "Candidater pour l'AG" dans l'espace admin (droit: administrateur)
+	- Affichage, ajout, modif et supprï¿½ssion des candidats.
+ - Crï¿½er un bouton "Appliquer une rï¿½duction" dans l'espace admin (droit: trï¿½sorier)
+	- Permet d'ajouter une rï¿½duction ï¿½ une personne en particulier (basï¿½ sur la liste des personnes de la saison prï¿½cï¿½dente)
+	- Permet d'ajouter une rï¿½duction ï¿½ tous les membres d'une section ou du club (basï¿½ sur la liste des personnes de la saison prï¿½cï¿½dente)
+ - Vï¿½rifier l'envoie automatique d'une facture (soit "Payï¿½", soit "En attente de paiement") ï¿½ la fin de chaque inscription.
+ - Crï¿½er un bouton rï¿½initialiser le mot de passe pour l'administrateur (Dans la gestion des utilisateurs)
  - Modifier le formulaire d'ajout d'utilisateur (bureau) pour l'envoi d'un mail automatique avec son mot de passe.
  - Voir pour un paiement en plusieurs fois en ligne (Paypal ou autre).
- - Redécouper les tables pour plus d'évolution. ("Adherents", "Inscriptions", "etc ...)
+ - Redï¿½couper les tables pour plus d'ï¿½volution. ("Adherents", "Inscriptions", "etc ...)
 	- A voir si c'est possible et comment.
 	- Passer au inscription et aux petites (Pas de compte internet)
-
-
-============================================================
-Modification faite:
- - Ajouter colonne "saison" dans la table adherent au format "YYYY-YYYY".
-	SQL: UPDATE `adherents` SET `saison`="2019-2020"
- - Créer une table "CandidatsAG" pour la liste des candidats.
- - Créer une table "ElectionAG" pour chaque vote collecté.
- - Modifier l'espace admin pour afficher les membres que de la saison en cours.

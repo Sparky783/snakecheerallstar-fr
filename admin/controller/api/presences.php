@@ -4,89 +4,86 @@ use System\ToolBox;
 use System\Database;
 use Snake\Adherent;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "coach")))
-{
-	$app->Get("/presences_get_list/{id_section}", function($args) {
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'coach'])) {
+	$app->get('/presences_list/{id_section}', function($args) {
 		global $router;
 
 		$nbr = 0;
-		$html = "";
+		$html = '';
+		//TODO: Move this SQL query in an object.
 		$database = new Database();
 
 		$rech = $database->query("SELECT COUNT(*) FROM presences WHERE id_section=:id_section AND jour=:jour", array(
-			"id_section" => intval($args['id_section']),
-			"jour" => date("Y-m-d")
+			'id_section' => (int)$args['id_section'],
+			'jour' => date("Y-m-d")
 		));
 		
-		if($rech != null)
-		{
+		if ($rech != null) {
 			$data = $rech->fetch();
 			
-			if(intval($data['COUNT(*)']) > 0)
-			{
-				$html = "
+			if ((int)$data['COUNT(*)'] > 0) {
+				$url = $router->getUrl("home");
+				$html = <<<HTML
 					<p class='text-center'>
 						Les présences ont déjà été validé pour aujourd'hui.
 						<br /><br />
-						<a class='btn btn-snake' href=" . $router->GetUrl("home") . " title=''>Retour</a>
+						<a class='btn btn-snake' href="{$url}" title=''>Retour</a>
 					</p>
-				";
-			}
-			else
-			{
-				$adherents = Adherent::GetListBySection($args['id_section']);
-				$htmlAdh = "";
+					HTML;
+			} else {
+				$adherents = Adherent::getListBySection($args['id_section']);
+				$htmlAdh = '';
 
-				foreach($adherents as $adherent)
-				{
-					$htmlAdh .= "
-						<tr data-id='" . $adherent->GetId() . "'>
-							<td>" . $adherent->GetFirstname() . " " . $adherent->GetLastname() . "</td>
+				foreach ($adherents as $adherent) {
+					$htmlAdh .= <<<HTML
+						<tr data-id="{$adherent->getId()}">
+							<td>{$adherent->GetFirstname()} {$adherent->GetLastname()}</td>
 							<td class='text-right'>
 								<div class='presence-button btn-group'>
-									<button class='btn snake' data-type='present'><i class='far fa-thumbs-up'></i></button>
-									<button class='btn justify' data-type='justify'><i class='far fa-file-alt'></i></button>
-									<button class='btn warning' data-type='late'><i class='far fa-clock'></i></button>
-									<button class='btn danger' data-type='absent'><i class='fas fa-ban'></i></button>
+									<button class='btn snake' data-type='present' title='Présent'><i class='far fa-thumbs-up'></i></button>
+									<button class='btn justify' data-type='justify' title='Absence justifié'><i class='far fa-file-alt'></i></button>
+									<button class='btn warning' data-type='late' title='En retard'><i class='far fa-clock'></i></button>
+									<button class='btn danger' data-type='absent' title='Absent'><i class='fas fa-ban'></i></button>
 								</div>
 							</td>
 						</tr>
-					";
+						HTML;
 					
 					$nbr ++;
 				}
 
-				$html = "
+				$html = <<<HTML
 					<div class='card-header clearfix'>
-						<span class='float-left'>Il y a " . $nbr . " élèves</span>
+						<span class='float-left'>Il y a {$nbr} élèves</span>
 					</div>
 					<table id='tableAdherents' class='card-body table table-hover'>
 						<tbody>
-						" . $htmlAdh . "
+							{$htmlAdh}
 						</tbody>
 					</table>
 					<div class='card-footer clearfix text-right'>
 						<button id='validatePresences' class='btn btn-snake' type='button'>Valider les présences</button> 
 					</div>
-				";
+				HTML;
 			}
 		}
 
-		API::SendJSON(array(
-			"html" => $html
-		));
+		API::sendJSON([
+			'html' => $html
+		]);
 	});
 
-	$app->Post("/validate_presences", function($args) {
+	$app->post('/validate_presences', function($args) {
+		//TOTO: move SQL to an object
 		$database = new Database();
 
-		$result = $database->Insert("presences", array(
-			"id_section" => intval($args['section']),
-			"jour" => date("Y-m-d"),
-			"list" => serialize($args['status'])
-		));
+		$result = $database->insert('presences', [
+			'id_section' => (int)$args['section'],
+			'jour' => date('Y-m-d'),
+			'list' => serialize($args['status'])
+		]);
 		
-		API::SendJSON($result);
+		API::sendJSON($result);
 	});
 }
 ?>

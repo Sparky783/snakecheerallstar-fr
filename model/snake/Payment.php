@@ -2,8 +2,6 @@
 namespace Snake;
 
 use DateTime;
-use ErrorException;
-use InvalidArgumentException;
 use System\Database;
 use Snake\Adherent;
 use Snake\Reduction;
@@ -71,7 +69,7 @@ class Payment
 			$this->_id = (int)$dbData['id_payment'];
 			$this->_basePrice = (int)$dbData['base_price'];
 			$this->_fixedPrice = (int)$dbData['fixed_price'];
-			$this->_method = self::convertStringToEPaymentType($dbData['method']);
+			$this->_method = EPaymentType::tryFrom($dbData['method']);
 			$this->_paymentDate = new DateTime($dbData['date_payment']);
 			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
 			$this->_isDone = (bool)$dbData['is_done'];
@@ -489,22 +487,5 @@ class Payment
 		$database = new Database();
 		return $database->delete('payments', 'id_payment', $idPayment);
 		// Les réductions sont supprimées grâce à la contrainte par clè étrangère de la BDD.
-	}
-
-	/**
-	 * Convertie le type de paiement de string vers EPaymentType.
-	 * 
-	 * 
-	 */
-	private static function convertStringToEPaymentType(string $paymentType): EPaymentType
-	{
-		switch ($paymentType) {
-			case 'espece': return EPaymentType::Espece;
-			case 'cheque': return EPaymentType::Cheque;
-			case 'internet': return EPaymentType::Internet;
-			case 'virement': return EPaymentType::Virement;
-			default:
-				throw new InvalidArgumentException("The payment type ($paymentType) does not exist");
-		}
 	}
 }

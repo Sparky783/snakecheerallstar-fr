@@ -2,8 +2,7 @@
 use ApiCore\Api;
 use System\ToolBox;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "tresorier")))
-{
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'tresorier'])) {
 	/*
 	$app->Post("/comptabilite_export_list", function($args) {
 		$session = Session::GetInstance();

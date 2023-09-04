@@ -28,6 +28,7 @@ let InscriptionManager = {
 	hasChanged: true,
 	isPayed: false,
 	amountToPay: 100,
+	messageBoxModal: null,
 	paymenbtWaittingModal: null,
 
 	init: function () {
@@ -36,6 +37,7 @@ let InscriptionManager = {
 		$('#payment').hide();
 		$('#validation').hide();
 
+		this.messageBoxModal = new bootstrap.Modal("#messageBoxModal");
 		this.paymenbtWaittingModal = new bootstrap.Modal("#paymentPayPalWaitting");
 
 		this.initStepButtons();
@@ -364,7 +366,7 @@ let InscriptionManager = {
 
 					InscriptionManager.changeStep('payment');
 				} else {
-					alert(response.message);
+					InscriptionManager.messageBox(response.message);
 				}
 			}
 		});
@@ -374,7 +376,7 @@ let InscriptionManager = {
 		let selectedMethod = $('#paymentOptions button.active');
 
 		if (selectedMethod === undefined) {
-			alert("Veuillez sélectionner une méthode de paiement.");
+			this.messageBox("Veuillez sélectionner une méthode de paiement.");
 			return;
 		}
 
@@ -398,7 +400,7 @@ let InscriptionManager = {
 					InscriptionManager.changeStep('validation');
 					InscriptionManager.isPayed = true;
 				} else {
-					alert(response.message);
+					InscriptionManager.messageBox(response.message);
 				}
 			}
 		});
@@ -448,5 +450,10 @@ let InscriptionManager = {
 
 		$('#paymentResult').show();
 		this.paymenbtWaittingModal.hide();
+	},
+
+	messageBox: function (message) {
+		$('#messageBox').html(message);
+		this.messageBoxModal.show();
 	}
 };

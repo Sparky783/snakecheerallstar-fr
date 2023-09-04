@@ -23,14 +23,12 @@
 			<div class="front">
 				<div class="welcomeTitle">
 					<h1>Snake Cheer All Star</h1>
-					<p>
-						Club sportif de cheerleading sur Pau
-					</p>
+					<p>Club sportif de cheerleading sur Pau</p>
 				</div>
 			</div>
 		</section>
 
-		<div class="container snake-body">
+		<main class="container snake-body">
 			<section id="intro" class="row">
 				<div class="container">
 					<h1 class="text-center">Snake Cheer All Star équipe de cheerleading sur Pau<br />rejoignez-nous!</h1>
@@ -67,7 +65,7 @@
 					</p>
 				</div>
 			</section>
-		</div>
+		</main>
 		<?php include_once("FOOTER.php"); ?>
 	</body>
 </html>

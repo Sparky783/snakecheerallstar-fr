@@ -4,86 +4,75 @@ use System\Session;
 use System\Admin;
 
 // Met a jour les informations de l'utilisateur connecté.
-$app->Post("/profil_update_infos", function($args) {
+$app->post('/profil_update_infos', function($args) {
 	$args['name'] = trim($args['name']);
 	
-	if($args['name'] != "")
-	{
-		$session = Session::GetInstance();
-		$user = Admin::GetById($session->admin_id);
-		$user->SetName($args['name']);
+	if ($args['name'] !== '') {
+		$session = Session::getInstance();
+		$user = Admin::getById($session->admin_id);
+		$user->setName($args['name']);
 		
-		if($user->SaveToDatabase())
-		{
-			$session->admin_name = $user->GetName();
+		if ($user->saveToDatabase()) {
+			$session->admin_name = $user->getName();
 		
-			$response = array(
-				"type" => "success",
-				"message" => "Vos informations ont bien été mises à jour."
-			);
+			$response = [
+				'type' => "success",
+				'message' => "Vos informations ont bien été mises à jour."
+			];
+		} else {
+			$response = [
+				'type' => "error",
+				'message' => "Une erreur s'est produit lors de la mise à jour de vos informations."
+			];
 		}
-		else
-		{
-			$response = array(
-				"type" => "error",
-				"message" => "Une erreur s'est produit lors de la mise à jour de vos informations."
-			);
-		}
-	}
-	else
-	{
-		$response = array(
-			"type" => "error",
-			"message" => "Vous devez entrer un nom."
-		);
+	} else {
+		$response = [
+			'type' => "error",
+			'message' => "Vous devez entrer un nom."
+		];
 	}
 	
-	API::SendJSON($response);
+	API::sendJSON($response);
 });
 
-$app->Post("/profil_update_password", function($args) {
-	$session = Session::GetInstance();
+$app->post('/profil_update_password', function($args) {
+	$session = Session::getInstance();
 	$old_password = sha1(sha1(AUTH_SALT) . sha1($args['old_password']));
-	$password = "";
+	$password = '';
 	
-	if ($args['old_password'] != "" &&
-		$args['new_password'] != "" &&
-		$args['confirm_password'] != "" &&
-		$old_password == $session->admin_password &&
-		$args['new_password'] == $args['confirm_password']
-	)
+	if ($args['old_password'] !== '' &&
+		$args['new_password'] !== '' &&
+		$args['confirm_password'] !== '' &&
+		$old_password === $session->admin_password &&
+		$args['new_password'] === $args['confirm_password']
+	) {
 		$password = sha1(sha1(AUTH_SALT) . sha1($args['new_password']));
+	}
 	
-	if($password != "")
-	{
-		$user = Admin::GetById($session->admin_id);
-		$user->SetPassword($password);
+	if ($password !== '') {
+		$user = Admin::getById($session->admin_id);
+		$user->setPassword($password);
 		
-		if($user->SaveToDatabase())
-		{
+		if ($user->saveToDatabase()) {
 			$session->admin_password = $args['new_password'];
 		
-			$response = array(
-				"type" => "success",
-				"message" => "Votre mot de passe à été mises à jour."
-			);
+			$response = [
+				'type' => "success",
+				'message' => "Votre mot de passe à été mises à jour."
+			];
+		} else {
+			$response = [
+				'type' => "error",
+				'message' => "Une erreur s'est produit lors de la mise à jour de votre mot de passe."
+			];
 		}
-		else
-		{
-			$response = array(
-				"type" => "error",
-				"message" => "Une erreur s'est produit lors de la mise à jour de votre mot de passe."
-			);
-		}
-	}
-	else
-	{
-		$response = array(
-			"type" => "error",
-			"message" => "Les informations que vous avez fournis ne sont pas correcte ou ne correspondent pas."
-		);
+	} else {
+		$response = [
+			'type' => "error",
+			'message' => "Les informations que vous avez fournis ne sont pas correcte ou ne correspondent pas."
+		];
 	}
 	
-	API::SendJSON($response);
+	API::sendJSON($response);
 });
 ?>

@@ -116,12 +116,12 @@ global $router;
 </section>
 
 <div id='paymentPayPalWaitting' class='modal fade' tabindex='-1' aria-labelledby='paymentPayPalWaitting' aria-hidden='true'>
-	<div class='modal-dialog' role='document'>
+	<div class='modal-dialog modal-dialog-centered' role='document'>
 		<div class="modal-content">
-			<p class='text-center'>
+			<div class='modal-body text-center'>
 				<span class='spinner-border text-light' role='status'></span><br />
 				Validation en cours ...
-			</p>
+			</div>
 		</div>
 	</div>
 </div>

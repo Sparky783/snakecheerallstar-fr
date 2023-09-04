@@ -51,11 +51,12 @@
 	width: 20%;
 }
 
-#steps .steps-blocks .step span {
-	display: block;
+#steps .steps-blocks .step .step-content {
+	display: flex;
+    justify-content: center;
+	flex-direction: column;
 	background-color: white;
-	width: 150px;
-	margin: 0 auto;
+	margin: 0 15px;
 	padding: 20px;
 	border: solid 2px #848484;
 	border-radius: 10px;
@@ -66,7 +67,7 @@
 	cursor: pointer;
 }
 
-#steps .steps-blocks .step.active span {
+#steps .steps-blocks .step.active .step-content {
 	background-color: #2f832f;
 	color: white;
 	border-color: #454545;
@@ -242,7 +243,7 @@
 	margin: 35px 50px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
 	#messageInscription div {
 		width: 100%;
 	}
@@ -251,17 +252,32 @@
 		margin: 20px 0;
 	}
 
-	#steps .step {
-		width: 100%;
-		float: none;
+	#steps .steps-line {
+		justify-content: center;
+		height: 100%;
+		padding: 20px 0;
 	}
 
-	#steps .step span {
-		display: none;
+	#steps .steps-line span {
+		width: auto;
+		border-left: solid 3px #bbbbbb;
+		border-bottom: none;
 	}
-	
-	#steps .step span.active {
-		display: block;
+
+	#steps .steps-blocks {
+		flex-direction: column;
+	}
+
+	#steps .steps-blocks .step {
+		width: 100%;
+	}
+
+	#steps .steps-blocks .step .step-content {
+		flex-direction: row;
+		width: 100%;
+		gap: 10px;
+		margin: 5px 0;
+    	padding: 7px;
 	}
 
 	#adherentMenu button,
@@ -273,11 +289,11 @@
 		margin: 10px auto;
 	}
 
-	#selectOption button {
+	#paymentOptions button {
 		margin-bottom: 10px;
 	}
 
-	#selectOption div:last-child button {
+	#paymentOptions div:last-child button {
 		margin-bottom: 0;
 	}
 

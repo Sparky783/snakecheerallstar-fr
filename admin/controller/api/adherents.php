@@ -200,11 +200,11 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 			}
 		}
 
-		API::SendJSON($result);
+		API::sendJSON($result);
 	});
 
 	$app->post('/adherent_export_list', function($args) {
-		$session = Session::GetInstance();
+		$session = Session::getInstance();
 		$adherents = null;
 
 		if ($args['id_section'] === "all") {

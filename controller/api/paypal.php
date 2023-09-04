@@ -57,7 +57,8 @@ $app->post("/approve_paypal_order", function($args) {
 		'secret' => PAYPAL_SECRET
 	]);
 	
-	$response = $paypal->showOrderDetails($args['orderID']);
+	$orderId = $args['orderID'];
+	$response = $paypal->showOrderDetails($orderId);
 	$purchaseUnit = $response->purchase_units[0];
 
 	$currency = $purchaseUnit->payments->captures[0]->amount->currency_code;

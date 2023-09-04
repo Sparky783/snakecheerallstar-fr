@@ -22,7 +22,7 @@ if (!isset($session->inscriptionAllowAccess)) {
 }
 
 // Accès à l'inscription pour le dev.
-if (ENV === 'DEV' || $gmm->getValue('pass') === 'kamoulox') {
+if (ENV === 'DEV' || $gmm->getValue('pass') === 'bwsgl2024') {
 	$session->inscriptionAllowAccess = true;
 }
 

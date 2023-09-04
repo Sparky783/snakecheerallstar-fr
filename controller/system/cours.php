@@ -28,7 +28,7 @@ if ($nbSections === 0) {
 			$ages = $section->getMaxYear() . ' ans et +';
 		} else {
 			// Pour les autres sections
-			$ages = $section->getMaxYear() . ' à ' . ($sections[$i + 1]->getMaxYear() - 1) . ' ans';
+			$ages = $section->getMaxYear() . ' à ' . ($sections[$i + 1]->getMaxYear() - 1);
 		}
 
 		$horaires = '';

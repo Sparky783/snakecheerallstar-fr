@@ -20,9 +20,9 @@ use ApiCore\Route;
  */
 class Api
 {
-    private string $_requestType = "";
-    private string $_requestString = "";
-    private array $_routes = array();
+    private string $_requestType = '';
+    private string $_requestString = '';
+    private array $_routes = [];
 
     // == CONSTRUCTOR ==
 
@@ -35,12 +35,11 @@ class Api
 
         if (isset($_GET['request'])) {
             $requestString = $_GET['request'];
-            $this->_requestString = "/" . str_replace("\\", "/", $requestString);
-            
+            $this->_requestString = '/' . str_replace('\\', '/', $requestString);
         } else {
-            header("Access-Control-Allow-Origin: *");
+            header('Access-Control-Allow-Origin: *');
             header('HTTP/1.0 404 Not Found');
-            echo "HTTP/1.0 404 Not Found";
+            echo 'HTTP/1.0 404 Not Found';
             exit;
         }
     }
@@ -54,7 +53,7 @@ class Api
      */
     public function get(string $route, mixed $callback): void
     {
-        $this->_routes[] = new Route("GET", $route, $callback);
+        $this->_routes[] = new Route('GET', $route, $callback);
     }
 
     /**
@@ -66,7 +65,7 @@ class Api
      */
     public function post(string $route, mixed $callback): void
     {
-        $this->_routes[] = new Route("POST", $route, $callback);
+        $this->_routes[] = new Route('POST', $route, $callback);
     }
 
     /**
@@ -78,7 +77,7 @@ class Api
      */
     public function put(string $route, mixed $callback): void
     {
-        $this->_routes[] = new Route("PUT", $route, $callback);
+        $this->_routes[] = new Route('PUT', $route, $callback);
     }
 
     /**
@@ -90,7 +89,7 @@ class Api
      */
     public function delete(string $route, mixed $callback): void
     {
-        $this->_routes[] = new Route("DELETE", $route, $callback);
+        $this->_routes[] = new Route('DELETE', $route, $callback);
     }
 
     /**
@@ -100,21 +99,22 @@ class Api
      */
     public function run(): void
     {
-		if($this->_requestType != "OPTIONS") {
+		if ($this->_requestType !== 'OPTIONS') {
 			$response = false;
 
 			foreach ($this->_routes as $route) {
-				if ($route->getMethod() == $this->_requestType && $route->match($this->_requestString)) {
+				if ($route->getMethod() === $this->_requestType && $route->match($this->_requestString)) {
 					$route->execute($this->_requestString);
 					$response = true;
 					break;
 				}
 			}
 
-			if(!$response)
-				self::sendJSON("Error: The route does not exist.");
+			if (!$response) {
+				self::sendJSON('Error: The route does not exist.');
+            }
 		} else {
-            self::sendJSON("Error: OPTIONS request type is not allowed.");
+            self::sendJSON('Error: OPTIONS request type is not allowed.');
         }
     }
 
@@ -127,8 +127,8 @@ class Api
      */
     public static function sendJSON(mixed $data): void
     {
-        header("Access-Control-Allow-Origin: *");
-		header("Content-Type: application/json");
+        header('Access-Control-Allow-Origin: *');
+		header('Content-Type: application/json');
         echo json_encode($data);
 		exit;
     }

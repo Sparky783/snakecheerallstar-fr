@@ -32,19 +32,34 @@
 							
 							<div class="steps-blocks">
 								<div id="stepAdherents" class="step active">
-									<span>1<br />Adhérents</span>
+									<span class="step-content">
+										<span>1</span>
+										<span>Adhérents</span>
+									</span>
 								</div>
 								<div id="stepTuteurs" class="step">
-									<span>2<br />Tuteurs</span>
+									<span class="step-content">
+										<span>2</span>
+										<span>Tuteurs</span>
+									</span>
 								</div>
 								<div id="stepAuthorisation" class="step">
-									<span>3<br />Autorisations</span>
+									<span class="step-content">
+										<span>3</span>
+										<span>Autorisations</span>
+									</span>
 								</div>
 								<div id="stepPayment" class="step">
-									<span>4<br />Paiement</span>
+									<span class="step-content">
+										<span>4</span>
+										<span>Paiement</span>
+									</span>
 								</div>
 								<div id="stepValidation" class="step">
-									<span>5<br />Confirmation</span>
+									<span class="step-content">
+										<span>5</span>
+										<span>Confirmation</span>
+									</span>
 								</div>
 							</div>
 						</div>
@@ -56,6 +71,15 @@
 				<?php include('inscription-authorisation.php') ?>
 				<?php include('inscription-payment.php') ?>
 				<?php include('inscription-validation.php') ?>
+
+				<div id='messageBoxModal' class='modal fade' tabindex='-1' aria-labelledby='paymentPayPalWaitting' aria-hidden='true'>
+					<div class='modal-dialog modal-dialog-centered' role='document'>
+						<div class="modal-content">
+							<div id="messageBox" class='modal-body text-center'>
+							</div>
+						</div>
+					</div>
+				</div>
 			<?php } else { ?>
 				<div class="row">
 					<div class="col-sm-12">

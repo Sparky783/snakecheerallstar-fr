@@ -5,8 +5,7 @@ use System\Session;
 use Snake\Section;
 use Snake\SnakeTools;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster")))
-{
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 	$app->post('/apply_options', function($args) {
 		$session = Session::getInstance();
 		

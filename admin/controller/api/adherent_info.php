@@ -1,134 +1,115 @@
 <?php
 use ApiCore\Api;
+use Snake\Inscription;
 use System\ToolBox;
 use System\Session;
 use Snake\SnakeTools;
 use Snake\Tuteur;
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
-{
-	$app->Post("/adherent_info_add_tuteur", function($args) {
-		$session = Session::GetInstance();
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
+	$app->post('/adherent_info_add_tuteur', function($args) {
+		$session = Session::getInstance();
 
 		$tuteur = new Tuteur();
-		$response = array();
+		$response = [];
 			
-		if($tuteur->SetInformation($args))
-		{
-			$tuteur->AddAdherent(unserialize($session->selectedAdherent));
+		if ($tuteur->setInformation($args)) {
+			$tuteur->addAdherent(unserialize($session->selectedAdherent));
 
-			if($tuteur->SaveToDatabase())
-			{
-				$response = array(
+			if ($tuteur->saveToDatabase()) {
+				$response = [
 					'id' => $tuteur->GetId(),
 					'message' => "Le tuteur a bien été ajouté."
-				);
-			}
-			else
-			{
-				$response = array(
+				];
+			} else {
+				$response = [
 					'message' => "Une erreur lors de l'ajout dans la base de données est survenue."
-				);
+				];
 			}
-		}
-		else
-		{
-			$response = array(
+		} else {
+			$response = [
 				'message' => "L'un des champs n'est pas correctement rempli."
-			);
+			];
 		}
 
-		API::SendJSON($response);
+		API::sendJSON($response);
 	});
 }
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "tresorier", "secretaire")))
-{
-	$app->Post("/adherent_info_send_bill", function($args) {
-		$session = Session::GetInstance();
-
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'tresorier', 'secretaire'])) {
+	$app->post('/adherent_info_send_bill', function($args) {
+		$session = Session::getInstance();
 		$adherent = unserialize($session->selectedAdherent);
 		
-		if(ENV == "DEV")
-		{
+		if (ENV === 'DEV') {
 			$tuteur = new Tuteur();
-			$tuteur->SetFirstname(TITLE . " - DEV");
+			$tuteur->SetFirstname(TITLE . ' - DEV');
 			$tuteur->SetEmail(EMAIL_WABMASTER);
-			$tuteur->SetPhone("00 00 00 00 00");
-		}
-		else
-		{
-			if($args['id_tuteur'] == "snake")
-			{
+			$tuteur->SetPhone('00 00 00 00 00');
+		} else {
+			if ($args['id_tuteur'] === 'snake') {
 				$tuteur = new Tuteur();
 				$tuteur->SetFirstname(TITLE);
 				$tuteur->SetEmail(EMAIL_CONTACT);
-				$tuteur->SetPhone("00 00 00 00 00");
+				$tuteur->SetPhone('00 00 00 00 00');
+			} else {
+				$tuteur = Tuteur::getById($args['id_tuteur']);
 			}
-			else
-				$tuteur = Tuteur::GetById($args['id_tuteur']);
 		}
 
-		$result = SnakeTools::SendBill($adherent->GetPayment(), $tuteur);
-
-		$response = array();
+		$result = SnakeTools::sendBill($adherent->getPayment(), $tuteur);
+		$response = [];
 		
-		if($result) {
-			$response = array(
-				"message" => "La facture à bien été envoyé."
-			);
+		if ($result) {
+			$response = [
+				'message' => "La facture à bien été envoyé."
+			];
 		} else {
-			$response = array(
-				"message" => "Une erreur est survenue, veuillez réessayer."
-			);
+			$response = [
+				'message' => "Une erreur est survenue, veuillez réessayer."
+			];
 		}
 
-		API::SendJSON($response);
+		API::sendJSON($response);
 	});
 }
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")))
-{
-	$app->Post("/adherent_info_send_recap", function($args) {
-		$session = Session::GetInstance();
-
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'secretaire'])) {
+	$app->post('/adherent_info_send_recap', function($args) {
+		$session = Session::getInstance();
 		$adherent = unserialize($session->selectedAdherent);
 		
-		if(ENV == "DEV")
-		{
+		if (ENV === 'DEV') {
 			$tuteur = new Tuteur();
-			$tuteur->SetFirstname(TITLE . " - DEV");
-			$tuteur->SetEmail(EMAIL_WABMASTER);
-			$tuteur->SetPhone("00 00 00 00 00");
-		}
-		else
-		{
-			if($args['id_tuteur'] == "snake")
-			{
-				$tuteur = new Tuteur();
-				$tuteur->SetFirstname(TITLE);
-				$tuteur->SetEmail(EMAIL_CONTACT);
-				$tuteur->SetPhone("00 00 00 00 00");
-			}
-			else
-				$tuteur = Tuteur::GetById($args['id_tuteur']);
-		}
-
-		$result = SnakeTools::SendRecap($adherent->GetPayment(), $tuteur);
-
-		$response = array();
-		
-		if($result) {
-			$response = array(
-				"message" => "Le récapitulatif à bien été envoyé."
-			);
+			$tuteur->setFirstname(TITLE . ' - DEV');
+			$tuteur->setEmail(EMAIL_WABMASTER);
+			$tuteur->setPhone('00 00 00 00 00');
 		} else {
-			$response = array(
-				"message" => "Une erreur est survenue, veuillez réessayer."
-			);
+			if ($args['id_tuteur'] === 'snake') {
+				$tuteur = new Tuteur();
+				$tuteur->setFirstname(TITLE);
+				$tuteur->setEmail(EMAIL_CONTACT);
+				$tuteur->setPhone('00 00 00 00 00');
+			} else {
+				$tuteur = Tuteur::getById($args['id_tuteur']);
+			}
 		}
 
-		API::SendJSON($response);
+		$inscription = Inscription::getByPaymentId($adherent->getPayment()->getId());
+		$result = SnakeTools::sendRecap($inscription, $tuteur);
+		$response = [];
+		
+		if ($result) {
+			$response = [
+				'message' => "Le récapitulatif à bien été envoyé."
+			];
+		} else {
+			$response = [
+				'message' => "Une erreur est survenue, veuillez réessayer."
+			];
+		}
+
+		API::sendJSON($response);
 	});
 }
 ?>

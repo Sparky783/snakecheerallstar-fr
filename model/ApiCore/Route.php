@@ -9,8 +9,8 @@ use ErrorException;
  */
 class Route
 {
-	private string $_method = "";
-	private string $_route = "";
+	private string $_method = '';
+	private string $_route = '';
 	private mixed $_callback = null;
 
     /**
@@ -45,10 +45,11 @@ class Route
      */
 	public function match(string $request): bool
     {
-		$regex = "#^" . preg_replace("/\{[a-zA-Z]+\}/", ".+", $this->_route) . "$#";
+		$regex = '#^' . preg_replace('/\{[a-zA-Z_-]+\}/', '.+', $this->_route) . '$#';
 
-		if (preg_match($regex, $request))
+		if (preg_match($regex, $request)) {
 			return true;
+        }
 
 		return false;
 	}
@@ -61,24 +62,24 @@ class Route
      */
 	public function execute(string $request): void
     {
-        if($this->_callback === null) {
+        if ($this->_callback === null) {
             throw new ErrorException('The callback function must be initialized before execute API request.');
         }
 
 		switch ($this->_method) {
-            case "GET":
+            case 'GET':
                 call_user_func($this->_callback, $this->makeArgs($request));
                 break;
 
-            case "POST":
+            case 'POST':
                 call_user_func($this->_callback, $_POST);
                 break;
 
-            case "PUT":
+            case 'PUT':
                 call_user_func($this->_callback, $_PUT);
                 break;
 
-            case "DELETE":
+            case 'DELETE':
                 call_user_func($this->_callback, $this->makeArgs($request));
                 break;
         }
@@ -92,15 +93,16 @@ class Route
      */
 	private function makeArgs($request): array
     {
-		$values = explode("/", $request);
-		$keys = explode("/", $this->_route);
-		$args = array();
+		$values = explode('/', $request);
+		$keys = explode('/', $this->_route);
+		$args = [];
 
 		$tot = count($keys);
 		
 		for ($i = 0; $i < $tot; $i++) {
-			if(preg_match("/\{[a-zA-Z]+\}/", $keys[$i]))
-				$args[str_replace(array('{', '}'), '', $keys[$i])] = $values[$i];
+			if (preg_match('/\{[a-zA-Z_-]+\}/', $keys[$i])) {
+				$args[str_replace(['{', '}'], '', $keys[$i])] = $values[$i];
+            }
 		}
 
 		return $args;

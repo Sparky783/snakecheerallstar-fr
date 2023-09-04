@@ -2,12 +2,19 @@ $(document).ready(function(){
 	AdherentInfo.Init();
 });
 
-var AdherentInfo = {
+let AdherentInfo = {
 	selectedId: null,
+	addTuteurModal: null,
+	sendBillModal: null,
+	sendRecapModal: null,
 
 	Init: function () {
+		this.addTuteurModal = new bootstrap.Modal('#addTuteurModal');
+		this.sendBillModal = new bootstrap.Modal('#sendBillModal');
+		this.sendRecapModal = new bootstrap.Modal('#sendRecapModal');
+
 		$("#addTuteurButton").click(function(){
-			$("#addTuteurForm input").val("");
+			$("#addTuteurForm input").val('');
 		});
 		
 		$("#addTuteurForm").submit(function(){
@@ -38,7 +45,7 @@ var AdherentInfo = {
 				},
 				success: function(response) {
 					alert(response.message);
-					$('#sendBillModal').modal('toggle');
+					AdherentInfo.sendBillModal.hide();
 				}
 			});
 			return false;
@@ -53,7 +60,7 @@ var AdherentInfo = {
 				},
 				success: function(response) {
 					alert(response.message);
-					$('#sendRecapModal').modal('toggle');
+					AdherentInfo.sendRecapModal.hide();
 				}
 			});
 			return false;
