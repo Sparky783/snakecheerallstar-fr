@@ -1,7 +1,6 @@
 <?php
 use ApiCore\Api;
 use System\Session;
-use Snake\SnakeTools;
 use Snake\SimplePayPal;
 
 /*
@@ -50,6 +49,7 @@ $app->Post("/create_paypal_order", function($args) {
 
 $app->post("/approve_paypal_order", function($args) {
 	$session = Session::getInstance();
+	$inscription = unserialize($session->inscription);
 	
 	$paypal = new SimplePayPal([
 		'url' => PAYPAL_URL,
@@ -65,7 +65,7 @@ $app->post("/approve_paypal_order", function($args) {
 	$amount = $purchaseUnit->payments->captures[0]->amount->value;
 	$status = $purchaseUnit->payments->captures[0]->status;
 
-	$amountExpected = number_format($session->inscription->getPayment()->getFinalAmount(), 2);
+	$amountExpected = number_format($inscription->getPayment()->getFinalAmount(), 2);
 
 	$result = true;
 	$message = '';
@@ -77,12 +77,14 @@ $app->post("/approve_paypal_order", function($args) {
 	$validPayment = $validPayment && $status === 'COMPLETED';
 
 	if ($validPayment) {
-		$session->inscription->getPayment()->setIsDone(true);
+		$inscription->getPayment()->setIsDone(true);
 		$message = 'Le paiement à bien été effectué.';
 	} else {
 		$result = false;
 		$message = 'Les informations de paiement ne correspondent pas aux information de la cotisation.<br />Le paiement à été annulé.';
 	}
+
+	$session->inscription = serialize($inscription);
 
 	API::SendJSON([
 		'result' => $result,

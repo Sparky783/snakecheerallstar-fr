@@ -4,8 +4,9 @@ namespace Snake;
 /**
  * Etapes de l'inscription
  */
-enum EInscriptionStep {
-	case Information;
-	case Payment;
-	case Validation;
+enum EInscriptionStep: int
+{
+	case Information = 1;
+	case Payment = 2;
+	case Validation = 3;
 }

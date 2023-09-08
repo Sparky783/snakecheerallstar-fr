@@ -191,12 +191,79 @@ class Adherent
 			$this->_docSportmut = (bool)$dbData['doc_sportmut'];
 			$this->_docMedicAuth = (bool)$dbData['doc_medic_auth'];
 			$this->_passSport = $dbData['pass_sport'];
-			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
 			$this->_socialSecurityNumber = $dbData['social_security_number'];
 			$this->_nameEmergencyContact = $dbData['name_emergency_contact'];
 			$this->_phoneEmergencyContact = $dbData['phone_emergency_contact'];
 			$this->_doctorName = $dbData['doctor_name'];
+			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
 		}
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id_adherent' => $this->_id,
+			'id_section' => $this->_idSection,
+			'id_payment' => $this->_idPayment,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'birthday' => serialize($this->_birthday),
+			'is_sibling' => $this->_isSiblings,
+			'medicine_info' => $this->_medicineInfo,
+			'uniform_option' => $this->_uniformOption,
+			'chq_buy_uniform' => $this->_chqBuyUniform,
+			'chq_rent_uniform' => $this->_chqRentUniform,
+			'chq_clean_uniform' => $this->_chqCleanUniform,
+			'doc_ID_card' => $this->_docIdCard,
+			'doc_photo' => $this->_docPhoto,
+			'doc_fffa' => $this->_docFffa,
+			'doc_sportmut' => $this->_docSportmut,
+			'doc_medic_auth' => $this->_docMedicAuth,
+			'pass_sport' => $this->_passSport,
+			'inscription_date' => serialize($this->_inscriptionDate),
+			'social_security_number' => $this->_socialSecurityNumber,
+			'name_emergency_contact' => $this->_nameEmergencyContact,
+			'phone_emergency_contact' => $this->_phoneEmergencyContact,
+			'doctor_name' => $this->_doctorName
+		];
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_adherent'];
+		$this->_idSection = $data['id_section'];
+		$this->_idPayment = $data['id_payment'];
+		$this->_firstname = $data['firstname'];
+		$this->_lastname = $data['lastname'];
+		$this->_birthday = unserialize($data['birthday']);
+		$this->_isSiblings = $data['is_sibling'];
+		$this->_medicineInfo = $data['medicine_info'];
+		$this->_uniformOption = $data['uniform_option'];
+		$this->_chqBuyUniform = $data['chq_buy_uniform'];
+		$this->_chqRentUniform = $data['chq_rent_uniform'];
+		$this->_chqCleanUniform = $data['chq_clean_uniform'];
+		$this->_docIdCard = $data['doc_ID_card'];
+		$this->_docPhoto = $data['doc_photo'];
+		$this->_docFffa = $data['doc_fffa'];
+		$this->_docSportmut = $data['doc_sportmut'];
+		$this->_docMedicAuth = $data['doc_medic_auth'];
+		$this->_passSport = $data['pass_sport'];
+		$this->_inscriptionDate = unserialize($data['inscription_date']);
+		$this->_socialSecurityNumber = $data['social_security_number'];
+		$this->_nameEmergencyContact = $data['name_emergency_contact'];
+		$this->_phoneEmergencyContact = $data['phone_emergency_contact'];
+		$this->_doctorName = $data['doctor_name'];
 	}
 	
 	// ==== GETTERS ====
@@ -506,7 +573,41 @@ class Adherent
 	 */
 	public function setId(int $id): void
 	{
-		$this->_id = $id;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
+	}
+
+	/**
+	 * Définie l'ID de la sectrion pour l'adhérent.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setIdSection(int $id): void
+	{
+		if ($id === 0) {
+			$this->_idSection = null;
+		} else {
+			$this->_idSection = $id;
+		}
+	}
+
+	/**
+	 * Définie l'ID du paiment de l'adhérent.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setIdPayment(int $id): void
+	{
+		if ($id === 0) {
+			$this->_idPayment = null;
+		} else {
+			$this->_idPayment = $id;
+		}
 	}
 
 	/**
@@ -735,25 +836,25 @@ class Adherent
 	
 	// ==== AUTRES METHODES ====
 	/**
-	 * Définie les informations de l'adhérent à partir des données fournis dans le formulaire d'inscription.
+	 * Rempli les informations de l'adhérent à partir des données saisies dans le formulaire.
 	 * 
-	 * @param array $infos Infos saisie lors de l'inscription
-	 * @return bool Retourne True en cas de succès, sinon False.
+	 * @param array $infos Infos saisie dans le formulaire.
+	 * @return array Retourne la liste des erreurs si il y en a.
 	 */
-	public function setInformation(array $infos): bool
+	public function setInformation(array $infos): array
 	{
-		$result = true;
+		$messages = [];
 
-		if (isset($infos['firstname'])) {
-			$result = $result && $this->setFirstname($infos['firstname']);
+		if (!isset($infos['firstname']) || !$this->setFirstname($infos['firstname'])) {
+			$messages[] = "Le prénom de l'adhérent contient des caractères non autorisé.";
 		}
 		
-		if (isset($infos['lastname'])) {
-			$result = $result && $this->setLastname($infos['lastname']);
+		if (!isset($infos['lastname']) || !$this->setLastname($infos['lastname'])) {
+			$messages[] = "Le nom de l'adhérent contient des caractères non autorisé.";
 		}
 		
-		if (isset($infos['birthday'])) {
-			$result = $result && $this->setBirthday($infos['birthday']);
+		if (!isset($infos['birthday']) || !$this->setBirthday($infos['birthday'])) {
+			$messages[] = "La date de naissance de l'adhérent n'est pas au bon format.";
 		}
 		
 		if (isset($infos['medicineInfo'])) {
@@ -780,7 +881,7 @@ class Adherent
 			$this->setDoctorName($infos['doctorName']);
 		}
 			
-		return $result;
+		return $messages;
 	}
 
 	/**
@@ -830,7 +931,7 @@ class Adherent
 		} else { // Update
 			$result = $database->update(
 				'adherents', 'id_adherent', $this->_id,
-				array(
+				[
 					'id_section' => $this->_idSection,
 					'id_payment' => $this->_idPayment,
 					'firstname' => $this->_firstname,
@@ -853,7 +954,7 @@ class Adherent
 					'name_emergency_contact' => $this->_nameEmergencyContact,
 					'phone_emergency_contact' => $this->_phoneEmergencyContact,
 					'doctor_name' => $this->_doctorName
-				)
+				]
 			);
 
 			return $result;

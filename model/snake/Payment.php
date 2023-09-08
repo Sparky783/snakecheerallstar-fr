@@ -69,10 +69,57 @@ class Payment
 			$this->_id = (int)$dbData['id_payment'];
 			$this->_basePrice = (int)$dbData['base_price'];
 			$this->_fixedPrice = (int)$dbData['fixed_price'];
-			$this->_method = EPaymentType::tryFrom($dbData['method']);
 			$this->_paymentDate = new DateTime($dbData['date_payment']);
 			$this->_nbDeadlines = (int)$dbData['nb_deadlines'];
 			$this->_isDone = (bool)$dbData['is_done'];
+			$this->_method = EPaymentType::tryFrom($dbData['method']);
+		}
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		$data = [
+			'id_payment' => $this->_id,
+			'base_price' => $this->_basePrice,
+			'fixed_price' => $this->_fixedPrice,
+			'method' => $this->_method,
+			'date_payment' => serialize($this->_paymentDate),
+			'nb_deadlines' => $this->_nbDeadlines,
+			'is_done' => $this->_isDone,
+			'reductions' => []
+		];
+
+		foreach ($this->_reductions as $reduction) {
+			$data['reductions'][] = serialize($reduction);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_payment'];
+		$this->_basePrice = $data['base_price'];
+		$this->_fixedPrice = $data['fixed_price'];
+		$this->_method = $data['method'];
+		$this->_paymentDate = unserialize($data['date_payment']);
+		$this->_nbDeadlines = $data['nb_deadlines'];
+		$this->_isDone = $data['is_done'];
+		$this->_reductions = [];
+
+		foreach ($data['reductions'] as $reduciton) {
+			$this->_reductions[] = unserialize($reduciton);
 		}
 	}
 	
@@ -248,7 +295,11 @@ class Payment
 	 */
 	public function setId(int $id): void
 	{
-		$this->_id = $id;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
 	}
 	
 	/**
@@ -382,7 +433,7 @@ class Payment
 		if ($this->_id !== null) {
 			foreach ($this->_reductions as $reduction) {
 				$reduction->setIdPayment($this->_id);
-				$result &= $reduction->saveToDatabase();
+				$result = $result && $reduction->saveToDatabase();
 			}
 		}
 

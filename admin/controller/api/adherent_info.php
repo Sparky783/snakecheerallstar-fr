@@ -13,7 +13,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 		$tuteur = new Tuteur();
 		$response = [];
 			
-		if ($tuteur->setInformation($args)) {
+		if (count($tuteur->setInformation($args)) === 0) {
 			$tuteur->addAdherent(unserialize($session->selectedAdherent));
 
 			if ($tuteur->saveToDatabase()) {

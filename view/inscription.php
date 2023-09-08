@@ -75,7 +75,7 @@
 				<div id='messageBoxModal' class='modal fade' tabindex='-1' aria-labelledby='paymentPayPalWaitting' aria-hidden='true'>
 					<div class='modal-dialog modal-dialog-centered' role='document'>
 						<div class="modal-content">
-							<div id="messageBox" class='modal-body text-center'>
+							<div id="messageBox" class='modal-body'>
 							</div>
 						</div>
 					</div>

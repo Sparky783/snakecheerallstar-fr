@@ -47,6 +47,37 @@ class Reduction
 			$this->_sujet = $dbData['sujet'];
 		}
 	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id_reduction' => $this->_id,
+			'id_payment' => $this->_idPayment,
+			'type' => $this->_type,
+			'value' => $this->_value,
+			'sujet' => $this->_sujet
+		];
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_reduction'];
+		$this->_idPayment = $data['id_payment'];
+		$this->_type = $data['type'];
+		$this->_value = $data['value'];
+		$this->_sujet = $data['sujet'];
+	}
 	
 	// ==== GETTERS ====
 	/**
@@ -108,7 +139,11 @@ class Reduction
 	 */
 	public function setId(int $id): void
 	{
-		$this->_id = $id;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
 	}
 
 	/**
@@ -162,8 +197,8 @@ class Reduction
 	public function toArray(): array
 	{
 		return [
-			'idReduction' => $this->_id,
-			'idPayment' => $this->_idPayment,
+			'id_reduction' => $this->_id,
+			'id_payment' => $this->_idPayment,
 			'type' => $this->_type->value,
 			'value' => $this->_value,
 			'sujet' => $this->_sujet

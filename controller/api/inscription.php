@@ -1,14 +1,11 @@
 <?php
 use ApiCore\Api;
 use System\Session;
-use System\ToolBox;
 use Snake\Inscription;
 use Snake\Adherent;
 use Snake\Tuteur;
-use Snake\Reduction;
 use Snake\EInscriptionStep;
 use Snake\EPaymentType;
-use Snake\EReductionType;
 use Snake\EUniformOption;
 use Snake\SnakeTools;
 
@@ -17,8 +14,10 @@ use Snake\SnakeTools;
 // ===============================
 $app->post('/inscription-set-informations', function($args) {
 	$session = Session::getInstance();
-	$session->inscription->clear();
 	$session->inscriptionState = EInscriptionStep::Information;
+
+	$inscription = unserialize($session->inscription);
+	$inscription->clear();
 
 	if (!isset($args['adherents'])) {
 		Api::sendJSON([
@@ -26,17 +25,22 @@ $app->post('/inscription-set-informations', function($args) {
 			'message' => 'Veuillez ajouter au moins un adhérent.'
 		]);
 	}
-
-	$listAdherents = [];
-
+	
 	// Vérification des adhérents
 	foreach ($args['adherents'] as $adherent) {
 		$adh = new Adherent();
-		
-		if (!$adh->setInformation($adherent)) {
+		$testAdherent = $adh->setInformation($adherent);
+
+		if (count($testAdherent) > 0) {
+			$message = '';
+
+			foreach ($testAdherent as $err) {
+				$message .= "- {$err}<br />";
+			}
+
 			Api::sendJSON([
 				'result' => false,
-				'message' => "L'un des champs des adhérents n'est pas correctement rempli."
+				'message' => $message
 			]);
 		}
 
@@ -59,7 +63,7 @@ $app->post('/inscription-set-informations', function($args) {
 		}
 
 		$adh->setUniformOption(EUniformOption::Rent);
-		$session->inscription->addAdherent($adh);
+		$inscription->addAdherent($adh);
 	}
 
 	if (!isset($args['tuteurs'])) {
@@ -71,15 +75,22 @@ $app->post('/inscription-set-informations', function($args) {
 
 	foreach ($args['tuteurs'] as $tuteur) {
 		$tut = new Tuteur();
-		
-		if (!$tut->setInformation($tuteur)) {
+		$testTuteur = $tut->setInformation($tuteur);
+
+		if (count($testTuteur) > 0) {
+			$message = '';
+
+			foreach ($testTuteur as $err) {
+				$message .= "- {$err}<br />";
+			}
+
 			Api::sendJSON([
 				'result' => false,
-				'message' => "L'un des champs des tuteurs n'est pas correctement rempli."
+				'message' => $message
 			]);
 		}
 		
-		$session->inscription->addTuteur($tut);
+		$inscription->addTuteur($tut);
 	}
 
 	if ($args['authorisation']['acceptTermes'] !== 'true') {
@@ -90,13 +101,14 @@ $app->post('/inscription-set-informations', function($args) {
 	}
 
 	// Prépare les données à afficher
-	$amountToPay = $session->inscription->computeFinalPrice();
+	$amountToPay = $inscription->computeFinalPrice();
 	$reductions = [];
-	foreach ($session->inscription->getPayment()->getReductions() as $resduction) {
+	foreach ($inscription->getPayment()->getReductions() as $resduction) {
 		$reductions[] = $resduction->toArray();
 	}
 
 	$session->inscriptionState = EInscriptionStep::Payment;
+	$session->inscription = serialize($inscription);
 
 	Api::sendJSON([
 		'result' => true,
@@ -107,12 +119,15 @@ $app->post('/inscription-set-informations', function($args) {
 });
 
 // ==========================
-// ==== Step 4 - Payment ====
+// ==== Step 2 - Payment ====
 // ==========================
 $app->post('/inscription-validate-payment', function($args) {
 	$session = Session::getInstance();
 
-	if ($session->inscriptionState !== EInscriptionStep::Payment) {
+	$inscription = unserialize($session->inscription);
+
+	if ($session->inscriptionState !== EInscriptionStep::Payment &&
+		$session->inscriptionState !== EInscriptionStep::Validation) {
 		Api::sendJSON([
 			'result' => false,
 			'message' => 'Une erreur est survenue. Veuillez rafraichir votre page.'
@@ -123,7 +138,7 @@ $app->post('/inscription-validate-payment', function($args) {
 
 	switch ($args['method']) {
 		case 'optionEspece':
-			$session->inscription->getPayment()->setMethod(EPaymentType::Espece);
+			$inscription->getPayment()->setMethod(EPaymentType::Espece);
 			$session->inscriptionState = EInscriptionStep::Validation;
 			break;
 
@@ -131,8 +146,8 @@ $app->post('/inscription-validate-payment', function($args) {
 			$nbDeadlines = (int)$args['deadlines'];
 
 			if ($nbDeadlines >= 1 && $nbDeadlines <= 4) {
-				$session->inscription->getPayment()->setMethod(EPaymentType::Cheque);
-				$session->inscription->getPayment()->setNbDeadlines($nbDeadlines);
+				$inscription->getPayment()->setMethod(EPaymentType::Cheque);
+				$inscription->getPayment()->setNbDeadlines($nbDeadlines);
 
 				$session->inscriptionState = EInscriptionStep::Validation;
 			} else {
@@ -141,9 +156,9 @@ $app->post('/inscription-validate-payment', function($args) {
 			break;
 
 		case 'optionEnLigne':
-			$session->inscription->getPayment()->setMethod(EPaymentType::Internet);
+			$inscription->getPayment()->setMethod(EPaymentType::Internet);
 			
-			if ($session->inscription->getPayment()->isDone()) {
+			if ($inscription->getPayment()->isDone()) {
 				$session->inscriptionState = EInscriptionStep::Validation;
 			} else {
 				$message = 'Veuillez valider votre paiement en ligne.';
@@ -163,20 +178,21 @@ $app->post('/inscription-validate-payment', function($args) {
 	}
 
 	// Sauvegarde en base de donnée de l'inscription
-	$result = $session->inscription->saveToDatabase();
-
-	if (!$result) {
-		$message = "Une erreur est survenue lors de l'enregistrement de votre inscription. Veuillez réessayer.";
+	if (!$inscription->saveToDatabase()) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => "Une erreur est survenue lors de l'enregistrement de votre inscription. Veuillez réessayer."
+		]);
 	}
 
 	// ================================================
 	// E-mail récapitulatif + facture
 	// ================================================
-	$payment = $session->inscription->getPayment();
+	$payment = $inscription->getPayment();
 	$emails = [];
 
-	foreach ($session->inscription->getTuteurs() as $tuteur) {
-		SnakeTools::sendRecap($session->inscription, $tuteur);
+	foreach ($inscription->getTuteurs() as $tuteur) {
+		SnakeTools::sendRecap($inscription, $tuteur);
 		SnakeTools::sendBill($payment, $tuteur);
 		$emails[] = $tuteur->getEmail();
 	}
@@ -184,19 +200,21 @@ $app->post('/inscription-validate-payment', function($args) {
 	if(count($emails) > 0) {
 		$message = 'Un E-mail récapitulatif a été envoyé à ' . implode(', ', $emails);
 	}
+
+	$session->inscription = serialize($inscription);
 	
 	Api::sendJSON([
-		'result' => $result,
+		'result' => true,
 		'message' => $message
 	]);
 });
 
 // ===============================
-// ==== Step 5 - Confirmation ====
+// ==== Step 3 - Confirmation ====
 // ===============================
 $app->post('/close_inscription', function($args) {
 	$session = Session::getInstance();
-	$session->inscription = new Inscription();
+	$session->inscription = serialize(new Inscription());
 	$session->inscriptionState = EInscriptionStep::Information;
 });
 ?>

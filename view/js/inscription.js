@@ -159,7 +159,7 @@ let InscriptionManager = {
 					</div>
 					<div class='col-sm-6 mb-3'>
 						<label for='socialSecurityNumberInput'>Numéro de sécurité sociale</label>
-						<input class='form-control' name='socialSecurityNumber' type='text'>
+						<input class='form-control' name='socialSecurityNumber' type='text' placeholder='Ex: 1 85 05 78 006 084 36'>
 					</div>
 					<div class='col-sm-6 mb-3'>
 						<label for='doctorNameInput'>Nom du édecine traitant</label>
@@ -171,7 +171,7 @@ let InscriptionManager = {
 					</div>
 					<div class='col-sm-6 mb-3'>
 						<label for='phoneEmergencyContactInput'>Numéro de la personne à contacter en cas d'urgence</label>
-						<input class='form-control' name='phoneEmergencyContact' type='text'>
+						<input class='form-control' name='phoneEmergencyContact' type='text' placeholder='Ex: 0123456789'>
 					</div>
 
 					<!--<div class='col-sm-12 mb-3'>
@@ -257,11 +257,11 @@ let InscriptionManager = {
 					</div>
 					<div class='col-sm-6  mb-3'>
 						<label for='emailInput'>E-mail</label>
-						<input class='form-control' name='email' type='email'>
+						<input class='form-control' name='email' type='email' placeholder='Ex: monemail@gmail.fr'>
 					</div>
 					<div class='col-sm-6  mb-3'>
 						<label for='phoneInput'>Téléphone</label>
-						<input class='form-control' name='phone' type='text'>
+						<input class='form-control' name='phone' type='text' placeholder='Ex: 0123456789'>
 					</div>
 					<div class='col-sm-12'>
 						<small class='form-text text-muted'>
@@ -319,6 +319,7 @@ let InscriptionManager = {
 
 			case 'validation':
 				$('#validation').show();
+				$('#stepValidation').addClass('active');
 				break;
 		}
 	},

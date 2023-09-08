@@ -26,7 +26,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 		foreach ($args['adherents'] as $adherent) {
 			$adh = new Adherent();
 			
-			if (!$adh->setInformation($adherent)) {
+			if (count($adh->setInformation($adherent)) > 0) {
 				API::sendJSON([
 					'result' => false,
 					'message' => "L'un des champs n'est pas correctement rempli."
@@ -78,7 +78,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 		foreach ($args['tuteurs'] as $tuteur) {
 			$tut = new Tuteur();
 			
-			if (!$tut->setInformation($tuteur)) {
+			if (count($tut->setInformation($tuteur)) > 0) {
 				API::sendJSON([
 					'result' => false,
 					'message' => "L'un des champs n'est pas correctement rempli."

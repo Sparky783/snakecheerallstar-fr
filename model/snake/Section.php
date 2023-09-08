@@ -75,7 +75,7 @@ class Section
 	public function __construct(array $dbData = [])
 	{
 		if (count($dbData) !== 0) {
-			$this->_id = (int)$dbData['id_section'];
+			$this->setId((int)$dbData['id_section']);
 			$this->_name = $dbData['name'];
 			$this->_saison = $dbData['saison'];
 			$this->_maxYear = (int)$dbData['max_year'];
@@ -220,6 +220,21 @@ class Section
 	
 	// ==== SETTERS ====
 	/**
+	 * Définie l'ID de la section.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setId(int $id): void
+	{
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
+	}
+
+	/**
 	 * Définie le nom de la section.
 	 * 
 	 * @param string $name
@@ -346,15 +361,17 @@ class Section
 	public function toArray(): array
 	{
 		return [
-			'idSection' => $this->getId(),
+			'id_section' => $this->getId(),
 			'name' => $this->getName(),
-			'maxYear' => $this->getMaxYear(),
-			'cotisationPrice' => $this->getCotisationPrice(),
-			'rentUniformPrice' => $this->getRentUniformPrice(),
-			'cleanUniformPrice' => $this->getCleanUniformPrice(),
-			'buyUniformPrice' => $this->getBuyUniformPrice(),
-			'depositUniformPrice' => $this->getDepositUniformPrice(),
-			'maxMembers' => $this->getNbMaxMembers()
+			'saison' => $this->getSaison(),
+			'max_year' => $this->getMaxYear(),
+			'cotisation_price' => $this->getCotisationPrice(),
+			'rent_uniform_price' => $this->getRentUniformPrice(),
+			'clean_uniform_price' => $this->getCleanUniformPrice(),
+			'buy_uniform_price' => $this->getBuyUniformPrice(),
+			'deposit_uniform_price' => $this->getDepositUniformPrice(),
+			'nb_max_members' => $this->getNbMaxMembers(),
+			'horaires' => $this->getHoraires()
 		];
 	}
 

@@ -10,7 +10,7 @@ use Snake\EInscriptionStep;
 global $gmm;
 
 $session = Session::getInstance();
-$session->inscription = new Inscription();
+$session->inscription = serialize(new Inscription());
 $session->inscriptionState = EInscriptionStep::Information;
 
 // ==============================================

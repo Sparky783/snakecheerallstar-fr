@@ -3,6 +3,7 @@ use ApiCore\Api;
 use System\ToolBox;
 use System\Session;
 use Snake\Section;
+use Snake\Horaire;
 use Snake\SnakeTools;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
@@ -77,6 +78,22 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 
 	$app->post('/section_remove', function($args) {
 		API::sendJSON(Section::removeFromDatabase($args['idSection']));
+	});
+
+	$app->post('/update_horaires', function($args) {
+		$section = Section::getById($args['idSection']);
+		$section->clearHoraire();
+
+		foreach ($args['horaires'] as $horaire) {
+			$section->addHoraire(new Horaire(
+				$horaire['day'],
+				$horaire['start'],
+				$horaire['end'],
+				$horaire['place']
+			));
+		}
+
+		API::sendJSON($section->SaveToDatabase());
 	});
 }
 ?>

@@ -206,5 +206,58 @@
 				</div>
 			</div>
 		</div>
+
+		<div id="editHorairesModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<form action="" method="post">
+						<div class="modal-header">
+							<h5 class="modal-title">Modifier une section</h5>
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<div class="form-group">
+								<label for="nameInput">Nom de la section</label>
+								<input id="nameInput" class="form-control" type="text" name="name">
+							</div>
+							<div class="form-group">
+								<label for="maxYearInput">Année de naissance maximum pour être dans la section</label>
+								<input id="maxYearInput" class="form-control" type="text" name="maxYear">
+							</div>
+							<div class="form-group">
+								<label for="cotisationPriceInput">Prix de la cotisation</label>
+								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisationPrice">
+							</div>
+							<div class="form-group">
+								<label for="rentUniformPriceInput">Prix de location de la tenue</label>
+								<input id="rentUniformPriceInput" class="form-control" type="text" name="rentUniformPrice">
+							</div>
+							<div class="form-group">
+								<label for="cleanUniformPriceInput">Prix de nettoyage de la tenue</label>
+								<input id="cleanUniformPriceInput" class="form-control" type="text" name="cleanUniformPrice">
+							</div>
+							<div class="form-group">
+								<label for="buyUniformPriceInput">Prix d'achat de la tenue</label>
+								<input id="buyUniformPriceInput" class="form-control" type="text" name="buyUniformPrice">
+							</div>
+							<div class="form-group">
+								<label for="depositUniformPriceInput">Montant de caution de la tenue</label>
+								<input id="depositUniformPriceInput" class="form-control" type="text" name="depositUniformPrice">
+							</div>
+							<div class="form-group">
+								<label for="maxMembersInput">Nombre maximum d'ahdérent dans la section</label>
+								<input id="maxMembersInput" class="form-control" type="text" name="maxMembers">
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
+							<button class="accepteButton btn btn-primary" type="submit">Modifier</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

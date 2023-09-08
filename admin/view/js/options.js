@@ -28,11 +28,13 @@ let Options = {
 	addSectionModal: null,
 	editSectionModal: null,
 	removeSectionModal: null,
+	editHorairesModal: null,
 
 	Init: function () {
 		this.addSectionModal = new bootstrap.Modal('#addSectionModal');
 		this.editSectionModal = new bootstrap.Modal('#editSectionModal');
 		this.removeSectionModal = new bootstrap.Modal('#removeSectionModal');
+		this.editHorairesModal = new bootstrap.Modal('#editHorairesModal');
 
 		// Partie inscription
 		$("#applyBlock button").click(function(){

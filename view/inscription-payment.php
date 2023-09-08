@@ -57,10 +57,10 @@ global $router;
 
 		<div id='paymentOptions'>
 			<h5>Choisissez un moyen de paiement.</h5>
-			<div class='row'>
-				<div class='col-sm-4'><button class='btn btn-snake btn-block' data-target='optionEspece'>Espèce<br /><small>(La totalité uniquement)</small></button></div>
-				<div class='col-sm-4'><button class='btn btn-snake btn-block' data-target='optionCheque'>Chèque<br /><small>(jusqu'à 4 fois)</small></button></div>
-				<div class='col-sm-4'><button class='btn btn-snake btn-block' data-target='optionEnLigne'>En ligne<br /><small>(rapide et simple)</small></button></div>
+			<div class='button-container'>
+				<div class='button-item'><button class='btn btn-snake btn-block' data-target='optionEspece'>Espèce<br /><small>(La totalité uniquement)</small></button></div>
+				<div class='button-item'><button class='btn btn-snake btn-block' data-target='optionCheque'>Chèque<br /><small>(jusqu'à 4 fois)</small></button></div>
+				<!--<div class='button-item'><button class='btn btn-snake btn-block' data-target='optionEnLigne'>En ligne<br /><small>(rapide et simple)</small></button></div>-->
 			</div>
 		</div>
 		<div id='paymentDetails'>

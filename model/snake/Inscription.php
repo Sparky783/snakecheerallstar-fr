@@ -28,6 +28,7 @@ class Inscription
 	 * @var Payment $_payment Paiement généré pour l'inscription.
 	 */
 	private Payment $_payment;
+
 	
 	// ==== CONSTRUCTOR ====
 	public function __construct(Payment $payment = null)
@@ -50,6 +51,52 @@ class Inscription
 		}
 	}
 	
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		$data = [
+			'adherents' => [],
+			'tuteurs' => [],
+			'payment' => serialize($this->_payment),
+		];
+
+		foreach ($this->_adherents as $adherent) {
+			$data['adherents'][] = serialize($adherent);
+		}
+
+		foreach ($this->_tuteurs as $tuteurs) {
+			$data['tuteurs'][] = serialize($tuteurs);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->_adherents = [];
+
+		foreach ($data['adherents'] as $adherent) {
+			$this->_adherents[] = unserialize($adherent);
+		}
+
+		$this->_tuteurs = [];
+
+		foreach ($data['tuteurs'] as $tuteur) {
+			$this->_tuteurs[] = unserialize($tuteur);
+		}
+
+        $this->_payment = unserialize($data['payment']);
+	}
 
 	// ==== GETTERS ====
 	/**
@@ -232,43 +279,51 @@ class Inscription
 		// Save payment
 		$this->_payment->saveToDatabase();
 
-		if ($this->_payment->getId() !== null) {
-			// Save adherents to database.
-			foreach ($this->_adherents as $adherent) {
-				$adherent->setInscriptionDate();
-				$adherent->setPayment($this->_payment);
+		if ($this->_payment->getId() === null) {
+			return false;
+		}
 
-				if ($adherent->saveToDatabase()) {
-					$idAdherents[] = $adherent->getId();
-				}
-			}
-			
-			// Save tuteurs to database.
-			foreach ($this->_tuteurs as $tuteur) {
-				if ($tuteur->saveToDatabase()) {
-					$idTuteurs[] = $tuteur->getId();
-				}
-			}
-			
-			// Make links between adherents and tuteurs.
-			if (count($idAdherents) > 0 && count($idTuteurs) > 0) {
-				foreach ($idAdherents as $idA) {
-					foreach ($idTuteurs as $idP) {
-						$database->insert(
-							'adherent_tuteur',
-							[
-								'id_adherent' => $idA,
-								'id_tuteur' => $idP
-							]
-						);
-					}
-				}
+		// Save adherents to database.
+		foreach ($this->_adherents as $adherent) {
+			$adherent->setInscriptionDate();
+			$adherent->setPayment($this->_payment);
 
-				return true;
+			if ($adherent->saveToDatabase()) {
+				$idAdherents[] = $adherent->getId();
+			} else {
+				return false;
+			}
+		}
+		
+		// Save tuteurs to database.
+		foreach ($this->_tuteurs as $tuteur) {
+			if ($tuteur->saveToDatabase()) {
+				$idTuteurs[] = $tuteur->getId();
+			} else {
+				return false;
 			}
 		}
 
-		return false;
+		// Make links between adherents and tuteurs.
+		if (count($idAdherents) > 0 && count($idTuteurs) > 0) {
+			foreach ($idAdherents as $idA) {
+				foreach ($idTuteurs as $idP) {
+					$result = $database->insert(
+						'adherent_tuteur',
+						[
+							'id_adherent' => $idA,
+							'id_tuteur' => $idP
+						]
+					);
+
+					if ($result === false) {
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**

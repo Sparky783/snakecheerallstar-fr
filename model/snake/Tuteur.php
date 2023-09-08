@@ -59,6 +59,39 @@ class Tuteur
 			$this->_phone = $dbData['phone'];
 		}
 	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id_tuteur' => $this->_id,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'status' => $this->_status,
+			'email' => $this->_email,
+			'phone' => $this->_phone
+		];
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_tuteur'];
+		$this->_firstname = $data['firstname'];
+		$this->_lastname = $data['lastname'];
+		$this->_status = $data['status'];
+		$this->_email = $data['email'];
+		$this->_phone = $data['phone'];
+	}
 	
 	// == METHODES GETTERS ==
 	/**
@@ -154,7 +187,11 @@ class Tuteur
 	 */
 	public function setId(int $id): void
 	{
-		$this->_id = $id;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
 	}
 
 	/**
@@ -249,40 +286,40 @@ class Tuteur
 	}
 	
 	/**
-	 * Définie les informations du tuteur avec les données saisie dans le formulaire.
+	 * Rempli les informations du tuteur avec les données saisies dans le formulaire.
 	 * 
-	 * @param array $infos
-	 * @return bool Retourne True en cas de succès, sinon False.
+	 * @param array $infos Infos saisie dans le formulaire.
+	 * @return array Retourne la liste des erreurs si il y en a.
 	 */
-	public function setInformation(array $infos): bool
+	public function setInformation(array $infos): array
 	{
-		$result = true;
+		$messages = [];
 		
 		if (isset($infos['id_tuteur'])) {
 			$this->setId((int)$infos['id_tuteur']);
 		}
 		
-		if (isset($infos['firstname'])) {
-			$result &= $this->setFirstname($infos['firstname']);
+		if (!isset($infos['firstname']) || !$this->setFirstname($infos['firstname'])) {
+			$messages[] = "Le prénom du tuteur contient des caractères non autorisé.";
 		}
 		
-		if (isset($infos['lastname'])) {
-			$result &= $this->setLastname($infos['lastname']);
+		if (!isset($infos['lastname']) || !$this->setLastname($infos['lastname'])) {
+			$messages[] = "Le nom du tuteur contient des caractères non autorisé.";
 		}
 		
-		if (isset($infos['status'])) {
-			$result &= $this->setStatus($infos['status']);
+		if (!isset($infos['status']) || !$this->setStatus($infos['status'])) {
+			$messages[] = "Le statut du tuteur doit être défini.";
 		}
 		
-		if (isset($infos['email'])) {
-			$result &= $this->setEmail($infos['email']);
+		if (!isset($infos['email']) || !$this->setEmail($infos['email'])) {
+			$messages[] = "L'E-mail du tuteur n'est pas au bon format.";
 		}
 		
-		if (isset($infos['phone'])) {
-			$result &= $this->setPhone($infos['phone']);
+		if (!isset($infos['phone']) || !$this->setPhone($infos['phone'])) {
+			$messages[] = "Le numéro de téléphone du tuteur n'est pas au bon format.";
 		}
 		
-		return $result;
+		return $messages;
 	}
 
 	/**

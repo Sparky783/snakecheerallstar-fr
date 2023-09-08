@@ -29,7 +29,7 @@
 		</div>
 	</div>
 
-	<div id='nextButton' class='col-md-12'>
+	<div id='nextButton' class='col-md-12 mb-4'>
 		<div class='text-center'>
 			<a id='validButton' class='btn btn-primary' href='" . $router->GetUrl("accueil") . "'>Retour à l'accueil</a>
 		</div>

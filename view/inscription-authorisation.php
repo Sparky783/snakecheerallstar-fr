@@ -27,7 +27,7 @@
 	<form id="authorisationForm" class="col-md-8">
 		<div class="card">
 			<div class="card-body">
-				<h3>Droit à l"image</h3>
+				<h3>Droit à l'image</h3>
 				<p>
 					En inscrivant vous ou vos enfants au club des Snake Cheer All Star, vous autorisez l'association à filmer, photographier et enregistrer votre image ou celle de vos enfants lors des activités et à reproduire, diffuser et exploiter librement les images ainsi réalisées.
 					<br /><br />

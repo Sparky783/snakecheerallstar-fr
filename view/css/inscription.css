@@ -187,8 +187,28 @@
 	text-align: center;
 }
 
-#paymentOptions button {
+#paymentOptions .button-container {
+	display: flex;
+	margin-right: calc(-.5 * var(--bs-gutter-x));
+    margin-left: calc(-.5 * var(--bs-gutter-x));
+}
+
+#paymentOptions .button-container .button-item {
 	width: 100%;
+	padding-right: calc(var(--bs-gutter-x) * .5);
+    padding-left: calc(var(--bs-gutter-x) * .5);
+}
+
+#paymentOptions .button-container .button-item button {
+	width: 100%;
+}
+
+#paymentOptions .btn-snake {
+	background-color: #454545;
+}
+
+#paymentOptions .btn-snake.active {
+	background-color: #2f832f;
 }
 
 #paymentOptions,
@@ -205,14 +225,6 @@
     border: 1px solid #ced4da;
     border-radius: .25rem;
 	transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-}
-
-#paymentOptions .btn-snake {
-	background-color: #454545;
-}
-
-#paymentOptions .btn-snake.active {
-	background-color: #2f832f;
 }
 
 #paypalButtonContainer {
@@ -275,9 +287,12 @@
 	#steps .steps-blocks .step .step-content {
 		flex-direction: row;
 		width: 100%;
-		gap: 10px;
 		margin: 5px 0;
     	padding: 7px;
+	}
+
+	#steps .steps-blocks .step .step-content span:first-child {
+		margin-right: 10px;
 	}
 
 	#adherentMenu button,
@@ -293,7 +308,7 @@
 		margin-bottom: 10px;
 	}
 
-	#paymentOptions div:last-child button {
+	#paymentOptions .col-sm-4:last-child button {
 		margin-bottom: 0;
 	}
 
