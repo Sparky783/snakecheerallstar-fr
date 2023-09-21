@@ -23,10 +23,11 @@
 						$("#contactSend").show();
 					},
 					function(data){
-						console.log(data);
-						if(data.error)
-							console.log(data.errorMessage);
-						$("#contactResponse").html('<p class="text-center"><i class="fa fa-grin-alt"></i> ' + data.message + '</p>');
+						if (data.error) {
+							console.log(data);
+						}
+						
+						$("#contactResponse").html('<p class="text-center">' + data.message + '</p>');
 						$("#contactSend").hide();
 						$("#contactResponse").show();
 					}
@@ -62,9 +63,11 @@
 						<p>Nous avons aussi intégré la MJC des Fleurs de Pau. Vous pouvez également consulter leur site internet en cliquant sur leur lien. La MJC des Fleurs propose divers sports et activités qui pourront sûrement vous satisfaire.</p>
 					</div>
 				</section>
+
 				<section class="col-sm-6">
 					<div id="contactResponse" class="ap-form-response">
 					</div>
+
 					<div id="contactForm">
 						<form class="ap-form" action=<?php $router->API("contact"); ?> method="post">
 							<div class="form-group">
@@ -80,13 +83,15 @@
 								<textarea id="inputMessage" class="form-control" type="message" name="message" rows="5"></textarea>
 							</div>
 							<small class="form-text text-muted"><span class="ap-form-star">*</span> Ces champs sont obligatoires.</small>
-							<?php if(ENV == "DEV") { ?>
+
+							<?php if(ENV === 'DEV') { ?>
 								<button class="btn btn-snake" type="submit">Envoyer</button>
 							<?php } else { ?>
 								<button class="btn btn-snake g-recaptcha" type="submit" data-sitekey="6LeNSLcUAAAAAM7PeKkzChmiNANlzTdK6HxY7JP9" data-callback="sendFormCallback">Envoyer</button>
 							<?php } ?>
 						</form>
 					</div>
+
 					<div id="contactSend" class="ap-form-send">
 						<p class="text-center">
 							Envoi en cours ...<br />

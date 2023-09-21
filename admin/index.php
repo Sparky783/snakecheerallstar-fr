@@ -24,7 +24,6 @@ $website->setPages(array(
 	'adherent-add',
 	'email',
 	'presences',
-	'presences_graph',
 	'comptabilite',
 	'reductions',
 	'ag_elections',

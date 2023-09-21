@@ -15,7 +15,12 @@
 	<body>
 		<?php include_once("HEADER.php"); ?>
 		<div class="container">
-			<h1>Options du site internet</h1>
+			<div id="mainTitle">
+				<h1>Options du site internet</h1>
+				<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+					Retour
+				</a>
+			</div>
 
 			<div class="row">
 				<section id="inscription" class="col-md-3">
@@ -24,9 +29,9 @@
 							<h3>Inscriptions</h3>
 						</div>
 						<div class="card-body">
-							<div id="openInscriptionBlock" class="custom-control custom-switch">
-								<input id="cbOpenInscription" class="custom-control-input" type="checkbox" <?php echo $cbOpenInscriptionValue; ?> />
-								<label class="custom-control-label" for="cbOpenInscription">Ouvrir les inscriptions</label>
+							<div id="openInscriptionBlock" class="form-check form-switch">
+								<input id="cbOpenInscription" class="form-check-input" type="checkbox" role="switch" <?php echo $cbOpenInscriptionValue; ?> />
+								<label class="form-check-label" for="cbOpenInscription">Ouvrir les inscriptions</label>
 							</div>
 							<div class="form-group">
 								<label for="tbMinDateInscription">Ouvert à partir du (inclus) :</label>
@@ -42,9 +47,11 @@
 
 				<section id="sections" class="col-md-9">
 					<div class="card">
-						<div class="card-header clearfix">
-							<h3>Sections</h3>
-							<span class="float-left">Il y a <span id="nbSections"></span> section</span>
+						<div class="card-header">
+							<diV>
+								<h3>Sections</h3>
+								<span>Il y a <span id="nbSections"></span> section</span>
+							</diV>
 							<button id="addSectionButton" class="btn btn-primary float-right" type="button"><i class="fas fa-plus-circle"></i> Ajouter une section</button>
 						</div>
 						<div id="sectionList" class="card-body">
@@ -96,31 +103,31 @@
 							</div>
 							<div class="form-group">
 								<label for="maxYearInput">Année de naissance maximum pour être dans la section</label>
-								<input id="maxYearInput" class="form-control" type="text" name="maxYear">
+								<input id="maxYearInput" class="form-control" type="text" name="max_year">
 							</div>
 							<div class="form-group">
 								<label for="cotisationPriceInput">Prix de la cotisation</label>
-								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisationPrice">
+								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisation_price">
 							</div>
 							<div class="form-group">
 								<label for="rentUniformPriceInput">Prix de location de la tenue</label>
-								<input id="rentUniformPriceInput" class="form-control" type="text" name="rentUniformPrice">
+								<input id="rentUniformPriceInput" class="form-control" type="text" name="rent_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="cleanUniformPriceInput">Prix de nettoyage de la tenue</label>
-								<input id="cleanUniformPriceInput" class="form-control" type="text" name="cleanUniformPrice">
+								<input id="cleanUniformPriceInput" class="form-control" type="text" name="clean_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="buyUniformPriceInput">Prix d'achat de la tenue</label>
-								<input id="buyUniformPriceInput" class="form-control" type="text" name="buyUniformPrice">
+								<input id="buyUniformPriceInput" class="form-control" type="text" name="buy_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="depositUniformPriceInput">Montant de caution de la tenue</label>
-								<input id="depositUniformPriceInput" class="form-control" type="text" name="depositUniformPrice">
+								<input id="depositUniformPriceInput" class="form-control" type="text" name="deposit_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="maxMembersInput">Nombre maximum d'ahdérent dans la section</label>
-								<input id="maxMembersInput" class="form-control" type="text" name="maxMembers">
+								<input id="maxMembersInput" class="form-control" type="text" name="nb_max_members">
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -149,31 +156,31 @@
 							</div>
 							<div class="form-group">
 								<label for="maxYearInput">Année de naissance maximum pour être dans la section</label>
-								<input id="maxYearInput" class="form-control" type="text" name="maxYear">
+								<input id="maxYearInput" class="form-control" type="text" name="max_year">
 							</div>
 							<div class="form-group">
 								<label for="cotisationPriceInput">Prix de la cotisation</label>
-								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisationPrice">
+								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisation_price">
 							</div>
 							<div class="form-group">
 								<label for="rentUniformPriceInput">Prix de location de la tenue</label>
-								<input id="rentUniformPriceInput" class="form-control" type="text" name="rentUniformPrice">
+								<input id="rentUniformPriceInput" class="form-control" type="text" name="rent_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="cleanUniformPriceInput">Prix de nettoyage de la tenue</label>
-								<input id="cleanUniformPriceInput" class="form-control" type="text" name="cleanUniformPrice">
+								<input id="cleanUniformPriceInput" class="form-control" type="text" name="clean_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="buyUniformPriceInput">Prix d'achat de la tenue</label>
-								<input id="buyUniformPriceInput" class="form-control" type="text" name="buyUniformPrice">
+								<input id="buyUniformPriceInput" class="form-control" type="text" name="buy_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="depositUniformPriceInput">Montant de caution de la tenue</label>
-								<input id="depositUniformPriceInput" class="form-control" type="text" name="depositUniformPrice">
+								<input id="depositUniformPriceInput" class="form-control" type="text" name="deposit_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="maxMembersInput">Nombre maximum d'ahdérent dans la section</label>
-								<input id="maxMembersInput" class="form-control" type="text" name="maxMembers">
+								<input id="maxMembersInput" class="form-control" type="text" name="nb_max_members">
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -224,31 +231,31 @@
 							</div>
 							<div class="form-group">
 								<label for="maxYearInput">Année de naissance maximum pour être dans la section</label>
-								<input id="maxYearInput" class="form-control" type="text" name="maxYear">
+								<input id="maxYearInput" class="form-control" type="text" name="max_year">
 							</div>
 							<div class="form-group">
 								<label for="cotisationPriceInput">Prix de la cotisation</label>
-								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisationPrice">
+								<input id="cotisationPriceInput" class="form-control" type="text" name="cotisation_price">
 							</div>
 							<div class="form-group">
 								<label for="rentUniformPriceInput">Prix de location de la tenue</label>
-								<input id="rentUniformPriceInput" class="form-control" type="text" name="rentUniformPrice">
+								<input id="rentUniformPriceInput" class="form-control" type="text" name="rent_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="cleanUniformPriceInput">Prix de nettoyage de la tenue</label>
-								<input id="cleanUniformPriceInput" class="form-control" type="text" name="cleanUniformPrice">
+								<input id="cleanUniformPriceInput" class="form-control" type="text" name="clean_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="buyUniformPriceInput">Prix d'achat de la tenue</label>
-								<input id="buyUniformPriceInput" class="form-control" type="text" name="buyUniformPrice">
+								<input id="buyUniformPriceInput" class="form-control" type="text" name="buy_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="depositUniformPriceInput">Montant de caution de la tenue</label>
-								<input id="depositUniformPriceInput" class="form-control" type="text" name="depositUniformPrice">
+								<input id="depositUniformPriceInput" class="form-control" type="text" name="deposit_uniform_price">
 							</div>
 							<div class="form-group">
 								<label for="maxMembersInput">Nombre maximum d'ahdérent dans la section</label>
-								<input id="maxMembersInput" class="form-control" type="text" name="maxMembers">
+								<input id="maxMembersInput" class="form-control" type="text" name="nb_max_members">
 							</div>
 						</div>
 						<div class="modal-footer">

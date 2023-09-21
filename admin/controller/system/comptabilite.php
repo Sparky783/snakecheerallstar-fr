@@ -1,11 +1,14 @@
 <?php
+
+use Snake\EPaymentType;
 use System\WebSite;
 use System\ToolBox;
 use Snake\Payment;
 
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "tresorier")))
-	WebSite::Redirect("login", true);
+if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'tresorier'])) {
+	WebSite::redirect('login', true);
+}
 // =========================
 
 $amountEspece = 0;
@@ -16,26 +19,23 @@ $nbCheque = 0;
 $nbInternet = 0;
 $fraisPaypal = 0;
 
-$payments = Payment::GetList($session->selectedSaison);
+$payments = Payment::getList($session->selectedSaison);
 
-if($payments !== false)
-{
-	foreach($payments as $payment)
-	{
-		switch($payment->GetMethod())
-		{
-			case Payment::$METHODS['Espece']:
-				$amountEspece += $payment->GetFinalAmount();
+if ($payments !== false) {
+	foreach ($payments as $payment) {
+		switch ($payment->getMethod()) {
+			case EPaymentType::Espece:
+				$amountEspece += $payment->getFinalAmount();
 				$nbEspece ++;
 				break;
 
-			case Payment::$METHODS['Cheque']:
-				$amountCheque += $payment->GetFinalAmount();
+			case EPaymentType::Cheque:
+				$amountCheque += $payment->getFinalAmount();
 				$nbCheque ++;
 				break;
 
-			case Payment::$METHODS['Internet']:
-				$amountInternet += $payment->GetFinalAmount();
+			case EPaymentType::Internet:
+				$amountInternet += $payment->getFinalAmount();
 				$nbInternet ++;
 				break;
 		}
@@ -45,26 +45,29 @@ if($payments !== false)
 	$fraisPaypal = ($nbInternet * 0.25) + ($amountInternet * 0.034);
 }
 
-$paymentHtml = "
+$totalOfPayments = $nbInternet + $nbCheque + $nbEspece;
+$totalOfAmount = $amountInternet + $amountCheque + $amountEspece;
+
+$paymentHtml = <<<HTML
 	<tr>
 		<td>Internet (PayPal)</td>
-		<td>" . $nbInternet . "</td>
-		<td>" . $amountInternet . " € (Frais: " . $fraisPaypal . "€)</td>
+		<td>{$nbInternet}</td>
+		<td>{$amountInternet} € (Frais: {$fraisPaypal}€)</td>
 	</tr>
 	<tr>
 		<td>Cheque</td>
-		<td>" . $nbCheque . "</td>
-		<td>" . $amountCheque . " €</td>
+		<td>{$nbCheque}</td>
+		<td>{$amountCheque} €</td>
 	</tr>
 	<tr>
 		<td>Espèce</td>
-		<td>" . $nbEspece . "</td>
-		<td>" . $amountEspece . " €</td>
+		<td>{$nbEspece}</td>
+		<td>{$amountEspece} €</td>
 	</tr>
 	<tr>
 		<th>TOTAL</th>
-		<th>" . ($nbInternet + $nbCheque + $nbEspece) . "</th>
-		<th>" . ($amountInternet + $amountCheque + $amountEspece) . " €</th>
+		<th>{$totalOfPayments}</th>
+		<th>{$totalOfAmount} €</th>
 	</tr>
-";
+	HTML;
 ?>

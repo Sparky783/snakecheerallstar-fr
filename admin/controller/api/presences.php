@@ -1,89 +1,90 @@
 <?php
 use ApiCore\Api;
 use System\ToolBox;
-use System\Database;
 use Snake\Adherent;
+use Snake\Presence;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'coach'])) {
 	$app->get('/presences_list/{id_section}', function($args) {
-		global $router;
+		$presence = Presence::getByDay(new DateTime(), (int)$args['id_section']);
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
+		$adherentsList = [];
 
-		$nbr = 0;
-		$html = '';
-		//TODO: Move this SQL query in an object.
-		$database = new Database();
+		foreach ($adherents as $adherent) {
+			$adherentData = [
+				'id_adherent' => $adherent->getId(),
+				'firstname' => $adherent->getFirstname(),
+				'lastname' => $adherent->getLastname(),
+				'status' => ''
+			];
 
-		$rech = $database->query("SELECT COUNT(*) FROM presences WHERE id_section=:id_section AND jour=:jour", array(
-			'id_section' => (int)$args['id_section'],
-			'jour' => date("Y-m-d")
-		));
-		
-		if ($rech != null) {
-			$data = $rech->fetch();
-			
-			if ((int)$data['COUNT(*)'] > 0) {
-				$url = $router->getUrl("home");
-				$html = <<<HTML
-					<p class='text-center'>
-						Les présences ont déjà été validé pour aujourd'hui.
-						<br /><br />
-						<a class='btn btn-snake' href="{$url}" title=''>Retour</a>
-					</p>
-					HTML;
-			} else {
-				$adherents = Adherent::getListBySection($args['id_section']);
-				$htmlAdh = '';
-
-				foreach ($adherents as $adherent) {
-					$htmlAdh .= <<<HTML
-						<tr data-id="{$adherent->getId()}">
-							<td>{$adherent->GetFirstname()} {$adherent->GetLastname()}</td>
-							<td class='text-right'>
-								<div class='presence-button btn-group'>
-									<button class='btn snake' data-type='present' title='Présent'><i class='far fa-thumbs-up'></i></button>
-									<button class='btn justify' data-type='justify' title='Absence justifié'><i class='far fa-file-alt'></i></button>
-									<button class='btn warning' data-type='late' title='En retard'><i class='far fa-clock'></i></button>
-									<button class='btn danger' data-type='absent' title='Absent'><i class='fas fa-ban'></i></button>
-								</div>
-							</td>
-						</tr>
-						HTML;
-					
-					$nbr ++;
+			if ($presence !== false) {
+				foreach ($presence->getListMembers() as $item) {
+					if ((int)$item['id'] === $adherent->getId()) {
+						$adherentData['status'] = $item['state'];
+						break;
+					}
 				}
-
-				$html = <<<HTML
-					<div class='card-header clearfix'>
-						<span class='float-left'>Il y a {$nbr} élèves</span>
-					</div>
-					<table id='tableAdherents' class='card-body table table-hover'>
-						<tbody>
-							{$htmlAdh}
-						</tbody>
-					</table>
-					<div class='card-footer clearfix text-right'>
-						<button id='validatePresences' class='btn btn-snake' type='button'>Valider les présences</button> 
-					</div>
-				HTML;
 			}
+
+			$adherentsList[] = $adherentData;
 		}
 
 		API::sendJSON([
-			'html' => $html
+			'adherents' => $adherentsList
 		]);
 	});
 
 	$app->post('/validate_presences', function($args) {
-		//TOTO: move SQL to an object
-		$database = new Database();
+		$presence = Presence::getByDay(new DateTime(), (int)$args['id_section']);
 
-		$result = $database->insert('presences', [
-			'id_section' => (int)$args['section'],
-			'jour' => date('Y-m-d'),
-			'list' => serialize($args['status'])
-		]);
+		if ($presence === false) {
+			$presence = new Presence();
+			$presence->setIdSection((int)$args['id_section']);
+			$presence->setDay(new DateTime());
+		}
+
+		if (!is_array($args['status'])) {
+			API::sendJSON(false);
+		}
+
+		$presence->setListMembers($args['status']);
 		
-		API::sendJSON($result);
+		API::sendJSON($presence->saveToDatabase());
 	});
+
+	$app->post('/presences_stats', function($args) {
+		$presences = Presence::getListBySection((int)$args['id_section']);
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
+		$adherentsList = [];
+
+		foreach($adherents as $adherent) {
+			$adherentsList[$adherent->getId()] = [
+				'firstname' => $adherent->getFirstname(),
+				'lastname' => $adherent->getLastname(),
+				'status' => [
+					'present' => 0,
+					'justify' => 0,
+					'late' => 0,
+					'absent' => 0
+				]
+			];
+		}
+
+		foreach ($presences as $presence) {
+			$list = $presence->getListMembers();
+
+			foreach ($list as $item) {
+				if (isset($adherentsList[$item['id']])) {
+					$adherentsList[$item['id']]['status'][$item['state']] ++;
+				}
+			}
+		}
+
+		API::sendJSON([
+			'adherents' => array_values($adherentsList)
+		]);
+	});
+
 }
 ?>

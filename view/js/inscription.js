@@ -408,7 +408,6 @@ let InscriptionManager = {
 	},
 
 	payPalCreateOrder: function(data, actions) {
-		console.log('payPalCreateOrder');
 		return actions.order.create({
 			purchase_units: [{
 				amount: {
@@ -421,7 +420,6 @@ let InscriptionManager = {
 	},
 
 	payPalOnApporve: function(data, actions) {
-		console.log('payPalOnApporve');
 		return actions.order.capture().then(function(details) {
 			InscriptionManager.paymenbtWaittingModal.show();
 
@@ -432,7 +430,6 @@ let InscriptionManager = {
 					orderID: data.orderID
 				},
 				success: function(response) {
-					console.log(response);
 					InscriptionManager.validPaypalPayment(response);
 				}
 			});

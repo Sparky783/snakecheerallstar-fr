@@ -4,8 +4,6 @@ use System\ToolBox;
 use System\Session;
 use Snake\Adherent;
 use Snake\EPaymentType;
-use Snake\EUniformOption;
-use Snake\Payment;
 
 // ==== Access security ====
 if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
@@ -16,15 +14,15 @@ if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'membe
 global $gmm;
 
 $session = Session::getInstance();
-$adherent = Adherent::getById((int)$gmm->getValue('id'));
 
 // Stock les infos de l'adhérent dans la session pour le réutiliser dans l'API.
+$adherent = Adherent::getById((int)$gmm->getValue('id'));
 $session->selectedAdherent = serialize($adherent);
 
 $destsBillHtml = "<option value='snake'>" . TITLE . "</option>"; // Modal send bill
 $htmlName = "{$adherent->getFirstname()} {$adherent->getLastname()}";
 
-// Info élève
+// Info adhérent
 $birthday = ToolBox::formatDate($adherent->getBirthday(), false);
 $age = ToolBox:: age($adherent->getBirthday());
 

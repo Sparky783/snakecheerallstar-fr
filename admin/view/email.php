@@ -20,9 +20,12 @@ global $router;
 		<?php include_once("HEADER.php"); ?>
 		<div class="container">
 			<div class="row">
-				<section class="col-md-12">
+				<div id="mainTitle">
 					<h1>E-mail d'information</h1>
-				</section>
+					<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+						Retour
+					</a>
+				</div>
 
 				<?php if($session->selectedSaison == SnakeTools::GetCurrentSaison() || $session->selectedSaison == SnakeTools::GetPreviousSaison()) { ?>
 					<?php if($session->selectedSaison == SnakeTools::GetPreviousSaison()) { ?>

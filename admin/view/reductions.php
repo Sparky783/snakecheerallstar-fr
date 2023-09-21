@@ -17,7 +17,12 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Réductions</h1>
+					<div id="mainTitle">
+						<h1>Réductions</h1>
+						<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+							Retour
+						</a>
+					</div>
 
 					<div id="presences">
 						<div class="form-group">

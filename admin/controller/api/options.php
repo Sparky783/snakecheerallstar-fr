@@ -20,10 +20,11 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 
 			if ($options->saveToDatabase()) {
 				$session->websiteOptions = serialize($options);
+				API::sendJSON(true);
 			}
 		}
 
-		//API::SendJSON($reponse);
+		API::sendJSON(false);
 	});
 
 	$app->post('/section_list', function($args) {

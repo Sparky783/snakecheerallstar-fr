@@ -4,27 +4,34 @@ use System\ToolBox;
 use Snake\Section;
 
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "member")))
-	WebSite::Redirect("login", true);
+if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
+	WebSite::redirect('login', true);
+}
 // =========================
 
 global $router;
+global $gmm;
 
-$sections = Section::GetList($session->selectedSaison);
+$sections = Section::getList($session->selectedSaison);
+$idSelectedSection = (int)$gmm->getValue('section');
 
-$sectionsHtml = "";
-foreach($sections as $section)
-	$sectionsHtml .= "<option value='" . $section->GetId() . "'>" . $section->GetName() . "</option>";
+$sectionsHtml = '';
+foreach ($sections as $section) {
+	$isSelected = $section->getId() === $idSelectedSection ? ' selected' : '';
+	$sectionsHtml .= "<option value='{$section->getId()}' {$isSelected}>{$section->getName()}</option>";
+}
 
-$addAdhButtonHtml = "";
+$addAdhButtonHtml = '';
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "secretaire")))
-	$addAdhButtonHtml = "
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'secretaire'])) {
+	$link = $router->getUrl('adherent-add');
+	$addAdhButtonHtml = <<<HTML
 		<div class='btn-group right'>
-			<a id='buttonAddAdherent' class='btn btn-primary' href=" . $router->GetUrl('adherent-add') . ">
+			<a id='buttonAddAdherent' class='btn btn-primary' href={$link}>
 				<i class='fa fa-plus'></i>
 				Ajouter un adhérent
 			</a>
 		</div>
-	";
+		HTML;
+}
 ?>

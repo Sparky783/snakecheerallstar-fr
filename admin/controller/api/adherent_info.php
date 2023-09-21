@@ -3,7 +3,7 @@ use ApiCore\Api;
 use Snake\Inscription;
 use System\ToolBox;
 use System\Session;
-use Snake\SnakeTools;
+use Snake\SnakeMailer;
 use Snake\Tuteur;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
@@ -57,7 +57,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'tresor
 			}
 		}
 
-		$result = SnakeTools::sendBill($adherent->getPayment(), $tuteur);
+		$result = SnakeMailer::sendBill($adherent->getPayment(), $tuteur);
 		$response = [];
 		
 		if ($result) {
@@ -96,7 +96,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'secret
 		}
 
 		$inscription = Inscription::getByPaymentId($adherent->getPayment()->getId());
-		$result = SnakeTools::sendRecap($inscription, $tuteur);
+		$result = SnakeMailer::sendRecap($inscription, $tuteur);
 		$response = [];
 		
 		if ($result) {

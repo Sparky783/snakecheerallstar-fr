@@ -521,8 +521,8 @@ class ToolBox
 	 */
 	public static function convertNumberToString(int $number): string
 	{
-		$lettresUnite = array('', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf');
-		$lettresDizaine = array('', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix');
+		$lettresUnite = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+		$lettresDizaine = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
 	
 		if ($number === 0) {
             return 'zéro';
@@ -534,7 +534,7 @@ class ToolBox
 
         if ($number < 20) {
             return $lettresUnite[$number];
-        } elseif ($number < 70) {
+        } else if ($number < 70) {
             $dizaine = floor($number / 10);
             $unite = $number % 10;
             $lettreDizaine = $lettresDizaine[$dizaine];
@@ -545,22 +545,32 @@ class ToolBox
                 $lettreUnite = $lettresUnite[$unite];
             }
 
-            return $lettreDizaine . '-' . $lettreUnite;
-        } elseif ($number < 100) {
+            return $lettreDizaine . ' ' . $lettreUnite;
+        } else if ($number < 100) {
             $dizaine = floor($number / 10);
             $unite = $number % 10;
-            $lettreDizaine = $lettresDizaine[$dizaine];
-            $lettreUnite = $lettresUnite[$unite];
 
-            return $lettreDizaine . ($unite > 0 ? '-' . $lettreUnite : '');
-        } elseif ($number < 1000) {
+			$lettreDizaine = $lettresDizaine[$dizaine];
+
+			if ($dizaine == 7 || $dizaine == 9) {
+				if ($dizaine == 7 && $unite == 1) {
+					$lettreUnite = 'et ' . $lettresUnite[$unite + 10];
+				} else {
+					$lettreUnite = $lettresUnite[$unite + 10];
+				}
+			} else {
+				$lettreUnite = $lettresUnite[$unite];
+			}
+
+            return $lettreDizaine . ' ' . $lettreUnite;
+        } else if ($number < 1000) {
             $centaine = floor($number / 100);
             $reste = $number % 100;
-            $lettreCentaine = $lettresUnite[$centaine] . ' cent';
+            $lettreCentaine = $centaine == 1 ? 'cent' : $lettresUnite[$centaine] . ' cent';
 
             return $lettreCentaine . ($reste > 0 ? ' ' . self::convertNumberToString($reste) : '');
         } else {
-            $suffixes = array('', 'mille', 'million', 'milliard', 'billion', 'billiard', 'trillion'); // Continuer pour d'autres échelles
+            $suffixes = ['mille', 'million', 'milliard', 'billion', 'billiard', 'trillion']; // Continuer pour d'autres échelles
 
             foreach ($suffixes as $exposant => $suffixe) {
                 $base = pow(1000, $exposant + 1);
@@ -568,9 +578,14 @@ class ToolBox
                 if ($number < $base * 1000) {
                     $partieEntiere = floor($number / $base);
                     $reste = $number % $base;
-                    $partieEnLettres = self::convertNumberToString($partieEntiere) . ' ' . $suffixe;
 
-                    return $partieEnLettres . ($reste > 0 ? ' ' . self::convertNumberToString($reste) : '');
+					if ($partieEntiere == 1) {
+                    	$partieEnLettres = $exposant == 0 ? $suffixe : self::convertNumberToString($exposant) . ' ' . $suffixe;
+					} else {
+						$partieEnLettres = self::convertNumberToString($partieEntiere) . ' ' . $suffixe . 's';
+					}
+
+                    return $partieEnLettres . ($reste != 0 ? ' ' . self::convertNumberToString($reste) : '');
                 }
             }
         }

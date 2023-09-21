@@ -310,6 +310,10 @@ class Payment
 	 */
 	public function setBasePrice(float $basePrice): void
 	{
+		if ($basePrice > $this->_basePrice) {
+			$this->_isDone = false;
+		}
+
 		$this->_basePrice = $basePrice;
 	}
 
@@ -321,6 +325,10 @@ class Payment
 	 */
 	public function setFixedPrice(float $fixedPrice): void
 	{
+		if ($fixedPrice > $this->_fixedPrice) {
+			$this->_isDone = false;
+		}
+
 		$this->_fixedPrice = $fixedPrice;
 	}
 
@@ -506,7 +514,7 @@ class Payment
 
 		$database = new Database();
 
-		$payments = $database->query(
+		$rech = $database->query(
 			"SELECT payments.* FROM payments
 			JOIN adherents ON payments.id_payment = adherents.id_payment
 			JOIN sections ON sections.id_section = adherents.id_section
@@ -514,10 +522,10 @@ class Payment
 			['saison' => $saison]
 		);
 
-		if($payments != null) {
+		if ($rech !== null) {
 			$list = [];
 
-			while ($data = $payments->fetch()) {
+			while ($data = $rech->fetch()) {
 				$list[] = new Payment($data);
 			}
 

@@ -7,7 +7,7 @@ use Snake\Tuteur;
 use Snake\EInscriptionStep;
 use Snake\EPaymentType;
 use Snake\EUniformOption;
-use Snake\SnakeTools;
+use Snake\SnakeMailer;
 
 // ===============================
 // ==== Step 1 - Informations ====
@@ -192,8 +192,8 @@ $app->post('/inscription-validate-payment', function($args) {
 	$emails = [];
 
 	foreach ($inscription->getTuteurs() as $tuteur) {
-		SnakeTools::sendRecap($inscription, $tuteur);
-		SnakeTools::sendBill($payment, $tuteur);
+		SnakeMailer::sendRecap($inscription, $tuteur);
+		SnakeMailer::sendBill($payment, $tuteur);
 		$emails[] = $tuteur->getEmail();
 	}
 

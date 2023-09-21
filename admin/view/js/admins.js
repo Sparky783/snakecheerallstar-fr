@@ -2,7 +2,7 @@ $(document).ready(function(){
 	AdminManager.Init();
 });
 
-var AdminManager = {
+let AdminManager = {
 	admins: null,
 	selectedAdmin: null,
 	addAdminModal: null,
@@ -102,17 +102,17 @@ var AdminManager = {
 				AdminManager.admins = data.admins;
 				
 				$("#nbAdmins").html(AdminManager.admins.length + "");
-				
 				$("#tableAdmins tbody").html("");
 				
-				for(var i = 0; i < AdminManager.admins.length; i ++)
+				for (let i = 0; i < AdminManager.admins.length; i ++) {
 					AdminManager.AddAdmin(AdminManager.admins[i]);
+				}
 			}
 		});
 	},
 	
 	AddAdmin: function(admin) {
-		var actions = $("<td class='text-right'><div class='btn-group'></div></td>");
+		let actions = $("<td class='text-end'><div class='btn-group'></div></td>");
 		actions.find("div").append("<button class='modify-admin btn btn-secondary' data-id='" + admin.id_admin + "'><i class='fas fa-pen'></i></button> ");
 		actions.find("div").append("<button class='reinit-admin-password btn btn-info' data-id='" + admin.id_admin + "'><i class='fas fa-sync-alt'></i></button> ");
 		actions.find("div").append("<button class='remove-admin btn btn-danger' data-id='" + admin.id_admin + "'><i class='fas fa-trash-alt'></i></button>");
@@ -149,10 +149,10 @@ var AdminManager = {
 	},
 	
 	GetAdmin: function(id_admin) {
-		for(var i = 0; i < AdminManager.admins.length; i ++)
-		{
-			if(AdminManager.admins[i].id_admin == id_admin)
+		for (let i = 0; i < AdminManager.admins.length; i ++) {
+			if (AdminManager.admins[i].id_admin === id_admin) {
 				return AdminManager.admins[i];
+			}
 		}
 	}
 }

@@ -137,11 +137,11 @@ class Database
 	 * 
 	 * @param string $tableName Name of the table where thr row is.
 	 * @param string $idColumnName Name of the column ID to find the row.
-	 * @param int $idValue Value of the ID to modify.
+	 * @param int|string $idValue Value of the ID to modify.
 	 * @param array $variables List of values to update. ID cannot be modify.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	public function update(string $tableName, string $idColumnName, int $idValue, array $variables): bool
+	public function update(string $tableName, string $idColumnName, int|string $idValue, array $variables): bool
 	{
 		$requete = "UPDATE `$tableName` SET";
 
@@ -172,10 +172,10 @@ class Database
 	 * 
 	 * @param string $tableName Name of the table where the row is.
 	 * @param string $idColumnName Name of the column ID to find the row.
-	 * @param int $idValue Value of the ID to remove.
+	 * @param int|string $idValue Value of the ID to remove.
 	 * @return bool Return True if the process succeed, else False.
 	 */
-	public function delete(string $tableName, string $idColumnName, int $idValue): bool
+	public function delete(string $tableName, string $idColumnName, int|string $idValue): bool
 	{
 		$requete = "DELETE FROM `$tableName` WHERE `$idColumnName`=:value;";
 		$variables = ['value' => $idValue];

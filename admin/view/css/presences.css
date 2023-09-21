@@ -1,33 +1,126 @@
-/* Bootstrap modification */
-.btn.snake:hover {
-	border: solid 1px #2f832f;
-}
-
-.btn.justify:hover {
-	border: solid 1px #bb11e6;
-}
-
-.btn.warning:hover {
-	border: solid 1px #ffc107;
-}
-
-.btn.danger:hover {
-	border: solid 1px #dc3545;
-}
-
-.card {
-	margin-bottom: 30px;
-}
-
 h1 {
 	margin: 20px 0;
 }
 
-.btn-justify {
-	background-color: #bb11e6;
-	color: white;
+#presences-content {
+	--bs-card-spacer-x: 0;
+	--bs-card-spacer-y: 0;
+	margin-top: 15px;
+	margin-bottom: 25px;
 }
 
-.btn-justify:hover {
-	color: white;
+#adherentsList .adherent:nth-child(even) {
+	background-color: #ededed;
+}
+
+.adherent {
+	padding: 7px 10px;
+}
+
+.adherent .status {
+    font-weight: 500;
+}
+
+.adherent .present .status {
+	color: #2f832f;
+}
+
+.adherent .justify .status {
+	color: #2465ef;
+}
+
+.adherent .late .status {
+	color: #cb9800;
+}
+
+.adherent .absent .status {
+	color: #dc3545;
+}
+
+.adherent .presence-radio {
+	margin-top: 5px;
+}
+
+.adherent .btn-present {
+	border: solid 1px #757575;
+	background-color: transparent;
+	color: #2f832f;
+}
+
+.adherent .btn-justify {
+	border: solid 1px #757575;
+	background-color: transparent;
+	color: #2465ef;
+}
+
+.adherent .btn-late {
+	border: solid 1px #757575;
+	background-color: transparent;
+	color: #cb9800;
+}
+
+.adherent .btn-absent {
+	border: solid 1px #757575;
+	background-color: transparent;
+	color: #dc3545;
+}
+
+.adherent .btn-present:hover {
+	background-color: #d7f9d7;
+}
+
+.adherent .btn-justify:hover {
+	background-color: #b5cdfd;
+}
+
+.adherent .btn-late:hover {
+	background-color: #fff3d1;
+}
+
+.adherent .btn-absent:hover {
+	background-color: #ffc2c8;
+}
+
+.adherent .btn-present.active {
+	background-color: #2f832f;
+	color: #ffffff;
+}
+
+.adherent .btn-justify.active {
+	background-color: #2465ef;
+	color: #ffffff;
+}
+
+.adherent .btn-late.active {
+	background-color: #ffc107;
+	color: #4f3d0a;
+}
+
+.adherent .btn-absent.active {
+	background-color: #dc3545;
+	color: #ffffff;
+}
+
+.adherent .stats {
+	display: flex;
+    justify-content: center;
+    gap: 25px;
+	margin-top: 10px;
+	font-size: 20px;
+}
+
+.adherent .stats .stat-present {
+	color: #2f832f;
+}
+
+.adherent .stats .stat-justify {
+	color: #2465ef;
+}
+
+.adherent .stats .stat-late {
+	color: #cb9800;
+}
+
+.adherent .stats .stat-absent {
+	color: #dc3545;
 }

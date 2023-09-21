@@ -6,6 +6,12 @@ h1 {
 	margin-bottom: 30px;
 }
 
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
 .not_complete {
 	background-color: #febcbc;
 }
@@ -16,8 +22,4 @@ h1 {
 
 #tableAdherents {
 	margin-bottom: 0;
-}
-
-.right {
-	
 }

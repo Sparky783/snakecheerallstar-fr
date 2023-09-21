@@ -15,7 +15,7 @@
 
 		<section id="welcome" class="container-fluid">
 			<div class="bg">
-				<video class="img-responsive" autoplay muted loop poster="/view/img/parallax-home.jpg">
+				<video class="img-responsive" autoplay muted loop poster="/view/vids/poster.jpg">
 					<source src="view/vids/PresentationHome.mp4" type="video/mp4">
 				</video>
 				<div class="bg-black home"></div>

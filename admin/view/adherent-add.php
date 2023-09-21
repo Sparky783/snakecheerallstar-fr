@@ -6,8 +6,8 @@
 		<?php include_once("HEAD.php"); ?>
 		<title><?php echo TITLE; ?> - Administration</title>
 		
-		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent_add.css" />
-		<script type="text/javascript" src="admin/view/js/adherent_add.js"></script>
+		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent-add.css" />
+		<script type="text/javascript" src="admin/view/js/adherent-add.js"></script>
 		<script type="text/javascript">
 			var api_url = "<?php $router->API(""); ?>";
 		</script>
@@ -17,7 +17,12 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Ajouter un adhérent</h1>
+					<div id="mainTitle">
+						<h1>Ajouter un adhérent</h1>
+						<a class="btn btn-primary" href=<?= $router->url('adherents') ?>>
+							Retour
+						</a>
+					</div>
 					<div id="addAdherent" class="card">
 						<div class="card-header clearfix">
 							<div id="payment">

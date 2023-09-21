@@ -2,15 +2,20 @@
 use System\WebSite;
 use System\ToolBox;
 use Snake\Section;
+use Snake\SnakeTools;
 
 // ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "webmaster", "coach")))
-	WebSite::Redirect("login", true);
+if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'coach'])) {
+	WebSite::redirect('login', true);
+}
 // =========================
 
-$sections = Section::GetList($session->selectedSaison);
+$sections = Section::getList($session->selectedSaison);
+$sectionsHtml = '';
 
-$sectionsHtml = "";
-foreach($sections as $section)
-	$sectionsHtml .= "<option value='" . $section->GetId() . "'>" . $section->GetName() . "</option>";
+foreach ($sections as $section) {
+	$sectionsHtml .= "<option value='{$section->getId()}'>{$section->getName()}</option>";
+}
+
+$canBeDisplayed = $session->selectedSaison === SnakeTools::getCurrentSaison();
 ?>

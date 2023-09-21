@@ -6,10 +6,10 @@
 		<?php include_once("HEAD.php"); ?>
 		<title><?php echo TITLE; ?> - Administration</title>
 		
-		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent_info.css" />
-		<script type="text/javascript" src="admin/view/js/adherent_info.js"></script>
+		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent-info.css" />
+		<script type="text/javascript" src="admin/view/js/adherent-info.js"></script>
 		<script type="text/javascript">
-			var api_url = "<?php $router->API(""); ?>";
+			var api_url = "<?php $router->api(''); ?>";
 		</script>
 	</head>
 	<body>
@@ -17,11 +17,16 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Infos adhérent</h1>
+					<div id="mainTitle">
+						<h1>Infos adhérent</h1>
+						<a class="btn btn-primary" href=<?= $router->url('adherents', ['section' => $adherent->getSection()->getId()]) ?>>
+							Retour
+						</a>
+					</div>
 					<div class="card">
-						<div class="card-header clearfix">
-							<h2 class="float-left"><?php echo $htmlName; ?></h2>
-							<div class="btn-group float-right">
+						<div class="card-header">
+							<h2><?php echo $htmlName; ?></h2>
+							<div class="btn-group">
 								<button id="btnActions" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 									Actions
 								</button>

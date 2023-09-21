@@ -14,7 +14,12 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Comptabilité</h1>
+					<div id="mainTitle">
+						<h1>Comptabilité</h1>
+						<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+							Retour
+						</a>
+					</div>
 					<div class="card">
 						<table id="comptabilite" class="table">
 							<thead class="thead-dark">

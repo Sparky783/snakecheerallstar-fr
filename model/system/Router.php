@@ -101,7 +101,7 @@ class Router
 	 * @param string $page Page to display in URL.
 	 * @param array $options Options to include into URL.
 	 */
-	public function Url(string $page, array $options = array()): void
+	public function url(string $page, array $options = array()): void
 	{
 		$gmm = new GetMethodManager();
 

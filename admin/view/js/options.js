@@ -141,13 +141,13 @@ let Options = {
 			Options.selectedSection = section;
 			
 			$('#editSectionModal').find("#nameInput").val(Options.selectedSection.name);
-			$('#editSectionModal').find("#maxYearInput").val(Options.selectedSection.maxYear);
-			$('#editSectionModal').find("#cotisationPriceInput").val(Options.selectedSection.cotisationPrice);
-			$('#editSectionModal').find("#rentUniformPriceInput").val(Options.selectedSection.rentUniformPrice);
-			$('#editSectionModal').find("#cleanUniformPriceInput").val(Options.selectedSection.cleanUniformPrice);
-			$('#editSectionModal').find("#buyUniformPriceInput").val(Options.selectedSection.buyUniformPrice);
-			$('#editSectionModal').find("#depositUniformPriceInput").val(Options.selectedSection.depositUniformPrice);
-			$('#editSectionModal').find("#maxMembersInput").val(Options.selectedSection.maxMembers);
+			$('#editSectionModal').find("#maxYearInput").val(Options.selectedSection.max_year);
+			$('#editSectionModal').find("#cotisationPriceInput").val(Options.selectedSection.cotisation_price);
+			$('#editSectionModal').find("#rentUniformPriceInput").val(Options.selectedSection.rent_uniform_price);
+			$('#editSectionModal').find("#cleanUniformPriceInput").val(Options.selectedSection.clean_uniform_price);
+			$('#editSectionModal').find("#buyUniformPriceInput").val(Options.selectedSection.buy_uniform_price);
+			$('#editSectionModal').find("#depositUniformPriceInput").val(Options.selectedSection.deposit_uniform_price);
+			$('#editSectionModal').find("#maxMembersInput").val(Options.selectedSection.nb_max_members);
 			
 			Options.editSectionModal.show();
 		});
@@ -160,13 +160,13 @@ let Options = {
 	
 		var row = $("<tr></tr>");
 		row.append("<td>" + section.name + "</td>");
-		row.append("<td>" + section.maxYear + "</td>");
-		row.append("<td>" + section.cotisationPrice + " €</td>");
-		row.append("<td>" + section.rentUniformPrice + " €</td>");
-		row.append("<td>" + section.cleanUniformPrice + " €</td>");
-		row.append("<td>" + section.buyUniformPrice + " €</td>");
-		row.append("<td>" + section.depositUniformPrice + " €</td>");
-		row.append("<td>" + section.maxMembers + "</td>");
+		row.append("<td>" + section.max_year + "</td>");
+		row.append("<td>" + section.cotisation_price + " €</td>");
+		row.append("<td>" + section.rent_uniform_price + " €</td>");
+		row.append("<td>" + section.clean_uniform_price + " €</td>");
+		row.append("<td>" + section.buy_uniform_price + " €</td>");
+		row.append("<td>" + section.deposit_uniform_price + " €</td>");
+		row.append("<td>" + section.nb_max_members + "</td>");
 
 		if (Options.isCurrentSaison) {
 			row.append(actions);

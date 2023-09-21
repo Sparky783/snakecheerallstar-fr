@@ -6,6 +6,7 @@ use System\Database;
 use Snake\Adherent;
 use Snake\EPaymentType;
 use Snake\Section;
+use Snake\SnakeMailer;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
 	// Retourne une liste d'adhérent en fonction d'une section donnée.
@@ -255,36 +256,55 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 		$session = Session::getInstance();
 		$adherent = Adherent::getById((int)$args['id']);
 		$sections = Section::getList($session->selectedSaison);
+		$newSection = null;
+		$nbSection = count($sections);
 
-		foreach ($sections as $section) {
-			if ($section->getMaxYear() < $adherent->getSection()->getMaxYear()) {
-				$adherent->setSection($section);
-				$adherent->saveToDatabase();
-
-				API::sendJSON("L'adhérent à été surclassé en {$section->getName()}");
-				return;
+		for ($i = $nbSection - 1; $i >= 0; $i--) {
+			if ($sections[$i]->getMaxYear() < $adherent->getSection()->getMaxYear()) {
+				$newSection = $sections[$i];
+				break;
 			}
+		}
+
+		if ($newSection !== null) {
+			$adherent->setSection($sections[$i]);
+			$adherent->saveToDatabase();
+
+			$payment = $adherent->getPayment();
+			$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
+			$payment->setBasePrice($sections[$i]->getCotisationPrice());
+			$newPrice = $payment->getFinalAmount();
+			$payment->saveToDatabase();
+
+			foreach ($adherent->getTuteurs() as $tuteur) {
+				SnakeMailer::sendSurclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
+				SnakeMailer::sendBill($payment, $tuteur);
+			}
+
+			API::sendJSON("L'adhérent à été surclassé en {$sections[$i]->getName()}");
 		}
 		
 		API::sendJSON("Impossible de surclasser l'adhérent.");
 	});
 
 	$app->post('/adherent_sousclassement', function($args) {
+		API::sendJSON("Cette fonctionnalité n'est pas encore disponible.");
+        /*
 		$session = Session::getInstance();
 		$adherent = Adherent::getById((int)$args['id']);
 		$sections = Section::getList($session->selectedSaison);
+		$nbSection = count($sections);
 
-		for ($i = count($sections) - 1; $i > 0; $i--) {
+		for ($i = 0; $i < $nbSection; $i++) {
 			if ($sections[$i]->getMaxYear() > $adherent->getSection()->getMaxYear()) {
 				$adherent->setSection($sections[$i]);
 				$adherent->saveToDatabase();
 				
-				API::sendJSON("L'adhérent à été sousclassé en {$sections[$i]->GetName()}");
-				return;
+				API::sendJSON("L'adhérent à été sousclassé en {$sections[$i]->getName()}");
 			}
 		}
 		
-		API::sendJSON("Impossible de sousclasser l'adhérent.");
+		API::sendJSON("Impossible de sousclasser l'adhérent.");*/
 	});
 }
 ?>

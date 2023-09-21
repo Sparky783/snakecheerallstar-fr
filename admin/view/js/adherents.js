@@ -90,7 +90,7 @@ var Adherents = {
 		dom.append("<td>" + data_adherent.lastname + "</td>");
 		dom.append("<td>" + data_adherent.firstname + "</td>");
 		
-		var actions = $("<td class='text-right'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
+		var actions = $("<td class='text-end'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
 		
 		data_adherent.actions.forEach(action => {
 			var button = null;

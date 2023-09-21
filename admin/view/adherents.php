@@ -17,12 +17,17 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Liste des adhérents</h1>
+					<div id="mainTitle">
+						<h1>Liste des adhérents</h1>
+						<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+							Retour
+						</a>
+					</div>
 					<div class="card">
-						<div class="card-header clearfix">
-							<span class="float-left">Il y a <span id="nbAdherents"></span> adhérents</span>
-							<div class="form-group">
-								<select id="selectedSection" class="form-control">
+						<div class="card-header">
+							<div class="section-seclection">
+								<span>Il y a <span id="nbAdherents"></span> adhérents</span>
+								<select id="selectedSection" class="form-select mt-2">
 									<?php echo $sectionsHtml; ?>
 								</select>
 							</div>
@@ -38,7 +43,7 @@
 								<tr>
 									<th scope="col">Nom</th>
 									<th scope="col">Prénom</th>
-									<th class="text-right" scope="col">Options</th>
+									<th class="text-end" scope="col">Options</th>
 								</tr>
 							</thead>
 							<tbody>

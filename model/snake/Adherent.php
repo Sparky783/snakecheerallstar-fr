@@ -880,8 +880,44 @@ class Adherent
 		if (!empty($infos['doctorName'])) {
 			$this->setDoctorName($infos['doctorName']);
 		}
+
+		$this->setUniformOption(EUniformOption::Rent);
 			
 		return $messages;
+	}
+
+	/**
+	 * Retourne un tableau contenant les informations de l'adhérent.
+	 * 
+	 * @return array
+	 */
+	public function toArray(): array
+	{
+		return [
+			'id_adherent' => $this->_id,
+			'id_section' => $this->_idSection,
+			'id_payment' => $this->_idPayment,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'birthday' => $this->_birthday->format('Y-m-d'),
+			'is_sibling' => $this->_isSiblings,
+			'medicine_info' => $this->_medicineInfo,
+			'uniform_option' => $this->_uniformOption,
+			'chq_buy_uniform' => $this->_chqBuyUniform,
+			'chq_rent_uniform' => $this->_chqRentUniform,
+			'chq_clean_uniform' => $this->_chqCleanUniform,
+			'doc_ID_card' => $this->_docIdCard,
+			'doc_photo' => $this->_docPhoto,
+			'doc_fffa' => $this->_docFffa,
+			'doc_sportmut' => $this->_docSportmut,
+			'doc_medic_auth' => $this->_docMedicAuth,
+			'pass_sport' => $this->_passSport,
+			'inscription_date' => $this->_inscriptionDate->format('Y-m-d'),
+			'social_security_number' => $this->_socialSecurityNumber,
+			'name_emergency_contact' => $this->_nameEmergencyContact,
+			'phone_emergency_contact' => $this->_phoneEmergencyContact,
+			'doctor_name' => $this->_doctorName
+		];
 	}
 
 	/**
