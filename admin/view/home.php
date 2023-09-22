@@ -27,14 +27,14 @@
 						<div class="card-body">
 							<div class="saisons form-group">
 								<label for="selectSaison">Saison à afficher :</label>
-								<select id="selectSaison" class="form-control">
+								<select id="selectSaison" class="form-select">
 									<?php echo $saisons; ?>
 								</select>
 							</div>
 							<div class="links">
 								<?php echo $links; ?>
 								<span class="separator"></span>
-								<a class="btn btn-danger btn-lg btn-block" href=<?php $router->Url("login", array("logout" => "true")); ?>>Se déconnecter</a>
+								<a class="btn btn-outline-danger btn-sm btn-block" href=<?php $router->Url("login", array("logout" => "true")); ?>>Se déconnecter</a>
 							</div>
 						</div>
 					</div>
