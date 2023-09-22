@@ -2,7 +2,7 @@ $(document).ready(function(){
 	Adherents.Init();
 });
 
-var Adherents = {
+let Adherents = {
 	selectedId: null,
 	validateModal: null,
 	removeModal: null,
@@ -16,10 +16,10 @@ var Adherents = {
 		this.InitAjax();
 
 		$("#selectedSection").change(function(){
-			Adherents.SelectSection($("#selectedSection").val());
+			Adherents.SelectSection();
 		});
 		
-		this.SelectSection($("#selectedSection").val());
+		this.SelectSection();
 		this.InitExportList();
 	},
 
@@ -27,7 +27,7 @@ var Adherents = {
 		$('#validateModal').find("form").submit(function(){
 			let data = {}
 
-			$(this).find(".custom-control-input").each(function(){
+			$(this).find(".form-check-input").each(function(){
 				data[$(this).attr("name")] = $(this).is(":checked");
 			});
 			
@@ -38,7 +38,7 @@ var Adherents = {
 				type: "POST",
 				data: data,
 				success: function() {
-					Adherents.SelectSection($("#selectedSection").val());
+					Adherents.SelectSection();
 					Adherents.validateModal.hide();
 				}
 			});
@@ -47,7 +47,7 @@ var Adherents = {
 		});
 		
 		$('#removeModal').find("form").submit(function(){
-			var id_adherent = Adherents.selectedId;
+			let id_adherent = Adherents.selectedId;
 			$.ajax({
 				url: api_url + "remove_adherent",
 				type: "POST",
@@ -55,7 +55,7 @@ var Adherents = {
 					id_adherent: id_adherent
 				},
 				success: function() {
-					Adherents.SelectSection($("#selectedSection").val());
+					Adherents.SelectSection();
 					Adherents.removeModal.hide();
 				}
 			});
@@ -64,16 +64,14 @@ var Adherents = {
 		});
 	},
 	
-	SelectSection: function (id_section) {
+	SelectSection: function () {
 		$.ajax({
 			url: api_url + "adherent_list",
 			type: "POST",
 			data: {
-				id_section: id_section
+				id_section: $("#selectedSection").val()
 			},
 			success: function(data) {
-				var nbr = 0;
-
 				$("#tableAdherents tbody").html("");
 				$("#nbAdherents").html(data.list.length + "");
 
@@ -86,14 +84,14 @@ var Adherents = {
 
 	AddAdherentRow: function (data_adherent)
 	{
-		var dom = $("<tr class='" + data_adherent.status + "' data-id-adherent='" + data_adherent.id + "'></tr>");
+		let dom = $("<tr class='" + data_adherent.status + "' data-id-adherent='" + data_adherent.id + "'></tr>");
 		dom.append("<td>" + data_adherent.lastname + "</td>");
 		dom.append("<td>" + data_adherent.firstname + "</td>");
 		
-		var actions = $("<td class='text-end'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
+		let actions = $("<td class='text-end'><div class='dropdown'><a class='btn btn-secondary dropdown-toggle' href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false'>Action</a><div class='dropdown-menu'></div></div></td>");
 		
 		data_adherent.actions.forEach(action => {
-			var button = null;
+			let button = null;
 
 			switch(action) {
 				case "view":
@@ -110,14 +108,18 @@ var Adherents = {
 				case "surclasser":
 					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-up'></i> Sur-classer</button>");
 					button.click(function(){
-						Adherents.SurclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+						if (confirm("Voulez-vous vraiment surclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?")) {
+							Adherents.SurclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+						}
 					});
 					break;
 
 				case "sousclasser":
 					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-down'></i> Sous-classer</button>");
 					button.click(function(){
-						Adherents.SousclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+						if (confirm("Voulez-vous vraiment sousclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?")) {
+							Adherents.SousclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
+						}
 					});
 					break;
 
@@ -162,6 +164,7 @@ var Adherents = {
 			},
 			success: function(response) {
 				alert(response);
+				Adherents.SelectSection();
 			}
 		});
 	},
@@ -177,6 +180,7 @@ var Adherents = {
 			},
 			success: function(response) {
 				alert(response);
+				Adherents.SelectSection();
 			}
 		});
 	},
@@ -215,12 +219,12 @@ var Adherents = {
 						// IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
 						window.navigator.msSaveBlob(blob, filename);
 					} else {
-						var URL = window.URL || window.webkitURL;
-						var downloadUrl = URL.createObjectURL(blob);
+						let URL = window.URL || window.webkitURL;
+						let downloadUrl = URL.createObjectURL(blob);
 
 						if (filename) {
 							// use HTML5 a[download] attribute to specify filename
-							var a = document.createElement("a");
+							let a = document.createElement("a");
 							// safari doesn't support this yet
 							if (typeof a.download === 'undefined') {
 								window.location = downloadUrl;

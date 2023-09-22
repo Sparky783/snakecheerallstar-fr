@@ -590,4 +590,108 @@ class SnakeMailer
 
 		return false;
 	}
+
+	/**
+	 * Envoie un E-mail d'information pour le sousclassement de l'adhérent.
+	 * 
+	 * @param Adherent $adherent Adhérent surclassé
+	 * @param float $oldPrice Montant de l'ancienne cotisation
+	 * @param float $newPrice Montant de la nouvelle cotisation
+	 * @param Tuteur $tuteur Tuteur à qui envoyer le mail.
+	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
+	 */
+	public static function sendSousclassementInformation(Adherent $adherent, float $oldPrice, float $newPrice, Tuteur $tuteur = null): bool
+	{
+		// Destinataire
+		if ($tuteur === null) {
+			$tuteur = new Tuteur();
+			$tuteur->setFirstname(TITLE);
+			$tuteur->setEmail(EMAIL_CONTACT);
+			$tuteur->setPhone('00 00 00 00 00');
+		}
+
+		// Détail du paiement de la cotisation
+		$paymentContent = '<p>';
+
+		if ((int)$oldPrice === 0) {
+			// La première cotisation n'a jamais été payé.
+			$amountWords = SnakeTools::convertPaymentAmountToWords($newPrice);
+
+			$paymentContent .= <<<HTML
+				{$newPrice} €  ({$amountWords})
+				<br /><br />
+				Nous vous invitons à remettre le paiement à l'un de nos coach ou à l'un des membres du bureau.<br />
+				Dans le cas d'un chèque, merci de bien vouloir le mettre à l'ordre de "Snake Cheer All Star".
+			HTML;
+		} else {
+			// Ajustement du paiement de la cotisation
+			$price = $oldPrice - $newPrice;
+			$amountWords = SnakeTools::convertPaymentAmountToWords($price);
+
+			$paymentContent .= <<<HTML
+				{$newPrice} €
+				<br /><br />
+				Un premier paiement de {$oldPrice} € à déjà été perçu.<br />
+				Nous devons vous remettre le montant de <b>{$price} €</b> ({$amountWords})
+			HTML;
+		}
+		$paymentContent .= "</p>";
+		
+		// Génération de l'E-mail.
+		$signature = TITLE;
+		$mailContent = <<<HTML
+			<p>
+				Bonjour,
+				<br /><br />
+				Nous vous informons le sousclassement de {$adherent->getFirstname()} {$adherent->getLastname()} dans la section {$adherent->getSection()->getName()} (saison {$adherent->getSection()->getSaison()}).<br />
+				Ce sousclassement entraine une correction du montant de cotisation au club. Voici le nouveau montant:
+			</p>
+			{$paymentContent}
+			<p>
+				Cordialement,<br />
+				{$signature}
+			</p>
+		HTML;
+
+		$sujet = "Sousclassement - " . TITLE;
+		
+		// ================================================
+		// E-mail récapitulatif
+		// ================================================
+		$mail = new PHPMailer(true); // Passing `true` enables exceptions
+		
+		try {
+			//Server settings
+			$mail->isSMTP();
+			$mail->Host = SMTP_HOST;
+			$mail->SMTPAuth = SMTP_AUTH;
+			$mail->Username = SMTP_USERNAME;
+			$mail->Password = SMTP_PASSWORD;
+			$mail->SMTPSecure = SMTP_SECURE;
+			$mail->Port = SMTP_PORT;
+			$mail->CharSet = 'utf-8';
+
+			//Recipients
+			$mail->setFrom(EMAIL_WEBSITE, $sujet);
+
+			if (ENV === 'PROD') {
+				$mail->addAddress($tuteur->getEmail(), $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
+				$mail->addAddress(EMAIL_WABMASTER, $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
+			} else { // ENV DEV
+				$mail->addAddress(EMAIL_WABMASTER, $tuteur->getLastname() . ' ' . $tuteur->getFirstname());
+			}
+			
+			// Content
+			$mail->isHTML(true); // Set email format to HTML
+			$mail->Subject = $sujet;
+			$mail->Body    = EmailTemplates::standardHTML($sujet, $mailContent);
+			$mail->AltBody = EmailTemplates::standardText($sujet);
+			$mail->send();
+			
+			return true;
+		}
+		catch (Exception $e) { }
+
+		return false;
+	}
 }

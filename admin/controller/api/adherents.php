@@ -26,7 +26,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 				!$adherent->hasDocPhoto() ||
 				!$adherent->hasDocFFFA() ||
 				!$adherent->hasDocSportmut() ||
-				!$adherent->hasDocMedicAuth())
+				($adherent->hasMedicine() && !$adherent->hasDocMedicAuth()))
 			{
 				$status = 'not_complete';
 			}
@@ -78,7 +78,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 					break;
 
 				case EPaymentType::Cheque:
-					$priceHtml = $adherent->getPayment()->getFinalAmount() . "€ - " . $adherent->getPayment()->getNbDeadlines() ." Chèques";
+					$priceHtml = $adherent->getPayment()->getFinalAmount() . "€ - " . $adherent->getPayment()->getNbDeadlines() . " Chèques";
 					break;
 
 				case EPaymentType::Virement:
@@ -86,57 +86,57 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 					break;
 			}
 
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchPayment' class='custom-control-input' type='checkbox' name='payment' />
-					<label class='custom-control-label' for='customSwitchPayment'>Paiement (" . $priceHtml . ")</label>
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchPayment' class='form-check-input' type='checkbox' name='payment' />
+					<label class='form-check-label' for='customSwitchPayment'>Paiement ({$priceHtml})</label>
 				</div>
-			";
+				HTML;
 		}
 
 		if (!$adherent->hasDocIdCard()) {
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchIdCard' class='custom-control-input' type='checkbox' name='idCard' />
-					<label class='custom-control-label' for='customSwitchIdCard'>Pièce d'identité</label>
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchIdCard' class='form-check-input' type='checkbox' name='idCard' />
+					<label class='form-check-label' for='customSwitchIdCard'>Pièce d'identité</label>
 				</div>
-			";
+				HTML;
 		}
 
 		if (!$adherent->hasDocFffa()) {
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchFFFA' class='custom-control-input' type='checkbox' name='fffa' />
-					<label class='custom-control-label' for='customSwitchFFFA'>Licence FFFA</label>
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchFFFA' class='form-check-input' type='checkbox' name='fffa' />
+					<label class='form-check-label' for='customSwitchFFFA'>Licence FFFA</label>
 				</div>
-			";
+				HTML;
 		}
 
-		if (!$adherent->hasDocMedicAuth()) {
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchMedic' class='custom-control-input' type='checkbox' name='medic' />
-					<label class='custom-control-label' for='customSwitchMedic'>Autorisation médicale</label>
+		if ($adherent->hasMedicine() && !$adherent->hasDocMedicAuth()) {
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchMedic' class='form-check-input' type='checkbox' name='medic' />
+					<label class='form-check-label' for='customSwitchMedic'>Autorisation médicale</label>
 				</div>
-			";
+				HTML;
 		}
 
-		if (!$adherent->hasPhoto()) {
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchPhoto' class='custom-control-input' type='checkbox' name='photo' />
-					<label class='custom-control-label' for='customSwitchPhoto'>Photo d'identité</label>
+		if (!$adherent->hasDocPhoto()) {
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchPhoto' class='form-check-input' type='checkbox' name='photo' />
+					<label class='form-check-label' for='customSwitchPhoto'>Photo d'identité</label>
 				</div>
-			";
+				HTML;
 		}
 
 		if (!$adherent->hasDocSportmut()) {
-			$missDocHtml .= "
-				<div class='custom-control custom-switch'>
-					<input id='customSwitchSportmut' class='custom-control-input' type='checkbox' name='sportmut' />
-					<label class='custom-control-label' for='customSwitchSportmut'>Sportmut</label>
+			$missDocHtml .= <<<HTML
+				<div class='form-check form-switch'>
+					<input id='customSwitchSportmut' class='form-check-input' type='checkbox' name='sportmut' />
+					<label class='form-check-label' for='customSwitchSportmut'>Sportmut</label>
 				</div>
-			";
+				HTML;
 		}
 
 		API::sendJSON([
@@ -147,61 +147,35 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 
 	// Met à jour les éléments attendu pour l'inscription
 	$app->post('/adherent_validate_update', function($args) {
-		$data = [];
+		$adherent = Adherent::getById((int)$args['id_adherent']);
 
-		if (isset($args['chqBuyUniform'])) {
-			$data['chq_buy_uniform'] = ToolBox::stringToBool($args['chqBuyUniform']);
-		}
-
-		if (isset($args['chqRentUniform'])) {
-			$data['chq_rent_uniform'] = ToolBox::stringToBool($args['chqRentUniform']);
-		}
-
-		if (isset($args['chqCleanUniform'])) {
-			$data['chq_clean_uniform'] = ToolBox::stringToBool($args['chqCleanUniform']);
+		if (isset($args['payment']) && ToolBox::stringToBool($args['payment'])) {
+			$payment = $adherent->getPayment();
+			$payment->setIsDone(true);
+			$payment->saveToDatabase();
 		}
 
 		if (isset($args['idCard'])) {
-			$data['doc_ID_card'] = ToolBox::stringToBool($args['idCard']);
+			$adherent->setDocIdCard(ToolBox::stringToBool($args['idCard']));
 		}
-
-		if (isset($args['photo'])) {
-			$data['doc_photo'] = ToolBox::stringToBool($args['photo']);
-		}
-
+		
 		if (isset($args['fffa'])) {
-			$data['doc_fffa'] = ToolBox::stringToBool($args['fffa']);
-		}
-
-		if (isset($args['sportmut'])) {
-			$data['doc_sportmut'] = ToolBox::stringToBool($args['sportmut']);
+			$adherent->setDocFffa(ToolBox::stringToBool($args['fffa']));
 		}
 
 		if (isset($args['medic'])) {
-			$data['doc_medic_auth'] = ToolBox::stringToBool($args['medic']);
+			$adherent->setDocMedicAuth(ToolBox::stringToBool($args['medic']));
 		}
 
-		$database = new Database();
-		$result = true;
-		// TODO: Move this function to Adherent.
-		$result = $result & $database->update('adherents', 'id_adherent', (int)$args['id_adherent'], $data);
-
-		if (isset($args['payment'])) {
-			$rech = $database->query(
-				"SELECT * FROM adherents WHERE id_adherent=:id_adherent",
-				['id_adherent' => (int)$args['id_adherent']]
-			);
-
-			if ($rech !== null) {
-				$adherent = $rech->fetch();
-
-				$result = $result & $database->update('payments', 'id_payment', (int)$adherent['id_payment'],
-					['is_done' => ToolBox::stringToBool($args['payment'])]
-				);
-			}
+		if (isset($args['photo'])) {
+			$adherent->setDocPhoto(ToolBox::stringToBool($args['photo']));
 		}
 
-		API::sendJSON($result);
+		if (isset($args['sportmut'])) {
+			$adherent->setDocSportmut(ToolBox::stringToBool($args['sportmut']));
+		}
+
+		API::sendJSON($adherent->saveToDatabase());
 	});
 
 	$app->post('/adherent_export_list', function($args) {
@@ -267,12 +241,12 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 		}
 
 		if ($newSection !== null) {
-			$adherent->setSection($sections[$i]);
+			$adherent->setSection($newSection);
 			$adherent->saveToDatabase();
 
 			$payment = $adherent->getPayment();
 			$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
-			$payment->setBasePrice($sections[$i]->getCotisationPrice());
+			$payment->setBasePrice($newSection->getCotisationPrice());
 			$newPrice = $payment->getFinalAmount();
 			$payment->saveToDatabase();
 
@@ -281,30 +255,45 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 				SnakeMailer::sendBill($payment, $tuteur);
 			}
 
-			API::sendJSON("L'adhérent à été surclassé en {$sections[$i]->getName()}");
+			API::sendJSON("L'adhérent à été surclassé en {$newSection->getName()}");
 		}
 		
 		API::sendJSON("Impossible de surclasser l'adhérent.");
 	});
 
 	$app->post('/adherent_sousclassement', function($args) {
-		API::sendJSON("Cette fonctionnalité n'est pas encore disponible.");
-        /*
 		$session = Session::getInstance();
 		$adherent = Adherent::getById((int)$args['id']);
 		$sections = Section::getList($session->selectedSaison);
+		$newSection = null;
 		$nbSection = count($sections);
 
 		for ($i = 0; $i < $nbSection; $i++) {
 			if ($sections[$i]->getMaxYear() > $adherent->getSection()->getMaxYear()) {
-				$adherent->setSection($sections[$i]);
-				$adherent->saveToDatabase();
-				
-				API::sendJSON("L'adhérent à été sousclassé en {$sections[$i]->getName()}");
+				$newSection = $sections[$i];
+				break;
 			}
 		}
+
+		if ($newSection !== null) {
+			$adherent->setSection($newSection);
+			$adherent->saveToDatabase();
+
+			$payment = $adherent->getPayment();
+			$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
+			$payment->setBasePrice($newSection->getCotisationPrice());
+			$newPrice = $payment->getFinalAmount();
+			$payment->saveToDatabase();
+
+			foreach ($adherent->getTuteurs() as $tuteur) {
+				SnakeMailer::sendSousclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
+				SnakeMailer::sendBill($payment, $tuteur);
+			}
+
+			API::sendJSON("L'adhérent à été sousclassé en {$newSection->getName()}");
+		}
 		
-		API::sendJSON("Impossible de sousclasser l'adhérent.");*/
+		API::sendJSON("Impossible de sousclasser l'adhérent.");
 	});
 }
 ?>

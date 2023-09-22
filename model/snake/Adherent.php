@@ -398,7 +398,7 @@ class Adherent
 	 * 
 	 * @return bool
 	 */
-	public function hasPhoto(): bool
+	public function hasDocPhoto(): bool
 	{
 		return $this->_docPhoto;
 	}
@@ -832,6 +832,61 @@ class Adherent
 	{
 		$this->_payment = $payment;
 		$this->_idPayment = $payment->getId();
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni une pièce d'identité.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocIdCard(bool $hasDocument): void
+	{
+		$this->_docIdCard = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni une photo.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocPhoto(bool $hasDocument): void
+	{
+		$this->_docPhoto = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document de la FFFA rempli.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocFffa(bool $hasDocument): void
+	{
+		$this->_docFffa = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document de Sportmut.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocSportmut(bool $hasDocument): void
+	{
+		$this->_docSportmut = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document d'autorisation médical.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocMedicAuth(bool $hasDocument): void
+	{
+		$this->_docMedicAuth = $hasDocument;
 	}
 	
 	// ==== AUTRES METHODES ====
