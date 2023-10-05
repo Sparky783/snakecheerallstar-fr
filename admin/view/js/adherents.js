@@ -6,11 +6,14 @@ let Adherents = {
 	selectedId: null,
 	validateModal: null,
 	removeModal: null,
+	changeSectionModal: null,
 	exportModal: null,
+	changeSectionAction: '',
 
 	Init: function () {
 		this.validateModal = new bootstrap.Modal('#validateModal'),
 		this.removeModal = new bootstrap.Modal('#removeModal'),
+		this.changeSectionModal = new bootstrap.Modal('#changeSectionModal');
 		this.exportModal = new bootstrap.Modal('#exportModal'),
 
 		this.InitAjax();
@@ -43,6 +46,19 @@ let Adherents = {
 				}
 			});
 	
+			return false;
+		});
+
+		$('#changeSectionModal').find("form").submit(function() {
+			let sendEmail = $(this).find("#customSwitchChangeSectionEmail").is(":checked");
+			console.log(sendEmail);
+
+			if (Adherents.changeSectionAction == 'surclassement') {
+				Adherents.SurclasserAdherentAction(Adherents.selectedId, sendEmail);
+			} else if(Adherents.changeSectionAction == 'sousclassement') {
+				Adherents.SousclasserAdherentAction(Adherents.selectedId, sendEmail);
+			}
+
 			return false;
 		});
 		
@@ -108,18 +124,24 @@ let Adherents = {
 				case "surclasser":
 					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-up'></i> Sur-classer</button>");
 					button.click(function(){
-						if (confirm("Voulez-vous vraiment surclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?")) {
-							Adherents.SurclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
-						}
+						$('#changeSectionModal .modal-title').html('Surclassement');
+						$('#changeSectionModal .message').html("Voulez-vous vraiment surclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?");
+						$('#customSwitchChangeSectionEmail').prop("checked", false);
+						Adherents.changeSectionAction = 'surclassement';
+						Adherents.selectedId = data_adherent.id;
+						Adherents.changeSectionModal.show();
 					});
 					break;
 
 				case "sousclasser":
 					button = $("<button class='remove-adherent dropdown-item'><i class='fas fa-arrow-down'></i> Sous-classer</button>");
 					button.click(function(){
-						if (confirm("Voulez-vous vraiment sousclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?")) {
-							Adherents.SousclasserAdherentAction(data_adherent.id, data_adherent.firstname + " " + data_adherent.lastname);
-						}
+						$('#changeSectionModal .modal-title').html('Sousclassement');
+						$('#changeSectionModal .message').html("Voulez-vous vraiment sousclasser " + data_adherent.firstname + " " + data_adherent.lastname + "?");
+						$('#customSwitchChangeSectionEmail').prop("checked", false);
+						Adherents.changeSectionAction = 'sousclassement';
+						Adherents.selectedId = data_adherent.id;
+						Adherents.changeSectionModal.show();
 					});
 					break;
 
@@ -140,8 +162,6 @@ let Adherents = {
 	},
 
 	ModifyAdherentAction: function (id_adherent) {
-		this.selectedId = id_adherent;
-
 		$.ajax({
 			url: api_url + "adherent_validate_form/" + id_adherent,
 			type: "GET",
@@ -153,23 +173,23 @@ let Adherents = {
 		});
 	},
 
-	SurclasserAdherentAction: function (id_adherent) {
-		this.selectedId = id_adherent;
-
+	SurclasserAdherentAction: function (id_adherent, sendEmail = false) {
 		$.ajax({
 			url: api_url + "adherent_surclassement",
 			type: "POST",
 			data: {
 				id: id_adherent,
+				sendEmail: sendEmail
 			},
 			success: function(response) {
+				Adherents.changeSectionModal.hide();
 				alert(response);
 				Adherents.SelectSection();
 			}
 		});
 	},
 
-	SousclasserAdherentAction: function (id_adherent) {
+	SousclasserAdherentAction: function (id_adherent, sendEmail = false) {
 		this.selectedId = id_adherent;
 
 		$.ajax({
@@ -177,8 +197,10 @@ let Adherents = {
 			type: "POST",
 			data: {
 				id: id_adherent,
+				sendEmail: sendEmail
 			},
 			success: function(response) {
+				Adherents.changeSectionModal.hide();
 				alert(response);
 				Adherents.SelectSection();
 			}

@@ -4,7 +4,7 @@ use System\ToolBox;
 use System\Admin;
 use Snake\SnakeMailer;
 
-if(ToolBox::searchInArray($session->admin_roles, ['admin'])) {
+if (ToolBox::searchInArray($session->admin_roles, ['admin'])) {
 	$app->post('/admins_list', function($args) {
 		$admins = Admin::getList();
 		$list = [];
@@ -25,7 +25,7 @@ if(ToolBox::searchInArray($session->admin_roles, ['admin'])) {
 		$admin->setName($args['name']);
 		$admin->setRoles($args['roles']);
 		
-		if ($admin->saveToDatabase() && SnakeMailer::sendNewAdminAccount($admin)) {
+		if ($admin->saveToDatabase() && SnakeMailer::sendNewAdminAccount($admin, $password)) {
 			Api::sendJSON($admin->getId());
 		}
 
@@ -35,7 +35,7 @@ if(ToolBox::searchInArray($session->admin_roles, ['admin'])) {
 	$app->post('/admin_edit', function($args) {
 		$admin = Admin::getById($args['id_admin']);
 
-		if($admin === false) {
+		if ($admin === false) {
 			Api::sendJSON(false);
 		}
 
@@ -54,9 +54,9 @@ if(ToolBox::searchInArray($session->admin_roles, ['admin'])) {
 		$password = ToolBox::generatePassword();
 
 		$admin = Admin::getById($args['id_admin']);
-		$admin->setPassword(sha1(sha1(AUTH_SALT) . sha1($password)));
+		$admin->setPassword($password);
 
-		if ($admin->saveToDatabase() && SnakeMailer::sendNewAdminPassword($admin)) {
+		if ($admin->saveToDatabase() && SnakeMailer::sendNewAdminPassword($admin, $password)) {
 			API::sendJSON($admin->getId());
 		}
 		

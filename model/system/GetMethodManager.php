@@ -32,9 +32,9 @@ class GetMethodManager
 	 * Get a value with its key. Return False if the value doesn't exist.
 	 * 
 	 * @param string $name Name of the value that you want.
-     * @return bool
+     * @return string|false
 	 */
-	public function getValue(string $name): string|bool
+	public function getValue(string $name): string|false
 	{
 		if (isset($this->_values[$name])) {
 			return $this->_values[$name];

@@ -19,15 +19,15 @@
 						</div>
 						<form class="card-body" action="#" method="post">
 							<?php echo $errorHtml; ?>
-							<div class="form-group">
+							<div class="mb-3">
 								<label for="email">E-mail</label>
 								<input class="form-control" type="email" name="email" placeholder="Enter email">
 							</div>
-							<div class="form-group">
+							<div class="mb-3">
 								<label for="password">Password</label>
 								<input class="form-control" type="password" name="password" placeholder="Password">
 							</div>
-							<div class="form-group form-check">
+							<div class="mb-3 form-check">
 								<input class="form-check-input" type="checkbox" name="rememberme-admin" checked="checked">
 								<label class="form-check-label" for="rememberme-admin">Se souvenir de moi</label>
 							</div>

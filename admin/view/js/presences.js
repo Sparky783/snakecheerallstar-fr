@@ -42,10 +42,6 @@ let Presences = {
 		$("#statButton").click(function(){
 			if (Presences.isStatView) {
 				Presences.refresh();
-
-				$("#statButton").html('Voir les statistiques');
-				$("#presences .card-footer").show();
-				Presences.isStatView = false;
 			} else {
 				$.ajax({
 					url: api_url + "presences_stats",
@@ -86,6 +82,10 @@ let Presences = {
 				});
 
 				$('#presences-content .card-header').html('Il y a ' + data.adherents.length + ' élèves dans cette section');
+
+				$("#statButton").html('Voir les statistiques');
+				$("#presences .card-footer").show();
+				Presences.isStatView = false;
 			}
 		});
 	},

@@ -155,4 +155,20 @@ class SnakeTools
 
 		return $price;
 	}
+
+	/**
+	 * Change l'adhérent de section et met à jour ses informations
+	 * 
+	 * @param float $amount Montant à convertir
+	 * @return string Montant en toute lettre 
+	 */
+	public static function changeSection(Adherent $adherent, Section $section): void
+	{
+		$payment = $adherent->getPayment();
+		$payment->setBasePrice($section->getCotisationPrice());
+		$payment->saveToDatabase();
+
+		$adherent->setSection($section);
+		$adherent->saveToDatabase();
+	}
 }

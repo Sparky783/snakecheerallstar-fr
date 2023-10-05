@@ -181,8 +181,12 @@ class WebSite
 
 		// Get information of the asked page.
 		global $gmm;
+		
+		if (!isset($gmm)) {
+			$gmm = new GetMethodManager();
+		}
+		
 		$page = $this->_defaultPage;
-		$gmm = new GetMethodManager();
 
 		if ($gmm->getValue('page') !== false) {
 			$page = $gmm->getValue('page');

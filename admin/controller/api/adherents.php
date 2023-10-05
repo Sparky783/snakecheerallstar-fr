@@ -7,6 +7,7 @@ use Snake\Adherent;
 use Snake\EPaymentType;
 use Snake\Section;
 use Snake\SnakeMailer;
+use Snake\SnakeTools;
 
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
 	// Retourne une liste d'adhérent en fonction d'une section donnée.
@@ -228,8 +229,12 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 
 	$app->post('/adherent_surclassement', function($args) {
 		$session = Session::getInstance();
-		$adherent = Adherent::getById((int)$args['id']);
 		$sections = Section::getList($session->selectedSaison);
+		$adherent = Adherent::getById((int)$args['id']);
+		$payment = $adherent->getPayment();
+		$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
+
+		// Recherche la nouvelle section
 		$newSection = null;
 		$nbSection = count($sections);
 
@@ -241,18 +246,15 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 		}
 
 		if ($newSection !== null) {
-			$adherent->setSection($newSection);
-			$adherent->saveToDatabase();
-
+			SnakeTools::changeSection($adherent, $newSection);
 			$payment = $adherent->getPayment();
-			$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
-			$payment->setBasePrice($newSection->getCotisationPrice());
 			$newPrice = $payment->getFinalAmount();
-			$payment->saveToDatabase();
 
-			foreach ($adherent->getTuteurs() as $tuteur) {
-				SnakeMailer::sendSurclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
-				SnakeMailer::sendBill($payment, $tuteur);
+			if (ToolBox::stringToBool($args['sendEmail'])) {
+				foreach ($adherent->getTuteurs() as $tuteur) {
+					SnakeMailer::sendSurclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
+					SnakeMailer::sendBill($payment, $tuteur);
+				}
 			}
 
 			API::sendJSON("L'adhérent à été surclassé en {$newSection->getName()}");
@@ -263,8 +265,12 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 
 	$app->post('/adherent_sousclassement', function($args) {
 		$session = Session::getInstance();
-		$adherent = Adherent::getById((int)$args['id']);
 		$sections = Section::getList($session->selectedSaison);
+		$adherent = Adherent::getById((int)$args['id']);
+		$payment = $adherent->getPayment();
+		$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
+
+		// Recherche la nouvelle section
 		$newSection = null;
 		$nbSection = count($sections);
 
@@ -276,18 +282,16 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member
 		}
 
 		if ($newSection !== null) {
-			$adherent->setSection($newSection);
-			$adherent->saveToDatabase();
-
+			SnakeTools::changeSection($adherent, $newSection);
 			$payment = $adherent->getPayment();
-			$oldPrice = $payment->isDone() ? $payment->getFinalAmount() : 0;
-			$payment->setBasePrice($newSection->getCotisationPrice());
 			$newPrice = $payment->getFinalAmount();
-			$payment->saveToDatabase();
 
-			foreach ($adherent->getTuteurs() as $tuteur) {
-				SnakeMailer::sendSousclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
-				SnakeMailer::sendBill($payment, $tuteur);
+			
+			if (ToolBox::stringToBool($args['sendEmail'])) {
+				foreach ($adherent->getTuteurs() as $tuteur) {
+					SnakeMailer::sendSousclassementInformation($adherent, $oldPrice, $newPrice, $tuteur);
+					SnakeMailer::sendBill($payment, $tuteur);
+				}
 			}
 
 			API::sendJSON("L'adhérent à été sousclassé en {$newSection->getName()}");

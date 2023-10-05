@@ -369,9 +369,10 @@ class SnakeMailer
 	 * Envoie les informations de connexion au nouvel administrateur.
 	 * 
 	 * @param Admin $admin Administrateur concerné
+	 * @param string $password Mot de passe de l'administrateur.
 	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
 	 */
-	public static function sendNewAdminAccount(Admin $admin): bool
+	public static function sendNewAdminAccount(Admin $admin, string $password): bool
 	{
 		$mail = new PHPMailer(true); // Passing `true` enables exceptions
 
@@ -405,7 +406,7 @@ class SnakeMailer
 				Cette interface en ligne vous offre plein d'outils vous permettant de gérer le club ainsi que d'afficher ls information essentiel sur les adhérents.
 				<br /><br />
 				Identifiant: {$admin->getEmail()}<br />
-				Mot de passe: {$admin->getPassword()}
+				Mot de passe: {$password}
 				<br /><br />
 				Pour vous connecter, rendez-vous directement sur l'espace d'administration en cliquant sur ce lien:<br />
 				<a href="{$url}">{$url}</a>
@@ -434,9 +435,10 @@ class SnakeMailer
 	 * Envoie le nouveau mot de passe de l'administrateur.
 	 * 
 	 * @param Admin $admin Administrateur concerné
+	 * @param string $password Nouveau mot de passe de l'administrateur.
 	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
 	 */
-	public static function sendNewAdminPassword(Admin $admin): bool
+	public static function sendNewAdminPassword(Admin $admin, string $password): bool
 	{
 		$mail = new PHPMailer(true); // Passing `true` enables exceptions
 
@@ -467,7 +469,7 @@ class SnakeMailer
 				<br /><br />
 				Voici votre nouveau mot de passe. Retenez-le cette fois_ci ^^. Utilisez un gestionnaire de mot de passe si besoin.
 				<br /><br />
-				Mot de passe: {$admin->getPassword()}
+				Mot de passe: {$password}
 				<br /><br />
 				A bientôt,
 				<br /><br />

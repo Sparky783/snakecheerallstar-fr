@@ -25,9 +25,9 @@
 					</div>
 					<div class="card">
 						<div class="card-header">
-							<div class="section-seclection">
+							<div class="section-selection">
 								<span>Il y a <span id="nbAdherents"></span> adhérents</span>
-								<select id="selectedSection" class="form-select mt-2">
+								<select id="selectedSection" class="form-select mt-sm-2">
 									<?php echo $sectionsHtml; ?>
 								</select>
 							</div>
@@ -81,11 +81,35 @@
 				<div class="modal-content">
 					<form action="" method="post">
 						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Supprimer un adhérent</h5>
+							<h5 class="modal-title">Supprimer un adhérent</h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
 							Voulez-vous vraiment supprimer "<span id="nameAdherent"></span>" des adhérents ?
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
+							<button class="btn btn-primary" type="submit">Oui</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div id="changeSectionModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<form action="" method="post">
+						<div class="modal-header">
+							<h5 class="modal-title">Supprimer un adhérent</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<span class="message"></span><br />
+							<div class='form-check form-switch'>
+								<label class='form-check-label' for='customSwitchChangeSectionEmail'>Envoyer un E-mail d'information</label>
+								<input id='customSwitchChangeSectionEmail' class='form-check-input' type='checkbox' name='changeSectionEmail' />
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
