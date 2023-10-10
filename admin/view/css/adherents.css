@@ -6,6 +6,16 @@ h1 {
 	margin-bottom: 30px;
 }
 
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#selectedSection {
+    width: auto;
+}
+
 .not_complete {
 	background-color: #febcbc;
 }
@@ -16,4 +26,18 @@ h1 {
 
 #tableAdherents {
 	margin-bottom: 0;
+}
+
+@media (max-width: 575.98px) {
+	.card-header {
+		flex-direction: column;
+	}
+	
+	.card-header .section-selection {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		margin-bottom: 10px;
+	}
 }

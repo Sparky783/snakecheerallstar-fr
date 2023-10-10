@@ -1,238 +1,667 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Section.php");
-require_once("Payment.php");
+namespace Snake;
 
+use Datetime;
+use System\Database;
+use Snake\SnakeTools;
+use Snake\Section;
+use Snake\Payment;
+use Snake\EUniformOption;
+
+/**
+ * Représente un adhérent
+ */
 class Adherent
 {
-	// == ATTRIBUTS ==
-	private $id = null;
-	private $id_section = null;
-	private $id_payment = null;
-	private $firstname = "";
-	private $lastname = "";
-	private $birthday = "";
-	private $siblings = false;
-	private $medicine = false;
-	private $medicine_info = "";
-	private $has_uniform = false;
-	private $chq_buy_uniform = false;
-	private $chq_rent_uniform = false;
-	private $chq_clean_uniform = false;
-	private $doc_ID_card = false;
-	private $doc_photo = false;
-	private $doc_fffa = false;
-	private $doc_sportmut = false;
-	private $doc_medic_auth = false;
-	private $inscription_date = false;
+	// ==== ATTRBUTS ====
+	/**
+	 * ID de l'adhérent.
+	 * @var int|null $_id 
+	 */
+	private ?int $_id = null;
 
-	private $section = null;
-	private $payment = null;
-	private $tuteurs = array();
+	/**
+	 * ID de la section dans laquelle est l'adhérent.
+	 * @var int|null $_idSection
+	 */
+	private ?int $_idSection = null;
+
+	/**
+	 * ID du paiement fait par l'adhérent pour la saison en cours.
+	 * @var int|null $_idPayment
+	 */
+	private ?int $_idPayment = null;
+
+	/**
+	 * Prénom de l'adhérent.
+	 * @var string $_firstname
+	 */
+	private string $_firstname = '';
+
+	/**
+	 * Nom de famille de l'adhérent.
+	 * @var string $_lastname
+	 */
+	private string $_lastname = '';
+
+	/**
+	 * Date de naissance de l'adhérent.
+	 * @var DateTime|null $_birthday
+	 */
+	private ?DateTime $_birthday = null;
+
+	/**
+	 * Informe si l'adhérent fait partie d'une fratrie ou non.
+	 * @var bool $_isSiblings
+	 */
+	private bool $_isSiblings = false;
+
+	/**
+	 * Nom du traitement en cours pour l'adhérent.
+	 */
+	private string $_medicineInfo = '';
+
+	/** 
+	 * Informe sur le choix de l'adhérent par rapport à l'uniforme (Achat/Location).
+	 * @var EUniformOption $_uniformOption
+	 */
+	private EUniformOption $_uniformOption = EUniformOption::None;
+
+	/**
+	 * Informe si l'adhérent a donné le chèque pour l'achat de l'unifome.
+	 * @var bool $_chqBuyUniform
+	 */
+	private bool $_chqBuyUniform = false;
+
+	/**
+	 * Informe si l'adhérent a donné de chèque pour la location de la tenue.
+	 * @var bool $_chqRentUniform
+	 */
+	private bool $_chqRentUniform = false;
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * Informe si l'adhérent a donné de chèque pour le néttoyage de la tenue.
+	 * @var bool $_chqCleanUniform
+	 */
+	private bool $_chqCleanUniform = false;
+
+	/**
+	 * Informe si l'adhérent a fournis une pièce d'identité.
+	 * @var bool $_docIdCard
+	 */
+	private bool $_docIdCard = false;
+	
+	/**
+	 * Informe si l'adhérent a fournis une photo.
+	 * @var bool $_docPhoto
+	 */
+	private bool $_docPhoto = false;
+	
+	/**
+	 * Informe si l'adhérent a fournis le document de la FFFA rempli.
+	 * @var bool $_docFffa
+	 */
+	private bool $_docFffa = false;
+
+	/**
+	 * Informe si l'adhérent a fournis le document de la Sportmut (Mutuel sportive)
+	 * @var bool $_docSportmut
+	 */
+	private bool $_docSportmut = false;
+	
+	/**
+	 * Informe si l'adhérent a fournis le document d'autorisation médicale.
+	 * @var bool $_docMedicAuth
+	 */
+	private bool $_docMedicAuth = false;
+
+	/**
+	 * Informe si l'adhérent a un code pour bénéficier du Pass Sport.
+	 * @var string $_passSport
+	 */
+	private string $_passSport = '';
+	
+	/**
+	 * Date et heure d'inscription de l'adhérent.
+	 * @var DateTime|null $_inscriptionDate
+	 */
+	private ?DateTime $_inscriptionDate = null;
+
+	/**
+	 * Numéro de sécurité sociale de l'adhérent.
+	 * @var string $_socialSecurityNumber
+	 */
+	private string $_socialSecurityNumber = '';
+
+	/**
+	 * Nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * @var string $_nameEmergencyContact
+	 */
+	private string $_nameEmergencyContact = '';
+
+	/**
+	 * Numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * @var string $_phoneEmergencyContact
+	 */
+	private string $_phoneEmergencyContact = '';
+
+	/**
+	 * Nom du médecin traitant pour l'adhérent.
+	 * @var string $_doctorName
+	 */
+	private string $_doctorName = '';
+
+	/**
+	 * Section de l'adhérent.
+	 * @var Section|null $_section
+	 */
+	private ?Section $_section = null;
+	
+	/**
+	 * Paiement fait par l'adhérent.
+	 * @var Payment|null $_payment
+	 */
+	private ?Payment $_payment = null;
+	
+	/**
+	 * Liste de tuteurs associés à l'adhérent.
+	 * @var array $_tuteurs
+	 */
+	private array $_tuteurs = [];
+	
+	// ==== CONSTRUCTOR ====
+	public function __construct(array $dbData = [])
 	{
-		if($dbData != null)
-		{	
-			$this->id = intval($dbData['id_adherent']);
-			$this->id_section = intval($dbData['id_section']);
-			$this->id_payment = intval($dbData['id_payment']);
-			$this->firstname = $dbData['firstname'];
-			$this->lastname = $dbData['lastname'];
-			$this->birthday = new Datetime($dbData['birthday']);
-			$this->siblings = boolval($dbData['siblings']);
-			$this->medicine = boolval($dbData['medicine']);
-			$this->medicine_info = $dbData['medicine_info'];
-			$this->has_uniform = boolval($dbData['has_uniform']);
-			$this->chq_buy_uniform = boolval($dbData['chq_buy_uniform']);
-			$this->chq_rent_uniform = boolval($dbData['chq_rent_uniform']);
-			$this->chq_clean_uniform = boolval($dbData['chq_clean_uniform']);
-			$this->doc_ID_card = boolval($dbData['doc_ID_card']);
-			$this->doc_photo = boolval($dbData['doc_photo']);
-			$this->doc_fffa = boolval($dbData['doc_fffa']);
-			$this->doc_sportmut = boolval($dbData['doc_sportmut']);
-			$this->doc_medic_auth = boolval($dbData['doc_medic_auth']);
-			$this->inscription_date = new DateTime($dbData['inscription_date']);
+		if (count($dbData) > 0) {	
+			$this->_id = (int)$dbData['id_adherent'];
+			$this->_idSection = (int)$dbData['id_section'];
+			$this->_idPayment = (int)$dbData['id_payment'];
+			$this->_firstname = $dbData['firstname'];
+			$this->_lastname = $dbData['lastname'];
+			$this->_birthday = new Datetime($dbData['birthday']);
+			$this->_isSiblings = (bool)$dbData['is_sibling'];
+			$this->_medicineInfo = $dbData['medicine_info'];
+			$this->_uniformOption = EUniformOption::tryFrom($dbData['uniform_option']) ?? EUniformOption::None;
+			$this->_chqBuyUniform = (bool)$dbData['chq_buy_uniform'];
+			$this->_chqRentUniform = (bool)$dbData['chq_rent_uniform'];
+			$this->_chqCleanUniform = (bool)$dbData['chq_clean_uniform'];
+			$this->_docIdCard = (bool)$dbData['doc_ID_card'];
+			$this->_docPhoto = (bool)$dbData['doc_photo'];
+			$this->_docFffa = (bool)$dbData['doc_fffa'];
+			$this->_docSportmut = (bool)$dbData['doc_sportmut'];
+			$this->_docMedicAuth = (bool)$dbData['doc_medic_auth'];
+			$this->_passSport = $dbData['pass_sport'];
+			$this->_socialSecurityNumber = $dbData['social_security_number'];
+			$this->_nameEmergencyContact = $dbData['name_emergency_contact'];
+			$this->_phoneEmergencyContact = $dbData['phone_emergency_contact'];
+			$this->_doctorName = $dbData['doctor_name'];
+			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
 		}
 	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id_adherent' => $this->_id,
+			'id_section' => $this->_idSection,
+			'id_payment' => $this->_idPayment,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'birthday' => serialize($this->_birthday),
+			'is_sibling' => $this->_isSiblings,
+			'medicine_info' => $this->_medicineInfo,
+			'uniform_option' => $this->_uniformOption,
+			'chq_buy_uniform' => $this->_chqBuyUniform,
+			'chq_rent_uniform' => $this->_chqRentUniform,
+			'chq_clean_uniform' => $this->_chqCleanUniform,
+			'doc_ID_card' => $this->_docIdCard,
+			'doc_photo' => $this->_docPhoto,
+			'doc_fffa' => $this->_docFffa,
+			'doc_sportmut' => $this->_docSportmut,
+			'doc_medic_auth' => $this->_docMedicAuth,
+			'pass_sport' => $this->_passSport,
+			'inscription_date' => serialize($this->_inscriptionDate),
+			'social_security_number' => $this->_socialSecurityNumber,
+			'name_emergency_contact' => $this->_nameEmergencyContact,
+			'phone_emergency_contact' => $this->_phoneEmergencyContact,
+			'doctor_name' => $this->_doctorName
+		];
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_adherent'];
+		$this->_idSection = $data['id_section'];
+		$this->_idPayment = $data['id_payment'];
+		$this->_firstname = $data['firstname'];
+		$this->_lastname = $data['lastname'];
+		$this->_birthday = unserialize($data['birthday']);
+		$this->_isSiblings = $data['is_sibling'];
+		$this->_medicineInfo = $data['medicine_info'];
+		$this->_uniformOption = $data['uniform_option'];
+		$this->_chqBuyUniform = $data['chq_buy_uniform'];
+		$this->_chqRentUniform = $data['chq_rent_uniform'];
+		$this->_chqCleanUniform = $data['chq_clean_uniform'];
+		$this->_docIdCard = $data['doc_ID_card'];
+		$this->_docPhoto = $data['doc_photo'];
+		$this->_docFffa = $data['doc_fffa'];
+		$this->_docSportmut = $data['doc_sportmut'];
+		$this->_docMedicAuth = $data['doc_medic_auth'];
+		$this->_passSport = $data['pass_sport'];
+		$this->_inscriptionDate = unserialize($data['inscription_date']);
+		$this->_socialSecurityNumber = $data['social_security_number'];
+		$this->_nameEmergencyContact = $data['name_emergency_contact'];
+		$this->_phoneEmergencyContact = $data['phone_emergency_contact'];
+		$this->_doctorName = $data['doctor_name'];
+	}
 	
-	// == METHODES GETTERS ==
-	public function GetId()
+	// ==== GETTERS ====
+	/**
+	 * Retourne l'ID de l'adhérent.
+	 * 
+	 * @return int|null
+	 */
+	public function getId(): int|null
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetIdSection()
+	/**
+	 * Retourne l'ID de la section de l'adhérent.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdSection(): int|null
 	{
-		return $this->id_section;
-	}
-	
-	public function GetIdPayment()
-	{
-		return $this->id_payment;
-	}
-
-	public function GetFirstname()
-	{
-		return $this->firstname;
-	}
-
-	public function GetLastname()
-	{
-		return $this->lastname;
-	}
-
-	public function GetBirthday()
-	{
-		return $this->birthday;
-	}
-
-	public function GetSiblings()
-	{
-		return $this->siblings;
-	}
-
-	public function GetMedicine()
-	{
-		return $this->medicine;
-	}
-
-	public function GetMedicineInfo()
-	{
-		return $this->medicine_info;
-	}
-
-	public function GetTenue()
-	{
-		return $this->has_uniform;
-	}
-
-	public function GetDocIdCard()
-	{
-		return $this->doc_ID_card;
-	}
-
-	public function GetDocPhoto()
-	{
-		return $this->doc_photo;
-	}
-
-	public function GetDocFFFA()
-	{
-		return $this->doc_fffa;
-	}
-
-	public function GetDocSportmut()
-	{
-		return $this->doc_sportmut;
-	}
-
-	public function GetDocMedicAuth()
-	{
-		return $this->doc_medic_auth;
-	}
-
-	public function GetInscriptionDate()
-	{
-		return $this->inscription_date;
-	}
-
-	// Retourne l'objet Section lié à l'adhérent. Si besoin, charge les données de la BDD.
-	public function GetSection()
-	{
-		if($this->id_section != null && $this->section == null)
-		{
-			$section = Section::GetById($this->id_section);
-
-			if($section != false)
-				$this->section = $section;
+		if ($this->_section !== null) {
+			return $this->_section->getId();
 		}
 
-		return $this->section;
-	}
-
-	// Retourne l'objet Payment lié à l'adhérent. Si besoin, charge les données de la BDD.
-	public function GetPayment()
-	{
-		if($this->id_payment != null && $this->payment == null)
-		{
-			$payment = Payment::GetById($this->id_payment);
-
-			if($payment != false)
-				$this->payment = $payment;
+		if ($this->_idSection !== null) {
+			return $this->_idSection;
 		}
 
-		return $this->payment;
+		return null;
 	}
 
-	// Retourne la liste des tuteurs lié à l'adhérent. Si besoin, charge les données de la BDD.
-	public function GetTuteurs()
+	/**
+	 * Retourne l'ID du paiement fait par l'adhérent.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdPayment(): int|null
 	{
-		if($this->id != null && count($this->tuteurs) == 0)
-		{
-			$database = new Database();
-			$tuteurs = $database->Query(
-				"SELECT * FROM adherent_tuteur JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur WHERE id_adherent=:id_adherent",
-				array("id_adherent" => $this->id)
-			);
+		if ($this->_payment !== null) {
+			return $this->_payment->getId();
+		}
 
-			if($tuteurs != null)
-			{
-				while($tuteur = $tuteurs->fetch())
-					$this->tuteurs[] = new Tuteur($tuteur);
+		if ($this->_idPayment !== null) {
+			return $this->_idPayment;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Retourne le prénom de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getFirstname(): string
+	{
+		return $this->_firstname;
+	}
+
+	/**
+	 * Retourne le nom de famill de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getLastname(): string
+	{
+		return $this->_lastname;
+	}
+
+	/**
+	 * Retourne la date de naissance de l'adhérent.
+	 * 
+	 * @return DateTime|null
+	 */
+	public function getBirthday(): DateTime|null
+	{
+		return $this->_birthday;
+	}
+
+	/**
+	 * Retourne True si l'adhérent appartient à une fratrie, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function getIsSiblings(): bool
+	{
+		return $this->_isSiblings;
+	}
+
+	/**
+	 * Retourne True si l'adhérent prend un traitement médical, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasMedicine(): bool
+	{
+		return $this->_medicineInfo !== '';
+	}
+
+	/**
+	 * Retourne de le traitement pris par l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getMedicineInfo(): string
+	{
+		return $this->_medicineInfo;
+	}
+
+	/**
+	 * Retourne le choix de l'adhérent par rapport à l'uniforme (Achat/Location)
+	 * 
+	 * @return EUniformOption
+	 */
+	public function getUniformOption(): EUniformOption
+	{
+		return $this->_uniformOption;
+	}
+
+	/**
+	 * Retourne True si l'adhérent à fourni une pièce d'identité, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasDocIdCard(): bool
+	{
+		return $this->_docIdCard;
+	}
+
+	/**
+	 * Retourne True si l'adhérent à fourni une photo, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasDocPhoto(): bool
+	{
+		return $this->_docPhoto;
+	}
+
+	/**
+	 * Retourne True si l'adhérent à fourni le document de la FFFA rempli, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasDocFffa(): bool
+	{
+		return $this->_docFffa;
+	}
+
+	/**
+	 * Retourne True si l'adhérent à fourni le document de Sportmut, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasDocSportmut(): bool
+	{
+		return $this->_docSportmut;
+	}
+
+	/**
+	 * Retourne True si l'adhérent à fourni le document d'autorisation médical, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasDocMedicAuth(): bool
+	{
+		return $this->_docMedicAuth;
+	}
+
+	/**
+	 * Retourne True si l'adhérent bénéficie du Pass Sport, sinon False.
+	 * 
+	 * @return bool
+	 */
+	public function hasPassSport(): bool
+	{
+		return !empty($this->_passSport);
+	}
+
+	/**
+	 * Retourne le code du Pass Sport de l'adhérent.
+	 * 
+	 * @return bool
+	 */
+	public function getPassSport(): string
+	{
+		return $this->_passSport;
+	}
+
+	/**
+	 * Retourne la date d'inscription.
+	 * 
+	 * @return DateTime
+	 */
+	public function getInscriptionDate(): DateTime
+	{
+		return $this->_inscriptionDate;
+	}
+
+	/**
+	 * Retourne le numéro de sécurité sociale de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getSocialSecurityNumber(): string
+	{
+		return $this->_socialSecurityNumber;
+	}
+
+	/**
+	 * Retourne le nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getNameEmergencyContact(): string
+	{
+		return $this->_nameEmergencyContact;
+	}
+
+	/**
+	 * Retourne le numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getPhoneEmergencyContact(): string
+	{
+		return $this->_phoneEmergencyContact;
+	}
+
+	/**
+	 * Retourne le nom du médecin traitant de l'adhérent.
+	 * 
+	 * @return string
+	 */
+	public function getDoctorName(): string
+	{
+		return $this->_doctorName;
+	}
+
+	/**
+	 * Retourne la Section lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
+	 * @return Section|null
+	 */
+	public function getSection(): Section|null
+	{
+		if ($this->_section === null && $this->_idSection !== null) {
+			$section = Section::getById($this->_idSection);
+
+			if ($section !== false) {
+				$this->_section = $section;
 			}
 		}
 
-		return $this->tuteurs;
+		return $this->_section;
+	}
+
+	/**
+	 * Retourne l'objet Payment lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
+	 * @return Payment|null
+	 */
+	public function getPayment(): Payment|null
+	{
+		if ($this->_payment === null && $this->_idPayment !== null) {
+			$payment = Payment::getById($this->_idPayment);
+
+			if ($payment !== false) {
+				$this->_payment = $payment;
+			}
+		}
+
+		return $this->_payment;
+	}
+
+	/**
+	 * Retourne la liste des tuteurs lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
+	 * @return Tuteur[]
+	 */
+
+	public function getTuteurs(): array
+	{
+		if ($this->_id !== null && count($this->_tuteurs) === 0) {
+			$database = new Database();
+			$tuteurs = $database->query(
+				"SELECT * FROM adherent_tuteur JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur WHERE id_adherent=:id_adherent",
+				['id_adherent' => $this->_id]
+			);
+
+			if ($tuteurs !== null) {
+				while($tuteur = $tuteurs->fetch()) {
+					$this->_tuteurs[] = new Tuteur($tuteur);
+				}
+			}
+		}
+
+		return $this->_tuteurs;
 	}
 	
-	// == METHODES SETTERS ==
-	public function SetId($id)
+	// ==== SETTERS ====
+	/**
+	 * Définie l'ID de l'adhérent.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setId(int $id): void
 	{
-		$this->id = intval($id);
-
-		if($this->firstname == "" && $this->lastname == "")
-			$this->LoadFormDatabase();
-
-		return true;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
 	}
 
-	public function SetFirstname($firstname)
+	/**
+	 * Définie l'ID de la sectrion pour l'adhérent.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setIdSection(int $id): void
 	{
-		if($firstname != "")
-		{
-			$this->firstname = trim(ucwords(mb_strtolower($firstname)));
+		if ($id === 0) {
+			$this->_idSection = null;
+		} else {
+			$this->_idSection = $id;
+		}
+	}
+
+	/**
+	 * Définie l'ID du paiment de l'adhérent.
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setIdPayment(int $id): void
+	{
+		if ($id === 0) {
+			$this->_idPayment = null;
+		} else {
+			$this->_idPayment = $id;
+		}
+	}
+
+	/**
+	 * Définie le prénom de l'adhérent.
+	 * 
+	 * @param string $firstname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setFirstname(string $firstname): bool
+	{
+		if ($firstname !== '') {
+			$this->_firstname = trim(ucwords(mb_strtolower($firstname)));
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetLastname($lastname)
+	/**
+	 * Définie le nom de famille de l'adhérent.
+	 * 
+	 * @param string $lastname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setLastname(string $lastname): bool
 	{
-		if($lastname != "")
-		{
-			$this->lastname = trim(ucwords(mb_strtolower($lastname)));
+		if ($lastname != '') {
+			$this->_lastname = trim(ucwords(mb_strtolower($lastname)));
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetBirthday($birthday)
+	/**
+	 * Définie la date de naissance de l'adhérent.
+	 * 
+	 * @param string $birthday
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setBirthday(string $birthday): bool
 	{
 		$birthday = trim($birthday);
 		
 		//if(preg_match('/^([0-2][0-9]|(3)[0-1])(\/|-)(((0)[0-9])|((1)[0-2]))(\/|-)\d{4}$/i', $birthday)) // jj-mm-aaaa
-		if(preg_match('/^\d{4}(\/|-)(((0)[0-9])|((1)[0-2]))(\/|-)([0-2][0-9]|(3)[0-1])$/i', $birthday)) // yyyy-mm-dd
-		{
-			$this->birthday = new DateTime($birthday);
-			$section = SnakeTools::FindSection($birthday);
+		if (preg_match('/^\d{4}(\/|-)(((0)[0-9])|((1)[0-2]))(\/|-)([0-2][0-9]|(3)[0-1])$/i', $birthday)) { // yyyy-mm-dd
+			$this->_birthday = new DateTime($birthday);
+			$section = SnakeTools::findSection($this->_birthday);
 
-			if($section !== false)
-			{
-				$this->section = $section;
-				$this->id_section = $this->section->GetId();
+			if ($section !== false) {
+				$this->_section = $section;
+				$this->_idSection = $section->getId();
 			}
 
 			return true;
@@ -241,216 +670,426 @@ class Adherent
 		return false;
 	}
 
-	public function SetSiblings($siblings)
+	/**
+	 * Définie la date de naissance de l'adhérent.
+	 * 
+	 * @param bool $isSiblings
+	 * @return void
+	 */
+	public function setIsSiblings(bool $isSiblings): void
 	{
-		if(is_bool($siblings))
-		{
-			$this->siblings = $siblings;
+		$this->_isSiblings = $isSiblings;
+	}
+	
+	/**
+	 * Définie le traitement de l'adhérent s'il en a un.
+	 * 
+	 * @param string $medicineInfo
+	 * @return bool Retourne True en cs de succès, sinon False.
+	 */
+	public function setMedicineInfo(string $medicineInfo): bool
+	{
+		if($medicineInfo !== '') {
+			$this->_medicineInfo = $medicineInfo;
+
 			return true;
+		}
+
+		return false;
+	}
+	
+	/**
+	 * Définie le choix de l'adhérent par rapport à l'uniforme (Achat/Location).
+	 * 
+	 * @param EUniformOption $uniformOption
+	 * @return void
+	 */
+	public function setUniformOption(EUniformOption $uniformOption): void
+	{
+		$this->_uniformOption = $uniformOption;
+	}
+	
+	/**
+	 * Définie si l'adhérent à fourni le document de Sportmut.
+	 * 
+	 * @param bool $docSportmut
+	 * @return void
+	 */
+	public function setSportmut(bool $docSportmut): void
+	{
+		$this->_docSportmut = $docSportmut;
+	}
+
+	/**
+	 * Définie le code Pass Sport de l'adhérent.
+	 * 
+	 * @param string $passSport
+	 * @return void
+	 */
+	public function setPassSport(string $passSport): void
+	{
+		$this->_passSport = $passSport;
+	}
+
+	/**
+	 * Définie la date d'inscription de l'adhérent.
+	 * 
+	 * @param string $inscriptionDate Si la date d'inscription est ommise, la date du jour sera mise.
+	 * @return void
+	 */
+	public function setInscriptionDate(string $inscriptionDate = ''): void
+	{
+		if (!empty($inscriptionDate)) {
+			$this->_inscriptionDate = new DateTime($inscriptionDate);
+		} else {
+			$this->_inscriptionDate = new DateTime();
+		}
+	}
+
+	/**
+	 * Définie le numéro de sécurité sociale de l'adhérent.
+	 * 
+	 * @param string $socialSecurityNumber
+	 * @return bool
+	 */
+	public function setSocialSecurityNumber(string $socialSecurityNumber): bool
+	{
+		if (empty(trim($socialSecurityNumber))) {
+			return false;
+		}
+
+		$this->_socialSecurityNumber = $socialSecurityNumber;
+		return true;
+	}
+
+	/**
+	 * Définie le nom de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setNameEmergencyContact(string $nameEmergencyContact): bool
+	{
+		if (empty(trim($nameEmergencyContact))) {
+			return false;
+		}
+
+		$this->_nameEmergencyContact = $nameEmergencyContact;
+		return true;
+	}
+
+	/**
+	 * Définie le numéro de téléphone de la personne à contacter en cas d'urgence pour l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setPhoneEmergencyContact(string $phoneEmergencyContact): bool
+	{
+		if (empty(trim($phoneEmergencyContact))) {
+			return false;
+		}
+
+		$this->_phoneEmergencyContact = $phoneEmergencyContact;
+		return true;
+	}
+
+	/**
+	 * Définie le nom du médecin traitant de l'adhérent.
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public function setDoctorName(string $doctorName): bool
+	{
+		if (empty(trim($doctorName))) {
+			return false;
+		}
+
+		$this->_doctorName = $doctorName;
+		return true;
+	}
+
+	/**
+	 * Définie la section de l'adhérent.
+	 * 
+	 * @param Section $section
+	 * @return void
+	 */
+	public function setSection(Section $section): void
+	{
+		$this->_section = $section;
+		$this->_idSection = $section->getId();
+	}
+
+	/**
+	 * Définie la section de l'adhérent.
+	 * 
+	 * @param Payment $payment
+	 * @return void
+	 */
+	public function setPayment(Payment $payment): void
+	{
+		$this->_payment = $payment;
+		$this->_idPayment = $payment->getId();
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni une pièce d'identité.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocIdCard(bool $hasDocument): void
+	{
+		$this->_docIdCard = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni une photo.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocPhoto(bool $hasDocument): void
+	{
+		$this->_docPhoto = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document de la FFFA rempli.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocFffa(bool $hasDocument): void
+	{
+		$this->_docFffa = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document de Sportmut.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocSportmut(bool $hasDocument): void
+	{
+		$this->_docSportmut = $hasDocument;
+	}
+
+	/**
+	 * Définie si l'adhérent à fourni le document d'autorisation médical.
+	 * 
+	 * @param bool $hasDocument
+	 * @return void
+	 */
+	public function setDocMedicAuth(bool $hasDocument): void
+	{
+		$this->_docMedicAuth = $hasDocument;
+	}
+	
+	// ==== AUTRES METHODES ====
+	/**
+	 * Rempli les informations de l'adhérent à partir des données saisies dans le formulaire.
+	 * 
+	 * @param array $infos Infos saisie dans le formulaire.
+	 * @return array Retourne la liste des erreurs si il y en a.
+	 */
+	public function setInformation(array $infos): array
+	{
+		$messages = [];
+
+		if (!isset($infos['firstname']) || !$this->setFirstname($infos['firstname'])) {
+			$messages[] = "Le prénom de l'adhérent contient des caractères non autorisé.";
 		}
 		
-		return false;
-	}
-	
-	public function SetMedicine($medicine)
-	{
-		if($medicine == "yes" || $medicine == "no")
-		{
-			if($medicine == "yes")
-				$this->medicine = true;
-			else
-				$this->medicine = false;
-			
-			return true;
-		}
-		return false;
-	}
-
-	public function SetMedicineInfo($medicine_info)
-	{
-		if($medicine_info != "")
-			$this->medicine_info = $medicine_info;
-	}
-	
-	public function SetTenue($tenue)
-	{
-		if($tenue == "yes" || $tenue == "no")
-		{
-			if($tenue == "yes")
-				$this->has_uniform = true;
-			else
-				$this->has_uniform = false;
-			
-			return true;
-		}
-		return false;
-	}
-	
-	public function SetSportmut($doc_sportmut)
-	{
-		if($doc_sportmut == "yes" || $doc_sportmut == "no")
-		{
-			if($doc_sportmut == "yes")
-				$this->doc_sportmut = true;
-			else
-				$this->doc_sportmut = false;
-			
-			return true;
-		}
-		return false;
-	}
-
-	public function SetInscriptionDate($inscription_date = null)
-	{
-		if($inscription_date != null)
-			$this->inscription_date = new DateTime();
-		else
-			$this->inscription_date = new DateTime($inscription_date);
-	}
-
-	public function SetSection(Section $section)
-	{
-		$this->section = $section;
-	}
-
-	public function SetPayment(Payment $payment)
-	{
-		$this->payment = $payment;
-		$this->id_payment = $this->payment->GetId();
-	}
-	
-	// == AUTRES METHODES ==
-	public function SetInformation($infos)
-	{
-		if(is_array($infos))
-		{
-			$result = true;
-			if(isset($infos['firstname']))
-				$result = $result && $this->SetFirstname($infos['firstname']);
-			
-			if(isset($infos['lastname']))
-				$result = $result && $this->SetLastname($infos['lastname']);
-			
-			if(isset($infos['birthday']))
-				$result = $result && $this->SetBirthday($infos['birthday']);
-			
-			if(isset($infos['medicine']))
-				$result = $result && $this->SetMedicine($infos['medicine']);
-
-			if(isset($infos['infoMedicine']))
-				$this->SetMedicineInfo($infos['infoMedicine']);
-			
-			if(isset($infos['tenue']))
-				$result = $result && $this->SetTenue($infos['tenue']);
-				
-			return $result;
+		if (!isset($infos['lastname']) || !$this->setLastname($infos['lastname'])) {
+			$messages[] = "Le nom de l'adhérent contient des caractères non autorisé.";
 		}
 		
-		return false;
+		if (!isset($infos['birthday']) || !$this->setBirthday($infos['birthday'])) {
+			$messages[] = "La date de naissance de l'adhérent n'est pas au bon format.";
+		}
+		
+		if (isset($infos['medicineInfo'])) {
+			$this->setMedicineInfo($infos['medicineInfo']);
+		}
+
+		if (!empty($infos['passSportCode'])) {
+			$this->setPassSport($infos['passSportCode']);
+		}
+
+		if (!empty($infos['socialSecurityNumber'])) {
+			$this->setSocialSecurityNumber($infos['socialSecurityNumber']);
+		}
+
+		if (!empty($infos['nameEmergencyContact'])) {
+			$this->setNameEmergencyContact($infos['nameEmergencyContact']);
+		}
+
+		if (!empty($infos['phoneEmergencyContact'])) {
+			$this->setPhoneEmergencyContact($infos['phoneEmergencyContact']);
+		}
+
+		if (!empty($infos['doctorName'])) {
+			$this->setDoctorName($infos['doctorName']);
+		}
+
+		$this->setUniformOption(EUniformOption::Rent);
+			
+		return $messages;
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Retourne un tableau contenant les informations de l'adhérent.
+	 * 
+	 * @return array
+	 */
+	public function toArray(): array
+	{
+		return [
+			'id_adherent' => $this->_id,
+			'id_section' => $this->_idSection,
+			'id_payment' => $this->_idPayment,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'birthday' => $this->_birthday->format('Y-m-d'),
+			'is_sibling' => $this->_isSiblings,
+			'medicine_info' => $this->_medicineInfo,
+			'uniform_option' => $this->_uniformOption,
+			'chq_buy_uniform' => $this->_chqBuyUniform,
+			'chq_rent_uniform' => $this->_chqRentUniform,
+			'chq_clean_uniform' => $this->_chqCleanUniform,
+			'doc_ID_card' => $this->_docIdCard,
+			'doc_photo' => $this->_docPhoto,
+			'doc_fffa' => $this->_docFffa,
+			'doc_sportmut' => $this->_docSportmut,
+			'doc_medic_auth' => $this->_docMedicAuth,
+			'pass_sport' => $this->_passSport,
+			'inscription_date' => $this->_inscriptionDate->format('Y-m-d'),
+			'social_security_number' => $this->_socialSecurityNumber,
+			'name_emergency_contact' => $this->_nameEmergencyContact,
+			'phone_emergency_contact' => $this->_phoneEmergencyContact,
+			'doctor_name' => $this->_doctorName
+		];
+	}
+
+	/**
+	 * Sauvegarde les informations de l'adhérent dans la base de données.
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
 				"adherents",
-				array(
-					"id_section" => $this->id_section,
-					"id_payment" => $this->GetPayment()->GetId(),
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname,
-					"birthday" => $this->birthday->format('Y-m-d'),
-					"siblings" => $this->siblings,
-					"medicine" => $this->medicine,
-					"medicine_info" => $this->medicine_info,
-					"has_uniform" => $this->has_uniform,
-					"chq_buy_uniform" => $this->chq_buy_uniform,
-					"chq_rent_uniform" => $this->chq_rent_uniform,
-					"chq_clean_uniform" => $this->chq_clean_uniform,
-					"doc_ID_card" => $this->doc_ID_card,
-					"doc_photo" => $this->doc_photo,
-					"doc_fffa" => $this->doc_fffa,
-					"doc_sportmut" => $this->doc_sportmut,
-					"doc_medic_auth" => $this->doc_medic_auth,
-					"inscription_date" => $this->inscription_date->format("Y-m-d H:i:s")
-				)
+				[
+					'id_section' => $this->_idSection,
+					'id_payment' => $this->_idPayment,
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname,
+					'birthday' => $this->_birthday->format('Y-m-d'),
+					'is_sibling' => $this->_isSiblings,
+					'medicine_info' => $this->_medicineInfo,
+					'uniform_option' => $this->_uniformOption->value,
+					'chq_buy_uniform' => $this->_chqBuyUniform,
+					'chq_rent_uniform' => $this->_chqRentUniform,
+					'chq_clean_uniform' => $this->_chqCleanUniform,
+					'doc_ID_card' => $this->_docIdCard,
+					'doc_photo' => $this->_docPhoto,
+					'doc_fffa' => $this->_docFffa,
+					'doc_sportmut' => $this->_docSportmut,
+					'doc_medic_auth' => $this->_docMedicAuth,
+					'pass_sport' => $this->_passSport,
+					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+					'social_security_number' => $this->_socialSecurityNumber,
+					'name_emergency_contact' => $this->_nameEmergencyContact,
+					'phone_emergency_contact' => $this->_phoneEmergencyContact,
+					'doctor_name' => $this->_doctorName
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->id = intval($id);
+			if ($id !== false) {
+				$this->_id = (int)$id;
 				return true;
 			}
 			
 			return false;
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"adherents", "id_adherent", $this->id,
-				array(
-					"id_section" => $this->id_section,
-					"id_payment" => $this->GetPayment()->GetId(),
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname,
-					"birthday" => $this->birthday->format('Y-m-d'),
-					"siblings" => $this->siblings,
-					"medicine" => $this->medicine,
-					"medicine_info" => $this->medicine_info,
-					"has_uniform" => $this->has_uniform,
-					"chq_buy_uniform" => $this->chq_buy_uniform,
-					"chq_rent_uniform" => $this->chq_rent_uniform,
-					"chq_clean_uniform" => $this->chq_clean_uniform,
-					"doc_ID_card" => $this->doc_ID_card,
-					"doc_photo" => $this->doc_photo,
-					"doc_fffa" => $this->doc_fffa,
-					"doc_sportmut" => $this->doc_sportmut,
-					"doc_medic_auth" => $this->doc_medic_auth,
-					"inscription_date" => $this->inscription_date->format("Y-m-d H:i:s")
-				)
+		} else { // Update
+			$result = $database->update(
+				'adherents', 'id_adherent', $this->_id,
+				[
+					'id_section' => $this->_idSection,
+					'id_payment' => $this->_idPayment,
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname,
+					'birthday' => $this->_birthday->format('Y-m-d'),
+					'is_sibling' => $this->_isSiblings,
+					'medicine_info' => $this->_medicineInfo,
+					'uniform_option' => $this->_uniformOption->value,
+					'chq_buy_uniform' => $this->_chqBuyUniform,
+					'chq_rent_uniform' => $this->_chqRentUniform,
+					'chq_clean_uniform' => $this->_chqCleanUniform,
+					'doc_ID_card' => $this->_docIdCard,
+					'doc_photo' => $this->_docPhoto,
+					'doc_fffa' => $this->_docFffa,
+					'doc_sportmut' => $this->_docSportmut,
+					'doc_medic_auth' => $this->_docMedicAuth,
+					'pass_sport' => $this->_passSport,
+					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+					'social_security_number' => $this->_socialSecurityNumber,
+					'name_emergency_contact' => $this->_nameEmergencyContact,
+					'phone_emergency_contact' => $this->_phoneEmergencyContact,
+					'doctor_name' => $this->_doctorName
+				]
 			);
 
 			return $result;
 		}
 	}
 
-	public function RemoveFromDatabase()
+	/**
+	 * Supprime l'adhérent et toutes les données lié à lui de la base de données.
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function removeFromDatabase(): bool
 	{
-		if($this->id != null)
-		{
+		if ($this->_id != null) {
 			$database = new Database();
 
 			// Recherche l'adhérent dans la table de liaison.
-			$tuteurs = $this->GetTuteurs();
-			$payment = $this->GetPayment();
+			$tuteurs = $this->getTuteurs();
+			$payment = $this->getPayment();
 
 			// Suppression de l'adhérent
 			$result = true;
-			$result = $result & $database->Delete("adherent_tuteur", "id_adherent", $this->id);
-			$result = $result & $database->Delete("adherents", "id_adherent", $this->id);
+			$result &= $database->delete('adherent_tuteur', 'id_adherent', $this->_id);
+			$result &= $database->delete('adherents', 'id_adherent', $this->_id);
 
 			// Verification du reste de la BDD (Payments et tuteurs)
-			if($result)
-			{
+			if ($result) {
 				// Pour chaque tuteurs, on cherche si ils ont des adhérents. Si non, on supprime.
-				foreach($tuteurs as $tuteur)
-				{
-					if(count($tuteur->GetAdherents()) == 0)
-						$tuteur->RemoveFromDatabase();
+				foreach ($tuteurs as $tuteur) {
+					if (count($tuteur->getAdherents()) === 0) {
+						Tuteur::removeFromDatabase($tuteur->getId());
+					}
 				}
 
 				// Idem pour le payment, on regarde si le paiement est utilisé par un autre adhérent.
-				$rech = $database->Query(
+				$rech = $database->query(
 					"SELECT COUNT(*) AS count FROM adherents WHERE id_payment=:id_payment",
-					array("id_payment" => $this->id_payment)
+					['id_payment' => $this->_idPayment]
 				);
 				$donnees = $rech->fetch();
 
-				if($donnees != false && $donnees['count'] == 0)
-					$payment->RemoveFromDatabase();
+				if ($donnees !== false && $donnees['count'] === 0) {
+					Payment::removeFromDatabase($payment->getId());
+				}
 
 				return true;
 			}
@@ -458,65 +1097,27 @@ class Adherent
 		
 		return false;
 	}
-
-	// Charge un adhérent depuis la base de donnée.
-	private function LoadFormDatabase()
-	{
-		if($this->id != null)
-		{
-			$database = new Database();
-			$rech = $database->Query(
-				"SELECT * FROM adherents WHERE id_adherent=:id_adherent",
-				array("id_adherent" => $this->id)
-			);
-
-			if($rech != null)
-			{
-				$dbData = $rech->fetch();
-
-				$this->id = intval($dbData['id_adherent']);
-				$this->id_section = intval($dbData['id_section']);
-				$this->id_payment = intval($dbData['id_payment']);
-				$this->firstname = $dbData['firstname'];
-				$this->lastname = $dbData['lastname'];
-				$this->birthday = new DateTime($dbData['birthday']);
-				$this->siblings = boolval($dbData['siblings']);
-				$this->medicine = boolval($dbData['medicine']);
-				$this->medicine_info = $dbData['medicine_info'];
-				$this->has_uniform = boolval($dbData['has_uniform']);
-				$this->chq_buy_uniform = boolval($dbData['chq_buy_uniform']);
-				$this->chq_rent_uniform = boolval($dbData['chq_rent_uniform']);
-				$this->chq_clean_uniform = boolval($dbData['chq_clean_uniform']);
-				$this->doc_ID_card = boolval($dbData['doc_ID_card']);
-				$this->doc_photo = boolval($dbData['doc_photo']);
-				$this->doc_fffa = boolval($dbData['doc_fffa']);
-				$this->doc_sportmut = boolval($dbData['doc_sportmut']);
-				$this->doc_medic_auth = boolval($dbData['doc_medic_auth']);
-				$this->inscription_date = $dbData['inscription_date'];
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 
 
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_adherent)
+	/**
+	 * Retourne un adhérent suivant son ID.
+	 * 
+	 * @param int $idAdherent
+	 * @return Adherent|false Retourne l'instance de l'adhérent, sinon False si l'adhérent n'existe pas.
+	 */
+	public static function getById(int $idAdherent): Adherent|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM adherents WHERE id_adherent=:id_adherent",
-			array("id_adherent" => intval($id_adherent))
+			['id_adherent' => (int)$idAdherent]
 		);
 
-		if($rech != null)
-		{
+		if ($rech != null) {
 			$data = $rech->fetch();
 
 			return new Adherent($data);
@@ -525,29 +1126,32 @@ class Adherent
 		return false;
 	}
 
-	// Retourne la liste de tous les adhérents du club.
-	// Par défaut ceux de la saison en cours.
-	static public function GetList($saison = null)
+	/**
+	 * Retourne la liste de tous les adhérents du club.Par défaut ceux de la saison en cours.
+	 * 
+	 * @param string $saison Saison des adhérents à retourner.
+	 * @return array|false Retourne la liste d'adhérents, sinon False en cas d'échec.
+	 */
+	public static function getList(string $saison = null): array|false
 	{
-		if($saison == null)
-			$saison = SnakeTools::GetCurrentSaison();
+		if ($saison === null) {
+			$saison = SnakeTools::getCurrentSaison();
+		}
 
 		$database = new Database();
 
-		$adherents = $database->Query(
+		$adherents = $database->query(
 			"SELECT * FROM adherents JOIN sections ON adherents.id_section = sections.id_section JOIN payments ON adherents.id_payment = payments.id_payment WHERE saison=:saison",
-			array("saison" => $saison)
+			['saison' => $saison]
 		);
 
-		if($adherents != null)
-		{
-			$list = array();
+		if ($adherents != null) {
+			$list = [];
 
-			while($data = $adherents->fetch())
-			{
+			while ($data = $adherents->fetch()) {
 				$adherent = new Adherent($data);
-				$adherent->SetSection(new Section($data));
-				$adherent->SetPayment(new Payment($data));
+				$adherent->setSection(new Section($data));
+				$adherent->setPayment(new Payment($data));
 				$list[] = $adherent;
 			}
 
@@ -557,28 +1161,28 @@ class Adherent
 		return false;
 	}
 
-	// Retourne la liste de tous les adhérents de la section souhaité.
-	// Par défaut ceux de la saison en cours.
-	static public function GetListBySection($id_section)
+	/**
+	 * Retourne la liste de tous les adhérents de la section souhaité.
+	 * 
+	 * @param int $idSection ID de la section souhaité
+	 * @return array|false Retourne la liste d'adhérents, sinon False en cas d'échec.
+	 */
+	public static function getListBySection(int $idSection): array|false
 	{
 		$database = new Database();
 
-		$adherents = $database->Query(
+		$adherents = $database->query(
 			"SELECT * FROM adherents JOIN sections ON adherents.id_section = sections.id_section JOIN payments ON adherents.id_payment = payments.id_payment WHERE adherents.id_section=:id_section",
-			array(
-				"id_section" => intval($id_section)
-			)
+			['id_section' => $idSection]
 		);
 
-		if($adherents != null)
-		{
-			$list = array();
+		if($adherents != null) {
+			$list = [];
 
-			while($data = $adherents->fetch())
-			{
+			while ($data = $adherents->fetch()) {
 				$adherent = new Adherent($data);
-				$adherent->SetSection(new Section($data));
-				$adherent->SetPayment(new Payment($data));
+				$adherent->setSection(new Section($data));
+				$adherent->setPayment(new Payment($data));
 				$list[] = $adherent;
 			}
 
@@ -588,24 +1192,30 @@ class Adherent
 		return false;
 	}
 
-	static public function GetListByIdPayment($id_payment)
+	/**
+	 * Retourne la liste de tous les adhérents associé au paiement souhaité.
+	 * 
+	 * @param int $idPayment ID du paiement souhaité
+	 * @return array|false Retourne la liste d'adhérents, sinon False en cas d'échec.
+	 */
+	public static function getListByIdPayment(int $idPayment)
 	{
 		$database = new Database();
-		$adherents = $database->Query(
+		$adherents = $database->query(
 			"SELECT * FROM adherents WHERE id_payment=:id_payment",
-			array("id_payment" => $id_payment)
+			['id_payment' => $idPayment]
 		);
 
-		if($adherents != null)
-		{
-			$list = array();
+		if ($adherents != null) {
+			$list = [];
 
-			while($adherent = $adherents->fetch())
+			while ($adherent = $adherents->fetch()) {
 				$list[] = new Adherent($adherent);
+			}
 
 			return $list;
 		}
 
-		return $this->adherents;
+		return false;
 	}
 }

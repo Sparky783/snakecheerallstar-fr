@@ -1,39 +1,25 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin")))
-{
+use ApiCore\Api;
+use System\ToolBox;
+use Snake\Adherent;
+
+if (ToolBox::searchInArray($session->admin_roles, ['admin'])) {
 	// Supprime l'adhérent de la base de données.
-	$app->Post("/remove_adherent", function($args) {
-		include_once(ABSPATH . "model/snake/Adherent.php");
+	$app->post('/remove_adherent', function($args) {
+		$adherent = Adherent::getById($args['id_adherent']);
+		$result = $adherent->removeFromDatabase();
 
-		$adherent = Adherent::GetById($args['id_adherent']);
-		$result = $adherent->RemoveFromDatabase();
-
-		API::SendJSON(array(
+		API::sendJSON([
 			'result' => $result,
-		));
+		]);
 	});
 
-	$app->Get("/validation_remove", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
+	$app->get('/validation_remove', function($args) {
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
 
-		$database = new Database();
-		$rech = $database->Query(
-			"SELECT * FROM adherents WHERE id_section=:id_section",
-			array(
-				"id_section" => intval($args['id_section'])
-			)
-		);
-
-		$adherents = array();
-		
-		if($rech != null) {
-			while($donnees = $rech->fetch())
-				$adherents[] = $donnees;
-		}
-
-		API::SendJSON(array(
+		API::sendJSON([
 			'adherents' => $adherents,
-		));
+		]);
 	});
 }
 ?>

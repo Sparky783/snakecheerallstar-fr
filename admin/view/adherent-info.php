@@ -6,10 +6,10 @@
 		<?php include_once("HEAD.php"); ?>
 		<title><?php echo TITLE; ?> - Administration</title>
 		
-		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent_info.css" />
-		<script type="text/javascript" src="admin/view/js/adherent_info.js"></script>
+		<link rel="stylesheet" type="text/css" href="admin/view/css/adherent-info.css" />
+		<script type="text/javascript" src="admin/view/js/adherent-info.js"></script>
 		<script type="text/javascript">
-			var api_url = "<?php $router->API(""); ?>";
+			var api_url = "<?php $router->api(''); ?>";
 		</script>
 	</head>
 	<body>
@@ -17,12 +17,17 @@
 		<div class="container">
 			<div class="row">
 				<section class="col-md-12">
-					<h1>Infos adhérent</h1>
+					<div id="mainTitle">
+						<h1>Infos adhérent</h1>
+						<a class="btn btn-primary" href=<?= $router->url('adherents', ['section' => $adherent->getSection()->getId()]) ?>>
+							Retour
+						</a>
+					</div>
 					<div class="card">
-						<div class="card-header clearfix">
-							<h2 class="float-left"><?php echo $htmlName; ?></h2>
-							<div class="btn-group float-right">
-								<button id="btnActions" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<div class="card-header">
+							<h2><?php echo $htmlName; ?></h2>
+							<div class="btn-group">
+								<button id="btnActions" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 									Actions
 								</button>
 								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="btnActions">
@@ -46,7 +51,7 @@
 					<form id="addTuteurForm">
 						<div class="modal-header">
 							<h5 class="modal-title">Ajouter un tuteur</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -78,7 +83,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="btn btn-primary" type="submit">Ajouter</button>
 						</div>
 					</form>
@@ -92,7 +97,7 @@
 					<form id="sendBillForm">
 						<div class="modal-header">
 							<h5 class="modal-title">Envoyer une facture</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -105,7 +110,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="btn btn-primary" type="submit">Envoyer</button>
 						</div>
 					</form>
@@ -119,7 +124,7 @@
 					<form id="sendRecapForm">
 						<div class="modal-header">
 							<h5 class="modal-title">Envoyer le récapitulatif d'inscription</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
@@ -132,7 +137,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+							<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
 							<button class="btn btn-primary" type="submit">Envoyer</button>
 						</div>
 					</form>

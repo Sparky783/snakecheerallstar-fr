@@ -1,253 +1,220 @@
 <?php
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
+use ApiCore\Api;
+use System\Session;
+use Snake\Inscription;
+use Snake\Adherent;
+use Snake\Tuteur;
+use Snake\EInscriptionStep;
+use Snake\EPaymentType;
+use Snake\EUniformOption;
+use Snake\SnakeMailer;
 
-// ============================
-// ==== Step 1 - Adherents ====
-// ============================
-$app->Post("/inscription_validate_adherents", function($args) {
+// ===============================
+// ==== Step 1 - Informations ====
+// ===============================
+$app->post('/inscription-set-informations', function($args) {
 	$session = Session::getInstance();
-	$session->inscription->ClearAdherents(); // Nettoie la liste des adhérents.
+	$session->inscriptionState = EInscriptionStep::Information;
 
-	$result = true;
-	$message = "";
+	$inscription = unserialize($session->inscription);
+	$inscription->clear();
 
-	if(isset($args['adherents']))
-	{
-		$listAdherents = array();
+	if (!isset($args['adherents'])) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => 'Veuillez ajouter au moins un adhérent.'
+		]);
+	}
+	
+	// Vérification des adhérents
+	foreach ($args['adherents'] as $adherent) {
+		$adh = new Adherent();
+		$testAdherent = $adh->setInformation($adherent);
 
-		$nbBySection = SnakeTools::NbBySection();
+		if (count($testAdherent) > 0) {
+			$message = '';
 
-		// Vérification des adhérents
-		foreach($args['adherents'] as $adherent)
-		{
-			$adh = new Adherent();
-			
-			if($adh->SetInformation($adherent))
-			{
-				// Si l'adhérent appartien à une section
-				if($adh->GetSection() != null)
-				{
-					// Si la section n'est pas pleine.
-					if($nbBySection[$adh->GetSection()->GetId()] < $adh->GetSection()->GetNbMaxMembers())
-					{
-						$listAdherents[] = $adh;
-					}
-					else
-					{
-						$result = false;
-						$message = "Désolé, la section " . $adh->GetSection()->GetName() . " pour " . $adh->GetFirstname() . " est pleine.";
-					}
-				}
-				else
-				{
-					$result = false;
-					$message = "Désolé, " . $adh->GetFirstname() . " est trop jeune pour s'inscrire.";
-				}
+			foreach ($testAdherent as $err) {
+				$message .= "- {$err}<br />";
 			}
-			else
-			{
-				$result = false;
-				$message = "L'un des champs n'est pas correctement rempli.";
-			}
+
+			Api::sendJSON([
+				'result' => false,
+				'message' => $message
+			]);
 		}
 
-		if($result)
-		{
-			if(count($listAdherents) > 0)
-			{
-				// Enregistrement des adhérents dans l'objet inscription
-				foreach($listAdherents as $adherent)
-					$session->inscription->AddAdherent($adherent);
-
-				$session->inscription->ChangeState(Inscription::$STEPS['Tuteurs']);
-			}
-			else
-			{
-				$result = false;
-				$message = "Veuillez ajouter au moins un adhérent.";
-			}
+		$section = $adh->getSection();
+		
+		// Si l'adhérent appartien à une section
+		if ($section === null) {
+			Api::sendJSON([
+				'result' => false,
+				'message' => "Nous sommes désolé, " . $adh->getFirstname() . " est trop jeune pour s'inscrire."
+			]);
 		}
-	}
-	else
-	{
-		$result = false;
-		$message = "Veuillez ajouter au moins un adhérent.";
+
+		// Si la section n'est pas pleine.
+		if ($section->getNbMembers() >= $section->getNbMaxMembers()) {
+			Api::sendJSON([
+				'result' => false,
+				'message' => "Nous sommes désolé, il n'y a plus de place dans la section " . $section->getName() . " pour " . $adh->getFirstname() . "."
+			]);
+		}
+
+		$adh->setUniformOption(EUniformOption::Rent);
+		$inscription->addAdherent($adh);
 	}
 
-	$reponse = array(
-		'result' => $result,
-		'message' => $message
-	);
+	if (!isset($args['tuteurs'])) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => 'Veuillez ajouter au moins un tuteur.'
+		]);
+	}
 
-	API::SendJSON($reponse);
+	foreach ($args['tuteurs'] as $tuteur) {
+		$tut = new Tuteur();
+		$testTuteur = $tut->setInformation($tuteur);
+
+		if (count($testTuteur) > 0) {
+			$message = '';
+
+			foreach ($testTuteur as $err) {
+				$message .= "- {$err}<br />";
+			}
+
+			Api::sendJSON([
+				'result' => false,
+				'message' => $message
+			]);
+		}
+		
+		$inscription->addTuteur($tut);
+	}
+
+	if ($args['authorisation']['acceptTermes'] !== 'true') {
+		Api::sendJSON([
+			'result' => false,
+			'message' => 'Veuillez accepter les conditions afin de pouvoir continuer.'
+		]);
+	}
+
+	// Prépare les données à afficher
+	$amountToPay = $inscription->computeFinalPrice();
+	$reductions = [];
+	foreach ($inscription->getPayment()->getReductions() as $resduction) {
+		$reductions[] = $resduction->toArray();
+	}
+
+	$session->inscriptionState = EInscriptionStep::Payment;
+	$session->inscription = serialize($inscription);
+
+	Api::sendJSON([
+		'result' => true,
+		'message' => '',
+		'amountToPay' => $amountToPay,
+		'reductions' => $reductions
+	]);
 });
 
 // ==========================
-// ==== Step 2 - Tuteurs ====
+// ==== Step 2 - Payment ====
 // ==========================
-$app->Post("/inscription_validate_tuteurs", function($args) {
+$app->post('/inscription-validate-payment', function($args) {
 	$session = Session::getInstance();
-	$session->inscription->ClearTuteurs(); // Nettoie la liste des adhérents.
-	
-	$result = true;
-	$message = "";
 
-	if(isset($args['tuteurs']))
-	{
-		foreach($args['tuteurs'] as $tuteur)
-		{
-			$tut = new Tuteur();
-			
-			if($tut->SetInformation($tuteur))
-				$session->inscription->AddTuteur($tut);
-			else
-			{
-				$result = false;
-				$message = "L'un des champs n'est pas correctement rempli.";
+	$inscription = unserialize($session->inscription);
+
+	if ($session->inscriptionState !== EInscriptionStep::Payment &&
+		$session->inscriptionState !== EInscriptionStep::Validation) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => 'Une erreur est survenue. Veuillez rafraichir votre page.'
+		]);
+	}
+
+	$message = '';
+
+	switch ($args['method']) {
+		case 'optionEspece':
+			$inscription->getPayment()->setMethod(EPaymentType::Espece);
+			$session->inscriptionState = EInscriptionStep::Validation;
+			break;
+
+		case 'optionCheque':
+			$nbDeadlines = (int)$args['deadlines'];
+
+			if ($nbDeadlines >= 1 && $nbDeadlines <= 4) {
+				$inscription->getPayment()->setMethod(EPaymentType::Cheque);
+				$inscription->getPayment()->setNbDeadlines($nbDeadlines);
+
+				$session->inscriptionState = EInscriptionStep::Validation;
+			} else {
+				$message = "Veuillez choisir un nombre d'échéance entre 1 et 4.";
 			}
-		}
+			break;
 
-		if($result)
-		{
-			if($session->inscription->CountTuteurs() > 0)
-				$session->inscription->ChangeState(Inscription::$STEPS['Authorization']);
-			else
-			{
-				$result = false;
-				$message = "Veuillez ajouter au moins un tuteur.";
-			}
-		}
-	}
-	else
-	{
-		$result = false;
-		$message = "Veuillez ajouter au moins un tuteur.";
-	}
-
-	$reponse = array(
-		'result' => $result,
-		'message' => $message
-	);
-
-	API::SendJSON($reponse);
-});
-
-// ================================
-// ==== Step 3 - Authorization ====
-// ================================
-$app->Post("/inscription_validate_authorization", function($args) {
-	$session = Session::getInstance();
-	
-	$result = true;
-	$message = "";
-
-	if($args['authorization'] == "true")
-	{
-		$session->inscription->SetAuthorization(true);
-		
-		// Ajout d'une réduction pour les fratries.
-		if(count($session->inscription->GetAdherents()) > 1)
-		{
-			$reduc = new Reduction();
-			$reduc->SetType(Reduction::$TYPE['Percentage']);
-			$reduc->SetValue(15); // 15%
-			$reduc->SetSujet("Tarif fratrie");
+		case 'optionEnLigne':
+			$inscription->getPayment()->setMethod(EPaymentType::Internet);
 			
-			$session->inscription->GetPayment()->AddReduction($reduc);
-		}
-
-		$session->inscription->ComputeCotisation();
-		$session->inscription->ChangeState(Inscription::$STEPS['Payment']);
-	}
-	else
-	{
-		$result = false;
-		$message = "Veuillez accepter les conditions afin de pouvoir continuer.";
-	}
+			if ($inscription->getPayment()->isDone()) {
+				$session->inscriptionState = EInscriptionStep::Validation;
+			} else {
+				$message = 'Veuillez valider votre paiement en ligne.';
+			}
+			break;
 	
-	$reponse = array(
-		'result' => $result,
-		'message' => $message
-	);
-
-	API::SendJSON($reponse);
-});
-
-// ==========================
-// ==== Step 4 - Payment ====
-// ==========================
-$app->Post("/inscription_validate_payment", function($args) {
-	$session = Session::getInstance();
-
-	$message = "";
-
-	if($args['method'] == "optionEspece")
-	{
-		$session->inscription->GetPayment()->SetMethod(Payment::$METHODS['Espece']);
-		$session->inscription->ChangeState(Inscription::$STEPS['Validation']);
-	}
-	else if($args['method'] == "optionCheque")
-	{
-		$nbDeadlines = intval($args['deadlines']);
-
-		if($nbDeadlines >= 1 && $nbDeadlines <= 4)
-		{
-			$session->inscription->GetPayment()->SetMethod(Payment::$METHODS['Cheque']);
-			$session->inscription->GetPayment()->SetNbDeadlines($nbDeadlines);
-
-			$session->inscription->ChangeState(Inscription::$STEPS['Validation']);
-		}
-		else
-		{
-			$message = "Veuillez choisir un nombre d'échéance entre 1 et 4.";
-		}
-	}
-	else if($args['method'] == "optionEnLigne")
-	{
-		$session->inscription->GetPayment()->SetMethod(Payment::$METHODS['Internet']);
-		
-		if($session->inscription->GetPayment()->IsDone())
-			$session->inscription->ChangeState(Inscription::$STEPS['Validation']);
-		else
-		{
-			$message = "Veuillez valider votre paiement en ligne.";
-		}
-	}
-	else
-	{
-		$message = "Veuillez choisir un moyen de paiement.";
+		default:
+			$message = 'Veuillez choisir un moyen de paiement.';
+			break;
 	}
 
-	// Ajout de la réduction suite au Pass Sport mis en place par le gouvernement 
-	if(ToolBox::StringToBool($args['passSport']))
-	{
-		$reduc = new Reduction();
-		$reduc->SetType(Reduction::$TYPE['Amount']);
-		$reduc->SetValue(50); // 50€
-		$reduc->SetSujet("Pass Sport");
-		
-		$session->inscription->GetPayment()->AddReduction($reduc);
+	if ($session->inscriptionState !== EInscriptionStep::Validation) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => $message
+		]);
 	}
-	
+
 	// Sauvegarde en base de donnée de l'inscription
-	$result = false;
-	if($session->inscription->GetState() == Inscription::$STEPS['Validation'])
-		$result = $session->inscription->SaveToDatabase();
+	if (!$inscription->saveToDatabase()) {
+		Api::sendJSON([
+			'result' => false,
+			'message' => "Une erreur est survenue lors de l'enregistrement de votre inscription. Veuillez réessayer."
+		]);
+	}
 
-	$reponse = array(
-		'result' => $result,
-		'message' => $message
-	);
+	// ================================================
+	// E-mail récapitulatif + facture
+	// ================================================
+	$payment = $inscription->getPayment();
+	$emails = [];
+
+	foreach ($inscription->getTuteurs() as $tuteur) {
+		SnakeMailer::sendRecap($inscription, $tuteur);
+		SnakeMailer::sendBill($payment, $tuteur);
+		$emails[] = $tuteur->getEmail();
+	}
+
+	if(count($emails) > 0) {
+		$message = 'Un E-mail récapitulatif a été envoyé à ' . implode(', ', $emails);
+	}
+
+	$session->inscription = serialize($inscription);
 	
-	API::SendJSON($reponse);
+	Api::sendJSON([
+		'result' => true,
+		'message' => $message
+	]);
 });
 
 // ===============================
-// ==== Step 5 - Confirmation ====
+// ==== Step 3 - Confirmation ====
 // ===============================
-$app->Post("/close_inscription", function($args) {
+$app->post('/close_inscription', function($args) {
 	$session = Session::getInstance();
-	$session->inscription = new Inscription();
+	$session->inscription = serialize(new Inscription());
+	$session->inscriptionState = EInscriptionStep::Information;
 });
 ?>

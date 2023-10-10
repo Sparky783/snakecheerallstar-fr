@@ -1,250 +1,391 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Adherent.php");
+namespace Snake;
 
+use System\Database;
+use Snake\Adherent;
+
+/**
+ * Représente un tuteur d'un adhérent (parent, représentant légal, etc ...).
+ * Les adhérents majeurs on pour tuteur eux même.
+ */
 class Tuteur
 {
 	// == ATTRIBUTS ==
-	private $id = null;
-	private $firstname = "";
-	private $lastname = "";
-	private $status = "";
-	private $email = "";
-	private $phone = "";
-
-	private $adherents = null;
+	/**
+	 * @var int|null $_id ID du tuteur.
+	 */
+	private ?int $_id = null;
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * @var string $_firstname Prénom du tuteur.
+	 */
+	private string $_firstname = '';
+	
+	/**
+	 * @var string $_lastname Nom de famille du tuteur.
+	 */
+	private string $_lastname = '';
+	
+	/**
+	 * @var string $_status Status social du tuteur (Prèe, Mère, Représentant légal).
+	 */
+	private string $_status = '';
+	
+	/**
+	 * @var string $_email E-mail du tuteur.
+	 */
+	private string $_email = '';
+	
+	/**
+	 * @var string $_phone Numéro de téléphone du tuteur.
+	 */
+	private string $_phone = '';
+
+	/**
+	 * @var array $_adherents Liste des adhérents associés au tuteur.
+	 */
+	private array $_adherents = [];
+	
+
+	// ==== CONSTRUCTOR ==== 
+	public function __construct(array $dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_tuteur']);
-			$this->firstname = $dbData['firstname'];
-			$this->lastname = $dbData['lastname'];
-			$this->status = $dbData['status'];
-			$this->email = $dbData['email'];
-			$this->phone = $dbData['phone'];
+		if (count($dbData) !== 0) {
+			$this->_id = (int)$dbData['id_tuteur'];
+			$this->_firstname = $dbData['firstname'];
+			$this->_lastname = $dbData['lastname'];
+			$this->_status = $dbData['status'];
+			$this->_email = $dbData['email'];
+			$this->_phone = $dbData['phone'];
 		}
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id_tuteur' => $this->_id,
+			'firstname' => $this->_firstname,
+			'lastname' => $this->_lastname,
+			'status' => $this->_status,
+			'email' => $this->_email,
+			'phone' => $this->_phone
+		];
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+        $this->_id = $data['id_tuteur'];
+		$this->_firstname = $data['firstname'];
+		$this->_lastname = $data['lastname'];
+		$this->_status = $data['status'];
+		$this->_email = $data['email'];
+		$this->_phone = $data['phone'];
 	}
 	
 	// == METHODES GETTERS ==
-	public function GetId()
+	/**
+	 * Retourne l'ID du tuteur.
+	 * 
+	 * @return int|null
+	 */
+	public function getId(): int|null
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetFirstname()
+	/**
+	 * Retourne le prénom du tuteur.
+	 * 
+	 * @return string
+	 */
+	public function getFirstname(): string
 	{
-		return $this->firstname;
+		return $this->_firstname;
 	}
 
-	public function GetLastname()
+	/**
+	 * Retourne le nom de famille du tuteur.
+	 * 
+	 * @return string
+	 */
+	public function getLastname(): string
 	{
-		return $this->lastname;
+		return $this->_lastname;
 	}
 
-	public function GetStatus()
+	/**
+	 * Retourne le status social du tuteur (Adhérent, Père, Mère, Responsable légal, etc ...).
+	 * 
+	 * @return string
+	 */
+	public function getStatus(): string
 	{
-		return $this->status;
+		return $this->_status;
 	}
 
-	public function GetEmail()
+	/**
+	 * Retourne l'E-mail'e du tuteur.
+	 * 
+	 * @return string
+	 */
+	public function getEmail(): string
 	{
-		return $this->email;
+		return $this->_email;
 	}
 
-	public function GetPhone()
+	/**
+	 * Retourne le numéro de téléphone du tuteur.
+	 * 
+	 * @return string
+	 */
+	public function getPhone(): string
 	{
-		return $this->phone;
+		return $this->_phone;
 	}
 
-	// Retourne la liste des adhérents liés au paiement. Si besoin, charge les données depuis la BDD.
-	public function GetAdherents()
+	/**
+	 * Retourne la liste des adhérents liés au tuteur. Si besoin, charge les données depuis la BDD.
+	 * 
+	 * @return Adherent[]
+	 */
+	public function getAdherents(): array
 	{
-		if($this->id != null && $this->adherents == null)
-		{
-			$this->adherents = array();
-
+		if ($this->_id !== null && count($this->_adherents) === 0) {
 			$database = new Database();
-			$adherents = $database->Query(
+			$adherents = $database->query(
 				"SELECT * FROM adherent_tuteur JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent WHERE id_tuteur=:id_tuteur",
-				array("id_tuteur" => $this->id)
+				['id_tuteur' => $this->_id]
 			);
 
-			if($adherents != null)
-			{
-				while($adherent = $adherents->fetch())
-					$this->adherents[] = new Adherent($adherent);
+			if ($adherents != null) {
+				while($adherent = $adherents->fetch()) {
+					$this->_adherents[] = new Adherent($adherent);
+				}
 			}
 		}
 
-		return $this->adherents;
+		return $this->_adherents;
 	}
 	
 	// == METHODES SETTERS ==
-	public function SetId($id)
+	/**
+	 * Définie l'ID du tuteur
+	 * 
+	 * @param int $id
+	 * @return void
+	 */
+	public function setId(int $id): void
 	{
-		$this->id = intval($id);
-
-		if($this->firstname == "" && $this->lastname = "")
-			$this->LoadFromDatabase();
-
-		return true;
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
 	}
 
-	public function SetFirstname($firstname)
+	/**
+	 * Définie le prénom du tuteur
+	 * 
+	 * @param string $firstname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setFirstname(string $firstname): bool
 	{
-		if($firstname != "")
-		{
-			$this->firstname = trim(ucwords(mb_strtolower($firstname)));
+		if ($firstname !== '') {
+			$this->_firstname = trim(ucwords(mb_strtolower($firstname)));
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetLastname($lastname)
+	/**
+	 * Définie le nom de famille du tuteur
+	 * 
+	 * @param string $lastname
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setLastname(string $lastname): bool
 	{
-		if($lastname != "")
-		{
-			$this->lastname = trim(ucwords(mb_strtolower($lastname)));
+		if($lastname !== '') {
+			$this->_lastname = trim(ucwords(mb_strtolower($lastname)));
+
 			return true;
 		}
+
 		return false;
 	}
 
-	public function SetStatus($status)
+	/**
+	 * Définie le status du tuteur
+	 * 
+	 * @param string $status
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setStatus(string $status): bool
 	{
-		if($status != "")
-		{
-			$this->status = mb_strtolower($status);
+		if ($status !== '') {
+			$this->_status = mb_strtolower($status);
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetEmail($email)
+	/**
+	 * Définie l'E-mail du tuteur
+	 * 
+	 * @param string $email
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setEmail(string $email): bool
 	{
 		$email = trim($email);
-		if(preg_match("/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/i", $email))
-		{
-			$this->email = mb_strtolower($email);
+
+		if (preg_match("/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/i", $email)) {
+			$this->_email = mb_strtolower($email);
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetPhone($phone)
+	/**
+	 * Définie le numéro de téléphone du tuteur
+	 * 
+	 * @param string $phone
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function setPhone(string $phone): bool
 	{
 		$phone = trim($phone);
-		if(preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/i', $phone))
-		{
+
+		if (preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/i', $phone)) {
 			$phone = str_replace("+33", "0", $phone);
 			$phone = str_replace(array(".", "-", " "), "", $phone);
-			$this->phone = $phone;
+			$this->_phone = $phone;
+
 			return true;
 		}
+
 		return false;
 	}
 	
-	public function SetInformation($infos)
+	/**
+	 * Rempli les informations du tuteur avec les données saisies dans le formulaire.
+	 * 
+	 * @param array $infos Infos saisie dans le formulaire.
+	 * @return array Retourne la liste des erreurs si il y en a.
+	 */
+	public function setInformation(array $infos): array
 	{
-		if(is_array($infos))
-		{
-			$result = true;
-			if(isset($infos['id_tuteur']))
-				$result = $result && $this->SetId($infos['id_tuteur']);
-			
-			if(isset($infos['firstname']))
-				$result = $result && $this->SetFirstname($infos['firstname']);
-			
-			if(isset($infos['lastname']))
-				$result = $result && $this->SetLastname($infos['lastname']);
-			
-			if(isset($infos['status']))
-				$result = $result && $this->SetStatus($infos['status']);
-			
-			if(isset($infos['email']))
-				$result = $result && $this->SetEmail($infos['email']);
-			
-			if(isset($infos['phone']))
-				$result = $result && $this->SetPhone($infos['phone']);
-			
-			return $result;
+		$messages = [];
+		
+		if (isset($infos['id_tuteur'])) {
+			$this->setId((int)$infos['id_tuteur']);
 		}
 		
-		return false;
+		if (!isset($infos['firstname']) || !$this->setFirstname($infos['firstname'])) {
+			$messages[] = "Le prénom du tuteur contient des caractères non autorisé.";
+		}
+		
+		if (!isset($infos['lastname']) || !$this->setLastname($infos['lastname'])) {
+			$messages[] = "Le nom du tuteur contient des caractères non autorisé.";
+		}
+		
+		if (!isset($infos['status']) || !$this->setStatus($infos['status'])) {
+			$messages[] = "Le statut du tuteur doit être défini.";
+		}
+		
+		if (!isset($infos['email']) || !$this->setEmail($infos['email'])) {
+			$messages[] = "L'E-mail du tuteur n'est pas au bon format.";
+		}
+		
+		if (!isset($infos['phone']) || !$this->setPhone($infos['phone'])) {
+			$messages[] = "Le numéro de téléphone du tuteur n'est pas au bon format.";
+		}
+		
+		return $messages;
 	}
 
-	public function AddAdherent(Adherent $adherent)
+	/**
+	 * Ajoute un adhérent à ceux géré par ce tuteur.
+	 * 
+	 * @param Adherent $adherent Adhérent à associer.
+	 * @return void
+	 */
+	public function addAdherent(Adherent $adherent): void
 	{
-		if(!is_array($this->adherents))
-			$this->adherents = array();
-
-		$this->adherents[] = $adherent;
+		$this->_adherents[] = $adherent;
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Sauvegarde les informations du tuteur dans la base de données.
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon false.
+	 */
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 		$result = false;
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
-				"tuteurs",
-				array(
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname,
-					"status" => $this->status,
-					"email" => $this->email,
-					"phone" => $this->phone
-				)
+		if ($this->_id == null) { // Insert
+			$id = $database->insert(
+				'tuteurs',
+				[
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname,
+					'status' => $this->_status,
+					'email' => $this->_email,
+					'phone' => $this->_phone
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->id = intval($id);
+			if($id !== false) {
+				$this->_id = (int)$id;
 				$result = true;
 			}
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"tuteurs", "id_tuteur", $this->id,
-				array(
-					"firstname" => $this->firstname,
-					"lastname" => $this->lastname,
-					"status" => $this->status,
-					"email" => $this->email,
-					"phone" => $this->phone
-				)
+		} else { // Update
+			$result = $database->update(
+				'tuteurs', 'id_tuteur', $this->_id,
+				[
+					'firstname' => $this->_firstname,
+					'lastname' => $this->_lastname,
+					'status' => $this->_status,
+					'email' => $this->_email,
+					'phone' => $this->_phone
+				]
 			);
 		}
 
 		// Met à jour les liens avec les adhérents.
-		if($this->id != null && $this->adherents != null)
-		{
-			if(count($this->adherents) > 0)
-			{
-				foreach($this->adherents as $adherent)
-				{
-					if($adherent->GetId() != null)
-					{
-						$database->Insert(
-							"adherent_tuteur",
-							array(
-								"id_adherent" => $adherent->GetId(),
-								"id_tuteur" => $this->id
-							)
-						);
-					}
-					else
-					{
-						$result = false;
-						break;
-					}
+		if ($this->_id !== null && count($this->_adherents) !== 0) {
+			foreach ($this->_adherents as $adherent) {
+				if ($adherent->getId() !== null) {
+					$database->insert(
+						'adherent_tuteur',
+						[
+							'id_adherent' => $adherent->getId(),
+							'id_tuteur' => $this->_id
+						]
+					);
+				} else {
+					$result = false;
+					break;
 				}
 			}
 		}
@@ -252,61 +393,25 @@ class Tuteur
 		return $result;
 	}
 
-	public function RemoveFromDatabase()
-	{
-		if($this->id != null)
-		{
-			$database = new Database();
-			return $database->Delete("tuteurs", "id_tuteur", $this->id);
-		}
-
-		return false;
-	}
-
-	// Remonte les infos depuis la BDD.
-	private function LoadFromDatabase()
-	{
-		if($this->id != null)
-		{
-			$database = new Database();
-			$rech = $database->Query(
-				"SELECT * FROM tuteurs WHERE id_tuteur=:id_tuteur",
-				array("id_tuteur" => $this->id)
-			);
-	
-			if($rech != null)
-			{
-				$dbData = $rech->fetch();
-
-				$this->firstname = $dbData['firstname'];
-				$this->lastname = $dbData['lastname'];
-				$this->status = $dbData['status'];
-				$this->email = $dbData['email'];
-				$this->phone = $dbData['phone'];
-
-				return true;
-			}
-		}
-		
-		return false;
-	}
-
-
 
 	// ==============================================================================
 	// ==== Fonctions statiques =====================================================
 	// ==============================================================================
-	static public function GetById($id_tuteur)
+	/**
+	 * Retourne un tuteur suivant son ID.
+	 * 
+	 * @return Tuteur|false Retourne False en cas d'échec.
+	 */
+	public static function getById(int $id_tuteur): Tuteur|false
 	{
 		$database = new Database();
 
-		$rech = $database->Query(
+		$rech = $database->query(
 			"SELECT * FROM tuteurs WHERE id_tuteur=:id_tuteur",
-			array("id_tuteur" => intval($id_tuteur))
+			['id_tuteur' => $id_tuteur]
 		);
 
-		if($rech != null)
-		{
+		if($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Tuteur($data);
@@ -315,32 +420,36 @@ class Tuteur
 		return false;
 	}
 
-	// Retourne la liste de tous les tuteurs du club.
-	// Par défaut ceux de la saison en cours.
-	static public function GetList($saison = null)
+	/**
+	 * Retourne la liste de tous les tuteurs du club. Par défaut ceux de la saison en cours.
+	 * 
+	 * @return array|false Retourne False en cas d'échec.
+	 */
+	public static function getList($saison = null): array|false
 	{
-		if($saison == null)
-			$saison = SnakeTools::GetCurrentSaison();
+		if ($saison === null) {
+			$saison = SnakeTools::getCurrentSaison();
+		}
 
 		$database = new Database();
 
-		$tuteurs = $database->Query(
+		$tuteurs = $database->query(
 			"SELECT tuteurs.* FROM adherent_tuteur
 			JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent
 			JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur
 			JOIN sections ON sections.id_section = adherents.id_section
 			WHERE sections.saison=:saison",
-			array(
-				"saison" => $saison
-			)
+			[
+				'saison' => $saison
+			]
 		);
 		
-		if($tuteurs != null)
-		{
-			$list = array();
+		if ($tuteurs !== null) {
+			$list = [];
 
-			while($tuteur = $tuteurs->fetch())
+			while($tuteur = $tuteurs->fetch()) {
 				$list[] = new Tuteur($tuteur);
+			}
 			
 			return $list;
 		}
@@ -348,32 +457,46 @@ class Tuteur
 		return false;
 	}
 
-	// Retourne la liste de tous les tuteurs de la section souhaité.
-	// Par défaut ceux de la saison en cours.
-	static public function GetListBySection($id_section)
+	/**
+	 * Retourne la liste de tous les tuteurs de la section souhaité. Par défaut ceux de la saison en cours.
+	 * 
+	 * @param int $id_section ID de la section à récupérer.
+	 * @return array|false Retourne False en cas d'échec.
+	 */
+	public static function getListBySection(int $id_section): array|false
 	{
 		$database = new Database();
 
-		$tuteurs = $database->Query(
+		$tuteurs = $database->query(
 			"SELECT tuteurs.* FROM adherent_tuteur
 			JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent
 			JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur
 			WHERE id_section=:id_section",
-			array(
-				"id_section" => intval($id_section)
-			)
+			['id_section' => $id_section]
 		);
 
-		if($tuteurs != null)
-		{
-			$list = array();
+		if ($tuteurs !== null) {
+			$list = [];
 
-			while($tuteur = $tuteurs->fetch())
+			while ($tuteur = $tuteurs->fetch()) {
 				$list[] = new Tuteur($tuteur);
+			}
 
 			return $list;
 		}
 		
 		return false;
+	}
+
+	/**
+	 * Supprime un tuteur de la base de données.
+	 * 
+	 * @param int $id ID du tuteur à supprimer.
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public static function removeFromDatabase(int $id): bool
+	{
+		$database = new Database();
+		return $database->delete('tuteurs', 'id_tuteur', $id);
 	}
 }

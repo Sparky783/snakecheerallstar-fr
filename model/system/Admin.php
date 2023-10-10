@@ -1,139 +1,230 @@
 <?php
-require_once(ABSPATH . "model/system/ToolBox.php");
-require_once(ABSPATH . "model/system/Database.php");
+namespace System;
+use System\Database;
 
-// ========================================================================================
-// ==== Administrateur du site. Nécessaire pour la connexion à l'espace administrateur ====
-// ========================================================================================
-
+/**
+ * Represent a admin user session.
+ * It used for the connection to the administration space.
+ */
 class Admin
 {
-	// == ATTRIBUTS ==
-	private $id = null;
-	private $email = "";
-	private $password = "";
-	private $name = "";
-	private $roles = array();
-
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var int|null $_id Admin's ID.
+	 */
+	private ?int $_id = null;
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct($dbData = null)
+	/**
+	 * @var string $_email Admin's E-mail.
+	 */
+	private string $_email = '';
+	
+	/**
+	 * @var string $_password Admin's password.
+	 */
+	private string $_password = '';
+	
+	/**
+	 * @var string $_name Admin's name.
+	 */
+	private string $_name = '';
+	
+	/**
+	 * @var array $_roles Admin's roles.
+	 */
+	private array $_roles = [];
+
+	// ==== CONSTRUCTOR ====
+	/**
+	 * Make a new object of admin session
+	 */
+	public function __construct($dbData = [])
 	{
-		if($dbData != null)
-		{
-			$this->id = intval($dbData['id_admin']);
-			$this->email = $dbData['email'];
-			$this->password = $dbData['password'];
-			$this->name = $dbData['name'];
-			$this->roles = unserialize($dbData['roles']);
+		if (count($dbData) > 0) {
+			$this->_id = (int)$dbData['id_admin'];
+			$this->_email = $dbData['email'];
+			$this->_password = $dbData['password'];
+			$this->_name = $dbData['name'];
+			$this->_roles = unserialize($dbData['roles']);
 		}
 	}
 
-	// == METHODES GETTERS ==
-	public function GetId()
+	// ==== GETTERS ====
+	/**
+	 * Return the admin ID.
+	 * 
+	 * @return int
+	 */
+	public function getId(): int
 	{
-		return $this->id;
+		return $this->_id;
 	}
 
-	public function GetEmail()
+	/**
+	 * Return the admin E-mail.
+	 * 
+	 * @return string
+	 */
+	public function getEmail(): string
 	{
-		return $this->email;
+		return $this->_email;
 	}
 
-	public function GetPassword()
+	/**
+	 * Retrun the admin password.
+	 * WARNING: The password is hashed.
+	 * 
+	 * @return string
+	 */
+	public function getPassword(): string
 	{
-		return $this->password;
+		return $this->_password;
 	}
 
-	public function GetName()
+	/**
+	 * Return the admin name.
+	 * 
+	 * @return string
+	 */
+	public function getName(): string
 	{
-		return $this->name;
+		return $this->_name;
 	}
 
-	public function GetRoles()
+	/**
+	 * Return roles granted to the admin.
+	 * 
+	 * @return array
+	 */
+	public function getRoles(): array
 	{
-		return $this->roles;
+		return $this->_roles;
 	}
 
-	// == METHODES SETTERS ==
-	public function SetId($id = null)
+	// ==== SETTERS ====
+	/**
+	 * Define the admin ID.
+	 * 
+	 * @param int $id ID of the admin.
+     * @return void
+	 */
+	public function setId(int $id = null): void
 	{
-		$this->id = intval($id);
+		$this->_id = $id;
 	}
 
-	public function SetEmail($email) {
-		if(preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
-			$this->email = $email;
+	/**
+	 * Define the admin E-mail.
+	 * 
+	 * @param string $email Email of the admin.
+	 * @return bool Return True if the E-mail is correctly added, else False.
+	 */
+	public function setEmail(string $email): bool
+	{
+		if (preg_match("/^[a-z0-9._-]+@[a-z0-9._-]+\.[a-z]{2,6}$/", $email)) {
+			$this->_email = $email;
 			return true;
 		}
+
 		return false;
 	}
 
-	public function SetPassword($password)
+	/**
+	 * Set the admin password and hash it.
+	 * 
+	 * @param string $password Password of the admin.
+     * @return void
+	 */
+	public function setPassword(string $password): void
 	{
-		$this->password = sha1(sha1(AUTH_SALT) . sha1($password));
+		$this->_password = sha1(sha1(AUTH_SALT) . sha1($password));
 	}
 
-	public function SetName($name)
+	/**
+	 * Set the admin name.
+	 * 
+	 * @param  string $name Name of the admin.
+     * @return void
+	 */
+	public function setName(string $name): void
 	{
-		$this->name = $name;
+		$this->_name = $name;
 	}
 
-	public function SetRoles($roles)
+	/**
+	 * Set the list of admin roles.
+	 * 
+	 * @param array $roles List of roles.
+     * @return void
+	 */
+	public function setRoles(array $roles): void
 	{
-		$this->roles = $roles;
+		$this->_roles = $roles;
 	}
 
-	// == AUTRES METHODES ==
-	public function AddRoles($roles)
+	// ==== OTHER METHODS ====
+	/**
+	 * Add a nex roles to the admin.
+	 * 
+	 * @param string $role Role to add.
+     * @return void
+	 */
+	public function addRoles(string $role): void
 	{
-		$this->roles[] = $roles;
+		$this->_roles[] = $role;
 	}
 
-	public function ToArray()
+	/**
+	 * Convert this object to an associative array.
+	 * 
+	 * @return array Associative array of this admin.
+	 */
+	public function toArray(): array
 	{
-		return array(
-			"id_admin" => $this->id,
-			"email" => $this->email,
-			"name" => $this->name,
-			"roles" => $this->roles
-		);
+		return [
+			'id_admin' => $this->_id,
+			'email' => $this->_email,
+			'name' => $this->_name,
+			'roles' => $this->_roles
+		];
 	}
 
-	public function SaveToDatabase()
+	/**
+	 * Save this admin object into database.
+	 * If this admin is a new one, create id and affect a new ID.
+	 * 
+	 * @return bool Return True if the admin was correctly saved, else False.
+	 */
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 		$result = false;
 
-		if($this->id == null) // Insert
-		{
-			$id = $database->Insert(
-				"admins",
-				array(
-					"email" => $this->email,
-					"password" => $this->password,
-					"name" => $this->name,
-					"roles" => serialize($this->roles)
-				)
+		if ($this->_id === null) { // Insert
+			$id = $database->insert(
+				'admins',
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'roles' => serialize($this->_roles)
+				]
 			);
 
-			if($id !== false)
-			{
-				$this->id = intval($id);
+			if ($id !== false) {
+				$this->_id = (int)$id;
 
 				$result = true;
 			}
-		}
-		else // Update
-		{
-			$result = $database->Update(
-				"admins", "id_admin", $this->id,
-				array(
-					"email" => $this->email,
-					"password" => $this->password,
-					"name" => $this->name,
-					"roles" => serialize($this->roles)
-				)
+		} else { // Update
+			$result = $database->update(
+				'admins', 'id_admin', $this->_id,
+				[
+					'email' => $this->_email,
+					'password' => $this->_password,
+					'name' => $this->_name,
+					'roles' => serialize($this->_roles)
+				]
 			);
 		}
 
@@ -141,21 +232,25 @@ class Admin
 	}
 
 	
-	// ==============================================================================
-	// ==== Fonctions statiques =====================================================
-	// ==============================================================================
-	// Récupère un administrateur à l'aide de son ID.
-	static public function GetById($id_admin)
+	// ===========================================================================
+	// ==== Static functions =====================================================
+	// ===========================================================================
+	/**
+	 * Get an admin from his ID.
+	 * 
+	 * @param int $idAdmin ID of the admin to get.
+	 * @return Admin|false Admin wanted, else False if the process failed.
+	 */
+	public static function getById(int $idAdmin): Admin|false
 	{
 		$database = new Database();
 
 		$rech = $database->Query(
 			"SELECT * FROM admins WHERE id_admin=:id_admin",
-			array("id_admin" => intval($id_admin))
+			['id_admin' => $idAdmin]
 		);
 
-		if($rech != null)
-		{
+		if ($rech !== null) {
 			$data = $rech->fetch();
 
 			return new Admin($data);
@@ -164,19 +259,23 @@ class Admin
 		return false;
 	}
 
-	// Retourne la liste des administrateurs du site.
-	static public function GetList()
+	/**
+	 * Return the list of all administrators of the website.
+	 * 
+	 * @return array|bool List of the administrators, else False is the process failed.
+	 */
+	public static function getList(): array|bool
 	{
 		$database = new Database();
 
-		$admins = $database->Query("SELECT * FROM admins");
+		$admins = $database->query("SELECT * FROM admins");
 
-		if($admins != null)
-		{
-			$list = array();
+		if ($admins !== null) {
+			$list = [];
 
-			while($data = $admins->fetch())
+			while ($data = $admins->fetch()) {
 				$list[] = new Admin($data);
+			}
 
 			return $list;
 		}
@@ -184,32 +283,43 @@ class Admin
 		return false;
 	}
 
-	// Supprime un utilisateur de la base de donénes.
-	static public function RemoveFromDatabase($id_admin)
+	/**
+	 * Remove an administrator from the databas.
+	 * 
+	 * @param int $idAdmin Id of the admin to remove.
+	 * @return bool Return True if the process succeed, else False.
+	 */
+	public static function removeFromDatabase(int $idAdmin): bool
 	{
 		$database = new Database();
 
-		return $database->Delete("admins", "id_admin", intval($id_admin));
+		return $database->delete('admins', 'id_admin', $idAdmin);
 	}
 
-	// Récupère un utilisateur à l'aide de ses identifiants.
-	static public function Login($login, $password)
+	/**
+	 * Get an admin with his credentials (Login)
+	 * 
+	 * @param string $login Username or E-mail of the admin depending of the configuration.
+	 * @param string $password Password of the admin. The password must be correctly hashed.
+	 * @return Admin|false Return the admin logged, else False if the process failed.
+	 */
+	public static function login(string $login, string $password): Admin|false
 	{
 		$database = new Database();
 		$rech = $database->query(
 			"SELECT * FROM admins WHERE email=:email AND password=:password",
-			array(
-				"email" => $login,
-				"password" => $password,
-			)
+			[
+				'email' => $login,
+				'password' => $password,
+			]
 		);
 		
-		if($rech !== false)
-		{
+		if ($rech !== false) {
 			$data = $rech->fetch();
 			
-			if($data != null) // Connexion réussi
+			if ($data !== false) {
 				return new Admin($data);
+			}
 		}
 
 		return false;

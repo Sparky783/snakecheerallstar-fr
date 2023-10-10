@@ -1,105 +1,126 @@
 <?php
-// ==== Access security ====
-if(!ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
-	WebSite::Redirect("login", true);
-// =========================
+use System\WebSite;
+use System\ToolBox;
+use System\Session;
+use Snake\Adherent;
+use Snake\EPaymentType;
 
-include_once(ABSPATH . "model/system/ToolBox.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
-include_once(ABSPATH . "model/snake/Adherent.php");
+// ==== Access security ====
+if (!ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'member'])) {
+	WebSite::redirect('login', true);
+}
+// =========================
 
 global $gmm;
 
-$session = Session::GetInstance();
-$adherent = Adherent::GetById(intval($gmm->GetValue('id')));
+$session = Session::getInstance();
 
 // Stock les infos de l'adhérent dans la session pour le réutiliser dans l'API.
+$adherent = Adherent::getById((int)$gmm->getValue('id'));
 $session->selectedAdherent = serialize($adherent);
 
-$destsBillHtml = "<option value='snake'>" . TITLE ."</option>"; // Modal send bill
-$htmlName = $adherent->GetFirstname() . " " . $adherent->GetLastname();
+$destsBillHtml = "<option value='snake'>" . TITLE . "</option>"; // Modal send bill
+$htmlName = "{$adherent->getFirstname()} {$adherent->getLastname()}";
 
-// Info élève
-$html = "<h5>Elève</h5><hr /><p>";
-$html .= "Date de naissance : " . ToolBox::FormatDate($adherent->GetBirthday(), false) . "<br />";
+// Info adhérent
+$birthday = ToolBox::formatDate($adherent->getBirthday(), false);
+$age = ToolBox:: age($adherent->getBirthday());
 
-// Affichage spécifque à la saison 2019 - 2020.
-if($session->selectedSaison == "2019-2020")
-{
-	if($adherent->GetTenue())
-		$html .= "Tenue acheté<br />";
-	else
+$html = <<<HTML
+	<h5>Elève</h5><hr />
+	<p>
+		Date de naissance : $birthday ($age ans)<br />
+	HTML;
+
+/*
+switch ($adherent->getUniformOption()) {
+	case EUniformOption::Rent:
 		$html .= "Tenue loué<br />";
-}
-else
-{
-	if(!$adherent->GetTenue())
-		$html .= "Tenue acheté avec la cotisation cette saison.<br />";
-}
-
-if($adherent->GetMedicine())
-	$html .= "Traitement médical : " . $adherent->GetMedicineInfo() . "<br />";
-else
-	$html .= "Pas de traitement médical.<br />";
-
-$priceHtml = "";
-switch($adherent->GetPayment()->GetMethod())
-{
-	case Payment::$METHODS['Internet']:
-		$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Par internet";
 		break;
 
-	case Payment::$METHODS['Espece']:
-		$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - Espèce";
+	case EUniformOption::Buy:
+		$html .= "Tenue acheté<br />";
 		break;
 
-	case Payment::$METHODS['Cheque']:
-		{
-			$deadlines = $adherent->GetPayment()->GetDeadlines();
-			$nbDealines = $adherent->GetPayment()->GetNbDeadlines();
-			$priceHtml = $adherent->GetPayment()->GetFinalAmount() . "€ - " . $nbDealines ." Chèques";
+	default:
+		$html .= "Possède déjà la tenue<br />";
+		break;
+}
+*/
 
-			if($nbDealines > 1)
-			{
-				$priceHtml .= "<ul>";
+$priceHtml = '';
 
-				foreach($deadlines as $deadline)
-					$priceHtml .= "<li>" . $deadline . " €</li>";
+switch ($adherent->getPayment()->getMethod()) {
+	case EPaymentType::Internet:
+		$priceHtml = "{$adherent->getPayment()->getFinalAmount()}€ - Par internet";
+		break;
 
-				$priceHtml .= "</ul>";
+	case EPaymentType::Espece:
+		$priceHtml = "{$adherent->getPayment()->getFinalAmount()}€ - Espèce";
+		break;
+
+	case EPaymentType::Cheque:
+		$deadlines = $adherent->getPayment()->getDeadlines();
+		$nbDealines = $adherent->getPayment()->getNbDeadlines();
+		$priceHtml = "{$adherent->getPayment()->getFinalAmount()}€ - {$nbDealines} Chèques";
+
+		if ($nbDealines > 1) {
+			$priceHtml .= "<ul>";
+
+			foreach($deadlines as $deadline) {
+				$priceHtml .= "<li>{$deadline} €</li>";
 			}
+
+			$priceHtml .= "</ul>";
 		}
 		break;
+
+	case EPaymentType::Virement:
+		$priceHtml = "{$adherent->getPayment()->getFinalAmount()}€ - Virement";
+		break;
 }
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
-	$html .= "Cotisation: " . $priceHtml . "<br />";
+if(ToolBox::searchInArray($session->admin_roles, ['admin', 'tresorier', 'secretaire'])) {
+	$html .= "Cotisation: {$priceHtml}<br />";
+}
+
+$html .= "Personne à contacter en cas d'urgence: {$adherent->getNameEmergencyContact()} ({$adherent->getPhoneEmergencyContact()})<br /><br />";
+
+$html .= "Numéro de sécurité sociale: {$adherent->getSocialSecurityNumber()}<br />";
+$html .= "Nom du médecin traitant: {$adherent->getDoctorName()}<br />";
+
+if ($adherent->hasMedicine()) {
+	$html .= "Traitement médical : {$adherent->getMedicineInfo()}<br />";
+} else {
+	$html .= "Pas de traitement médical.<br />";
+}
 
 $html .= "</p>";
 
 // Info tuteurs
-$tuteurs = $adherent->GetTuteurs();
-
+$tuteurs = $adherent->getTuteurs();
 $html .= "<h5>Tuteurs</h5><hr />";
-foreach($tuteurs as $tuteur)
-{
+
+foreach ($tuteurs as $tuteur) {
 	$html .= "
 		<div class='alert alert-info'>
-			(" . $tuteur->GetStatus() . ") " . $tuteur->GetFirstname() . " " . $tuteur->GetLastname() . "<br />
-			" . $tuteur->GetEmail() . "<br />
-			" . $tuteur->GetPhone() . "
+			({$tuteur->getStatus()}) {$tuteur->getFirstname()} {$tuteur->getLastname()}<br />
+			{$tuteur->getEmail()}<br />
+			{$tuteur->getPhone()}
 		</div>
 	";
 
-	$destsBillHtml .= "<option value='" . $tuteur->GetId() . "'>" . $tuteur->GetFirstname() . " " . $tuteur->GetLastname() ."</option>";
+	$destsBillHtml .= "<option value='{$tuteur->getId()}'>{$tuteur->getFirstname()} {$tuteur->getLastname()}</option>";
 }
 
 // Actions
-$actionsHtml = '<button id="addTuteurButton" class="dropdown-item" data-toggle="modal" data-target="#addTuteurModal">Ajouter un tuteur</button>';
+$actionsHtml = '<button id="addTuteurButton" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addTuteurModal">Ajouter un tuteur</button>';
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier", "secretaire")))
-	$actionsHtml .= '<button class="dropdown-item" data-toggle="modal" data-target="#sendBillModal">Envoyer une facture</button>';
+if(ToolBox::searchInArray($session->admin_roles, ['admin', 'tresorier', 'secretaire'])) {
+	$actionsHtml .= '<button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sendBillModal">Envoyer une facture</button>';
+}
 
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "secretaire")))
-	$actionsHtml .= '<button class="dropdown-item" data-toggle="modal" data-target="#sendRecapModal">Envoyer le récapitulatif d\'inscription</button>';
+if(ToolBox::searchInArray($session->admin_roles, ['admin', 'secretaire'])) {
+	$actionsHtml .= '<button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sendRecapModal">Envoyer le récapitulatif d\'inscription</button>';
+}
 ?>

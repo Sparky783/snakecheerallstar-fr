@@ -15,7 +15,7 @@
 
 		<section id="welcome" class="container-fluid">
 			<div class="bg">
-				<video class="img-responsive" autoplay="" loop="" poster="/view/img/parallax-home.jpg">
+				<video class="img-responsive" autoplay muted loop poster="/view/vids/poster.jpg">
 					<source src="view/vids/PresentationHome.mp4" type="video/mp4">
 				</video>
 				<div class="bg-black home"></div>
@@ -23,13 +23,12 @@
 			<div class="front">
 				<div class="welcomeTitle">
 					<h1>Snake Cheer All Star</h1>
-					<p>
-						Site officiel de cheerleading en France et dans le Sud-Ouest
-					</p>
+					<p>Club sportif de cheerleading sur Pau</p>
 				</div>
 			</div>
 		</section>
-		<div class="container-fluid">
+
+		<main class="container snake-body">
 			<section id="intro" class="row">
 				<div class="container">
 					<h1 class="text-center">Snake Cheer All Star équipe de cheerleading sur Pau<br />rejoignez-nous!</h1>
@@ -66,7 +65,7 @@
 					</p>
 				</div>
 			</section>
-		</div>
+		</main>
 		<?php include_once("FOOTER.php"); ?>
 	</body>
 </html>

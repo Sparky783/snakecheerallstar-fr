@@ -1,92 +1,90 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "coach")))
-{
-	$app->Get("/presences_get_list/{id_section}", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
-		
-		global $router;
+use ApiCore\Api;
+use System\ToolBox;
+use Snake\Adherent;
+use Snake\Presence;
 
-		$nbr = 0;
-		$html = "";
-		$database = new Database();
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'coach'])) {
+	$app->get('/presences_list/{id_section}', function($args) {
+		$presence = Presence::getByDay(new DateTime(), (int)$args['id_section']);
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
+		$adherentsList = [];
 
-		$rech = $database->query("SELECT COUNT(*) FROM presences WHERE id_section=:id_section AND jour=:jour", array(
-			"id_section" => intval($args['id_section']),
-			"jour" => date("Y-m-d")
-		));
-		
-		if($rech != null)
-		{
-			$data = $rech->fetch();
-			
-			if(intval($data['COUNT(*)']) > 0)
-			{
-				$html = "
-					<p class='text-center'>
-						Les présences ont déjà été validé pour aujourd'hui.
-						<br /><br />
-						<a class='btn btn-snake' href=" . $router->GetUrl("home") . " title=''>Retour</a>
-					</p>
-				";
-			}
-			else
-			{
-				$adherents = Adherent::GetListBySection($args['id_section']);
-				$htmlAdh = "";
+		foreach ($adherents as $adherent) {
+			$adherentData = [
+				'id_adherent' => $adherent->getId(),
+				'firstname' => $adherent->getFirstname(),
+				'lastname' => $adherent->getLastname(),
+				'status' => ''
+			];
 
-				foreach($adherents as $adherent)
-				{
-					$htmlAdh .= "
-						<tr data-id='" . $adherent->GetId() . "'>
-							<td>" . $adherent->GetFirstname() . " " . $adherent->GetLastname() . "</td>
-							<td class='text-right'>
-								<div class='presence-button btn-group'>
-									<button class='btn snake' data-type='present'><i class='far fa-thumbs-up'></i></button>
-									<button class='btn justify' data-type='justify'><i class='far fa-file-alt'></i></button>
-									<button class='btn warning' data-type='late'><i class='far fa-clock'></i></button>
-									<button class='btn danger' data-type='absent'><i class='fas fa-ban'></i></button>
-								</div>
-							</td>
-						</tr>
-					";
-					
-					$nbr ++;
+			if ($presence !== false) {
+				foreach ($presence->getListMembers() as $item) {
+					if ((int)$item['id'] === $adherent->getId()) {
+						$adherentData['status'] = $item['state'];
+						break;
+					}
 				}
+			}
 
-				$html = "
-					<div class='card-header clearfix'>
-						<span class='float-left'>Il y a " . $nbr . " élèves</span>
-					</div>
-					<table id='tableAdherents' class='card-body table table-hover'>
-						<tbody>
-						" . $htmlAdh . "
-						</tbody>
-					</table>
-					<div class='card-footer clearfix text-right'>
-						<button id='validatePresences' class='btn btn-snake' type='button'>Valider les présences</button> 
-					</div>
-				";
+			$adherentsList[] = $adherentData;
+		}
+
+		API::sendJSON([
+			'adherents' => $adherentsList
+		]);
+	});
+
+	$app->post('/validate_presences', function($args) {
+		$presence = Presence::getByDay(new DateTime(), (int)$args['id_section']);
+
+		if ($presence === false) {
+			$presence = new Presence();
+			$presence->setIdSection((int)$args['id_section']);
+			$presence->setDay(new DateTime());
+		}
+
+		if (!is_array($args['status'])) {
+			API::sendJSON(false);
+		}
+
+		$presence->setListMembers($args['status']);
+		
+		API::sendJSON($presence->saveToDatabase());
+	});
+
+	$app->post('/presences_stats', function($args) {
+		$presences = Presence::getListBySection((int)$args['id_section']);
+		$adherents = Adherent::getListBySection((int)$args['id_section']);
+		$adherentsList = [];
+
+		foreach($adherents as $adherent) {
+			$adherentsList[$adherent->getId()] = [
+				'firstname' => $adherent->getFirstname(),
+				'lastname' => $adherent->getLastname(),
+				'status' => [
+					'present' => 0,
+					'justify' => 0,
+					'late' => 0,
+					'absent' => 0
+				]
+			];
+		}
+
+		foreach ($presences as $presence) {
+			$list = $presence->getListMembers();
+
+			foreach ($list as $item) {
+				if (isset($adherentsList[$item['id']])) {
+					$adherentsList[$item['id']]['status'][$item['state']] ++;
+				}
 			}
 		}
 
-		API::SendJSON(array(
-			"html" => $html
-		));
+		API::sendJSON([
+			'adherents' => array_values($adherentsList)
+		]);
 	});
 
-	$app->Post("/validate_presences", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-		
-		$database = new Database();
-
-		$result = $database->Insert("presences", array(
-			"id_section" => intval($args['section']),
-			"jour" => date("Y-m-d"),
-			"list" => serialize($args['status'])
-		));
-		
-		API::SendJSON($result);
-	});
 }
 ?>

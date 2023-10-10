@@ -28,37 +28,49 @@
 				</p>
 
 				<div class="coach-section">
+					<h3>Section Little Stars</h3>
+					<div class="row people">
+						<div class="col-sm-2">
+							<div class="card card-green">
+								<img class="card-img-top" src="view/img/stephanie_fleuri.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Stéphanie Fleuri</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="card card-green">
+								<img class="card-img-top" src="view/img/julie_darbary.jpg" alt="...">
+								<div class="card-body">
+									<p class="coach-name">Julie Darbary</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="coach-section">
 					<h3>Section Green Stars</h3>
 					<div class="row people">
 						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+							<div class="card card-green">
+								<img class="card-img-top" src="view/img/esteban_billaud.jpg" alt="...">
 								<div class="card-body">
 									<p class="coach-name">Esteban Billaud</p>
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+
+				<div class="coach-section">
+					<h3>Section Shooting Stars</h3>
+					<div class="row people">
 						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
+							<div class="card card-black">
+								<img class="card-img-top" src="view/img/lea_laffargue.jpg" alt="...">
 								<div class="card-body">
-									<p class="coach-name">Laurie Mendes</p>
-								</div>
-							</div>
-						</div>
-						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
-								<div class="card-body">
-									<p class="coach-name">Ines Donasenti</p>
-								</div>
-							</div>
-						</div>
-						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
-								<div class="card-body">
-									<p class="coach-name">Mathilde Meleiro</p>
+									<p class="coach-name">Léa Laffargue</p>
 								</div>
 							</div>
 						</div>
@@ -69,18 +81,10 @@
 					<h3>Section White Stars</h3>
 					<div class="row people">
 						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+							<div class="card card-green">
+								<img class="card-img-top" src="view/img/mathilde_meleiro.jpg" alt="...">
 								<div class="card-body">
-									<p class="coach-name">Lola Strazzera</p>
-								</div>
-							</div>
-						</div>
-						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
-								<div class="card-body">
-									<p class="coach-name">Margaux Barbe</p>
+									<p class="coach-name">Mathilde Meleiro</p>
 								</div>
 							</div>
 						</div>
@@ -91,24 +95,28 @@
 					<h3>Section Black Stars</h3>
 					<div class="row people">
 						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+							<div class="card card-black">
+								<img class="card-img-top" src="view/img/aurelie_benabdeljalil.jpg" alt="...">
 								<div class="card-body">
 									<p class="coach-name">Aurélie Benabdeljalil</p>
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-2">
-							<div class="card">
-								<img class="card-img-top" src="view/img/celine_denhaene.jpg" alt="...">
-								<div class="card-body">
-									<p class="coach-name">Léa Laffargue</p>
-								</div>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 			</section>
+
+			<!--
+			<div class="col-sm-2">
+				<div class="card card-green">
+					<img class="card-img-top" src="view/img/ines_donasenti.jpg" alt="...">
+					<div class="card-body">
+						<p class="coach-name">Ines Donasenti</p>
+					</div>
+				</div>
+			</div>
+			-->
 			
 			<section id="bureau">
 				<h2>Notre bureau</h2>
@@ -118,9 +126,9 @@
 				<div class="row people">
 					<div class="col-sm-3">
 						<div class="card">
-							<img class="card-img-top" src="view/img/rachid_benabdeljalil.jpg" alt="...">
+							<img class="card-img-top" src="view/img/lea_laffargue.jpg" alt="...">
 							<div class="card-body">
-								<h5 class="card-title">Rachid Benabdeljalil</h5>
+								<h5 class="card-title">Léa Laffargue</h5>
 								<p class="card-text">
 									Président
 								</p>
@@ -140,9 +148,9 @@
 					</div>
 					<div class="col-sm-3">
 						<div class="card">
-							<img class="card-img-top" src="view/img/aurelie_guerin.jpg" alt="...">
+							<img class="card-img-top" src="view/img/clea_casteres.jpg" alt="...">
 							<div class="card-body">
-								<h5 class="card-title">Aurélie Benabdeljalil</h5>
+								<h5 class="card-title">Cléa Castéres</h5>
 								<p class="card-text">
 									Secrétaire
 								</p>

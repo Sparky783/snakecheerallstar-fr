@@ -1,0 +1,5 @@
+.idea
+archivesBDD
+content
+config.php
+test*.php

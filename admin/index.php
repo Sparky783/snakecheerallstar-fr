@@ -1,32 +1,35 @@
 <?php
-include_once(ABSPATH . "model/system/WebSite.php");
-require_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
+use System\Session;
+use System\WebSite;
+use Snake\SnakeTools;
 
 $session = Session::getInstance();
 
-// ==== Controleur général ========================================================
-if(!isset($session->selectedSaison))
-	$session->selectedSaison = SnakeTools::GetCurrentSaison();
-// ================================================================================
+if (!isset($session->selectedSaison)) {
+	$session->selectedSaison = SnakeTools::getCurrentSaison();
+}
 
-$website = new WebSite(true); // true = Enable admin mode
+if (!isset($session->admin_isConnected)) {
+	$session->admin_isConnected = false;
+}
 
-$website->SetPages(array(
-	"login",
-	"home",
-	"profil",
-	"adherents",
-	"adherent-info",
-	"email",
-	"presences",
-	"presences_graph",
-	"comptabilite",
-	"reductions",
-	"ag_elections",
-	"admins",
-	"options"
+$website = new WebSite(ABSPATH. 'admin', true); // true = Enable admin mode
+
+$website->setPages(array(
+	'login',
+	'home',
+	'profil',
+	'adherents',
+	'adherent-info',
+	'adherent-add',
+	'email',
+	'presences',
+	'comptabilite',
+	'reductions',
+	'ag_elections',
+	'admins',
+	'options'
 ));
-$website->DefaultPage("login");
+$website->defaultPage("login");
 
-$website->Run();
+$website->run();

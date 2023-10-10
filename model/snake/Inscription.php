@@ -1,237 +1,350 @@
 <?php
-require_once(ABSPATH . "model/system/Database.php");
-require_once("SnakeTools.php");
-require_once("Adherent.php");
-require_once("Tuteur.php");
-require_once("Payment.php");
+namespace Snake;
 
+use System\Database;
+use Snake\Adherent;
+use Snake\Tuteur;
+use Snake\Payment;
+use Snake\Reduction;
+use Snake\ReductionPack;
+
+/**
+ * Outil de gestion d'inscription.
+ */
 class Inscription
 {
-	// ==============================================================================
-	// ==== Enumérations ============================================================
-	// ==============================================================================
-	// Etapes de l'inscription
-	static public $STEPS = array(
-		"Adherents" => 1,
-		"Tuteurs" => 2,
-		"Authorization" => 3,
-		"Payment" => 4,
-		"Validation" => 5
-	);
-
-
-
-	// ==============================================================================
-	// ==== Classe ==================================================================
-	// ==============================================================================
-	// == ATTRIBUTS ==
-	private $adherents = array();
-	private $tuteurs = array();
-	private $authorization = false;
-	private $payment = null;
-	private $state;
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var array $_adherents Liste des adhérents à inscrire.
+	 */
+	private array $_adherents = [];
 	
-	// == METHODES PRIMAIRES ==
-	public function __construct()
-	{
-		$this->payment = new Payment();
-		$this->state = self::$STEPS['Adherents'];
-	}
+	/**
+	 * @var array $_tuteurs Liste des tuteurs associés au adhérents à inscrire.
+	 */
+	private array $_tuteurs = [];
 	
-	// == METHODES GETTERS ==
-	public function GetAdherents()
-	{
-		return $this->adherents;
-	}
+	/**
+	 * @var Payment $_payment Paiement généré pour l'inscription.
+	 */
+	private Payment $_payment;
+
 	
-	public function GetTuteurs()
+	// ==== CONSTRUCTOR ====
+	public function __construct(Payment $payment = null)
 	{
-		return $this->tuteurs;
-	}
+		// Si un paiement est définie c'est que l'inscription a déjà été faite, dans ce cas on charge les données.
+		if ($payment !== null) {
+			$this->_payment = $payment;
 
-	public function GetPayment()
-	{
-		return $this->payment;
-	}
+			foreach ($payment->getAdherents() as $adherent) {
+				$this->addAdherent($adherent);
+			}
 
-	public function GetState()
-	{
-		return $this->state;
+			$tuteurs = $payment->getAdherents()[0]->getTuteurs();
+	
+			foreach ($tuteurs as $tuteur) {
+				$this->addTuteur($tuteur);
+			}
+		} else {
+			$this->_payment = new Payment();
+		}
 	}
 	
-	// == METHODES SETTERS ==
-	public function SetAuthorization($authorization)
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @return array
+	 */
+	public function __serialize(): array
 	{
-		$this->authorization = $authorization;
+		$data = [
+			'adherents' => [],
+			'tuteurs' => [],
+			'payment' => serialize($this->_payment),
+		];
+
+		foreach ($this->_adherents as $adherent) {
+			$data['adherents'][] = serialize($adherent);
+		}
+
+		foreach ($this->_tuteurs as $tuteurs) {
+			$data['tuteurs'][] = serialize($tuteurs);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Surcharge Serializable interface
+	 * 
+	 * @param array $data
+	 * @return void
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->_adherents = [];
+
+		foreach ($data['adherents'] as $adherent) {
+			$this->_adherents[] = unserialize($adherent);
+		}
+
+		$this->_tuteurs = [];
+
+		foreach ($data['tuteurs'] as $tuteur) {
+			$this->_tuteurs[] = unserialize($tuteur);
+		}
+
+        $this->_payment = unserialize($data['payment']);
+	}
+
+	// ==== GETTERS ====
+	/**
+	 * Retourne la liste des adhérents à inscrire
+	 * 
+	 * @return array
+	 */
+	public function getAdherents(): array
+	{
+		return $this->_adherents;
 	}
 	
-	// == AUTRES METHODES ==
-	public function ChangeState(int $state)
+	/**
+	 * Retourne la liste des tuteurs associés aux adhérents à inscrire
+	 * 
+	 * @return array
+	 */
+	public function getTuteurs(): array
 	{
-		$this->state = $state;
+		return $this->_tuteurs;
 	}
 
-	public function AddAdherent(Adherent $adherent)
+	/**
+	 * Retourne le paiement généré pour l'inscription.
+	 * 
+	 * @return Payment
+	 */
+	public function getPayment(): Payment
 	{
-		$adherent->SetPayment($this->payment);
+		return $this->_payment;
+	}
+	
+	// ==== OTHER METHODS ====
+	/**
+	 * Ajoute un nouvel adhérent à la liste des adhérents à inscrire.
+	 * 
+	 * @param Adherent $adherent Adhérent à inscrire.
+	 * @return void
+	 */
+	public function addAdherent(Adherent $adherent): void
+	{
+		if ($this->_payment !== null) {
+			$adherent->setPayment($this->_payment);
+		}
 
-		$this->adherents[] = $adherent;
+		$this->_adherents[] = $adherent;
 
 		// Met à jour si c'est une fratrie ou non.
-		if(count($this->adherents) >= 2)
-		{
-			foreach($this->adherents as $adherent)
-				$adherent->SetSiblings(true);
-		}
-	}
-	
-	public function AddTuteur(Tuteur $tuteur)
-	{
-		$this->tuteurs[] = $tuteur;
-	}
-	
-	public function CountAdherents() : int
-	{
-		return count($this->adherents);
-	}
-	
-	public function CountTuteurs() : int
-	{
-		return count($this->tuteurs);
-	}
-
-	public function ClearAdherents()
-	{
-		$this->adherents = array();
-	}
-	
-	public function ClearTuteurs()
-	{
-		$this->tuteurs = array();
-	}
-
-	// Fonction d'ajout d'une réduction dans le cadre du Covid-19.
-	// A mettre à jour en fonction du besoin.
-	public function ApplyReductionCovid()
-	{
-		$nbAdh = count($this->adherents);
-
-		if($nbAdh > 0 && count($this->tuteurs) > 0)
-		{
-			// Recherche si les adhérents étaient inscrit la saison précédente.
-			$number = 0;
-
-			foreach($this->tuteurs as $tuteur)
-			{
-				$database = new Database();
-				$rech = $database->Query(
-					"SELECT COUNT(*) FROM adherent_tuteur
-					JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent
-					JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur
-					JOIN sections ON sections.id_section = adherents.id_section
-					WHERE saison=:saison AND tuteurs.email=:email",
-					array(
-						"saison" => SnakeTools::GetPreviousSaison(),
-						"email" => $tuteur->GetEmail()
-					)
-				);
-
-				if($rech != null)
-				{
-					$data = $rech->fetch();
-					$val = intval($data['COUNT(*)']);
-
-					if($val > 0)
-						$number = $val;
-				}
-			}
-			
-			// Si la réduction est applicable
-			if($number > 0)
-			{
-				if($number > $nbAdh)
-					$number = $nbAdh;
-
-				$reduc = new Reduction();
-				$reduc->SetType(Reduction::$TYPE['Amount']);
-				$reduc->SetValue($number * 30); // 30€ de réduction par ancien adhérent.
-				$reduc->SetSujet("Covid-19 saison 2019-2020");
-				
-				$this->payment->AddReduction($reduc);
+		if (count($this->_adherents) >= 2) {
+			foreach ($this->_adherents as $adherent) {
+				$adherent->setIsSiblings(true);
 			}
 		}
-
-		return false;
+	}
+	
+	/**
+	 * Ajoute un tuteur àla liste des tuteurs responsable des adhérents à inscrire.
+	 * 
+	 * @param Tuteur $tuteur.
+	 * @return void
+	 */
+	public function addTuteur(Tuteur $tuteur): void
+	{
+		$this->_tuteurs[] = $tuteur;
 	}
 
-	// Calcule le montant total de la cotisation hors réductions (Cotisation + tenues).
-	public function ComputeCotisation()
+	/**
+	 * Ajoute une réduction au paiement lors de l'inscription.
+	 * 
+	 * @param Reduction $reduction.
+	 * @return void
+	 */
+	public function addReduction(Reduction $reduction): void
 	{
+		$this->_payment->addReduction($reduction);
+	}
+	
+	/**
+	 * Retourne le nombre d'adhérent à inscrire.
+	 * 
+	 * @return int
+	 */
+	public function numberOfAdherents(): int
+	{
+		return count($this->_adherents);
+	}
+	
+	/**
+	 * Retourne le nombre de tuteurs responsable des adhérents à inscrire.
+	 * 
+	 * @return int
+	 */
+	public function numberOfTuteurs(): int
+	{
+		return count($this->_tuteurs);
+	}
+
+	/**
+	 * Vide la liste des adhérents à inscrire.
+	 * 
+	 * @return void
+	 */
+	public function clearAdherents(): void
+	{
+		$this->_adherents = [];
+	}
+
+	/**
+	 * Vide la liste des tuteur responsable des adhérents à inscrire.
+	 * 
+	 * @return void
+	 */
+	public function clearTuteurs(): void
+	{
+		$this->_tuteurs = [];
+	}
+
+	/**
+	 * Vide l'inscription des informations saisies.
+	 * 
+	 * @return void
+	 */
+	public function clear(): void
+	{
+		$this->clearAdherents();
+		$this->clearTuteurs();
+	}
+
+	/**
+	 * Calcule le montant total de à payer pour l'inscription.
+	 * 
+	 * @return float Montant de l'inscription.
+	 */
+	public function computeFinalPrice(): float
+	{
+		$this->_payment->clearReductions();
 		$base_price = 0;
 		$fixed_price = 0;
 		
-		foreach($this->adherents as $adherent)
-		{
-			$base_price += $adherent->GetSection()->GetPriceCotisation();
-			
-			if(!$adherent->GetTenue())
-				$fixed_price += $adherent->GetSection()->GetPriceUniform();
+		foreach ($this->_adherents as $adherent) {
+			$base_price += $adherent->getSection()->getCotisationPrice();
+
+			switch ($adherent->getUniformOption()) {
+				case EUniformOption::Rent:
+					$fixed_price += $adherent->getSection()->getRentUniformPrice();
+					break;
+
+				case EUniformOption::Buy:
+					$fixed_price += $adherent->getSection()->getBuyUniformPrice();
+					break;
+			}
+
+			if ($adherent->hasPassSport()) {
+				$this->_payment->addReduction(ReductionPack::buildPassSportReduction());
+			}
 		}
 		
-		$this->payment->SetBasePrice($base_price);
-		$this->payment->SetFixedPrice($fixed_price);
+		$this->_payment->setBasePrice($base_price);
+		$this->_payment->setFixedPrice($fixed_price);
+
+		if (count($this->_adherents) > 1) {
+			$this->_payment->addReduction(ReductionPack::buildFratrieReduction());
+		}
+		
+		return $this->_payment->getFinalAmount();
 	}
 	
-	// Sauvegarde l'inscription dans la base de données.
-	public function SaveToDatabase() : bool
+	/**
+	 * Sauvegarde  toutes les informations de l'inscription dans la base de données.
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function saveToDatabase(): bool
 	{
 		$database = new Database();
 
-		$idAdherents = array();
-		$idTuteurs = array();
+		$idAdherents = [];
+		$idTuteurs = [];
 
 		// Save payment
-		$this->payment->SaveToDatabase();
+		$this->_payment->saveToDatabase();
 
-		if($this->payment->GetId() != null)
-		{
-			// Save adherents to database.
-			foreach($this->adherents as $adherent)
-			{
-				$adherent->SetInscriptionDate();
+		if ($this->_payment->getId() === null) {
+			return false;
+		}
 
-				if($adherent->SaveToDatabase())
-					$idAdherents[] = $adherent->GetId();
+		// Save adherents to database.
+		foreach ($this->_adherents as $adherent) {
+			$adherent->setInscriptionDate();
+			$adherent->setPayment($this->_payment);
+
+			if ($adherent->saveToDatabase()) {
+				$idAdherents[] = $adherent->getId();
+			} else {
+				return false;
 			}
-			
-			// Save tuteurs to database.
-			foreach($this->tuteurs as $tuteur)
-			{
-				if($tuteur->SaveToDatabase())
-					$idTuteurs[] = $tuteur->GetId();
-			}
-			
-			// Make links between adherents and tuteurs.
-			if(count($idAdherents) > 0 && count($idTuteurs) > 0)
-			{
-				foreach($idAdherents as $idA)
-				{
-					foreach($idTuteurs as $idP)
-					{
-						$database->Insert(
-							"adherent_tuteur",
-							array(
-								"id_adherent" => $idA,
-								"id_tuteur" => $idP
-							)
-						);
-					}
-				}
-
-				return true;
+		}
+		
+		// Save tuteurs to database.
+		foreach ($this->_tuteurs as $tuteur) {
+			if ($tuteur->saveToDatabase()) {
+				$idTuteurs[] = $tuteur->getId();
+			} else {
+				return false;
 			}
 		}
 
-		return false;
+		// Make links between adherents and tuteurs.
+		if (count($idAdherents) > 0 && count($idTuteurs) > 0) {
+			foreach ($idAdherents as $idA) {
+				foreach ($idTuteurs as $idP) {
+					$result = $database->insert(
+						'adherent_tuteur',
+						[
+							'id_adherent' => $idA,
+							'id_tuteur' => $idP
+						]
+					);
+
+					if ($result === false) {
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retourne une inscription en fonction du payment.
+	 *
+	 * @param int $idPayment
+	 * @return Inscription
+	 */
+	public static function getByPaymentId(int $idPayment): Inscription
+	{
+		return new Inscription(Payment::getById($idPayment));
+	}
+
+	/**
+	 * Retourne une inscription en fonction de la clé (fournis au tuteurs).
+	 *
+	 * @param string $key
+	 * @return Inscription
+	 */
+	public static function getByKey(string $key): Inscription
+	{
+		return new Inscription(Payment::getByKey($key));
 	}
 }

@@ -11,45 +11,63 @@
 	text-align: center;
 }
 
+#inscription-paper {
+	margin: 20px 0;
+	text-align: right;
+}
+
+#inscription-paper a {
+	text-decoration: none;
+}
+
+
+/* ==== Steps ==== */
 #steps {
 	width: 100%;
-	margin-top: 70px;
-	margin-bottom: 70px;
+	margin: 35px 0;
 }
 
-#steps .step-line {
+#steps .steps-line {
 	position: absolute;
-	display: block;
-	padding: 0 40px;
-	top: 50%;
+	top: 0;
 	left: 0;
+	display: flex;
 	width: 100%;
-	margin-top: -2px;
+    height: 50%;
+	padding: 0 90px;
 }
 
-#steps .step-line:after {
-	content: '';
+#steps .steps-line span {
 	display: block;
-	border: solid 2px #bbbbbb;
+	width: 100%;
+	border-bottom: solid 3px #bbbbbb;
 }
 
-#steps .step {
-	float: left;
+#steps .steps-blocks {
+	display: flex;
+}
+
+#steps .steps-blocks .step {
 	width: 20%;
 }
 
-#steps .step span {
-	display: block;
+#steps .steps-blocks .step .step-content {
+	display: flex;
+    justify-content: center;
+	flex-direction: column;
 	background-color: white;
-	width: 150px;
-	margin: 0 auto;
+	margin: 0 15px;
 	padding: 20px;
 	border: solid 2px #848484;
 	border-radius: 10px;
 	text-align: center;
 }
 
-#steps .step span.active {
+#steps .steps-blocks .step span:hover {
+	cursor: pointer;
+}
+
+#steps .steps-blocks .step.active .step-content {
 	background-color: #2f832f;
 	color: white;
 	border-color: #454545;
@@ -59,31 +77,27 @@
 	width: 100%;
 }
 
-#inscriptionMenu {
-	margin-bottom: 30px;
+
+.inscription-menu {
+	align-items: center;
+	padding-bottom: 15px;
 }
 
-#inscriptionMenu div {
-	border-bottom: solid 1px #bbbbbb;
-}
-
-#inscriptionMenu button {
-	position: absolute;
-	top: 15px;
-	right: 15px;
-}
-
-#nextButton {
-	padding-bottom: 30px;
+.nextButton {
+	padding: 15px 0 30px;
 }
 
 /* Guide */
-#guide .title {
+.guide h4 {
+    margin: 6px 0;
+}
+
+.guide .title {
 	font-weight: bold;
 	font-style: italic;
 	font-size: 1.1em;
 }
-#guide .card-body p:last-child {
+.guide .card-body p:last-child {
 	margin-bottom: 0;
 }
 
@@ -95,10 +109,17 @@
 
 .adherent .card-header {
 	background-color: #ededed;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
-.adherent .card-header button {
-	float: right;
+.passSportCodeInput {
+	display: none;
+}
+
+.passSportCodeInput.active {
+	display: inherit;
 }
 
 /* Tuteurs Step */
@@ -109,13 +130,18 @@
 
 .tuteur .card-header {
 	background-color: #ededed;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
-.tuteur .tuteur-title {
+.tuteur .tuteur-header {
 	vertical-align: sub;
 }
 
-.tuteur .tuteur-title select {
+.tuteur .tuteur-header select {
+	display: inline-block;
+    width: auto;
 	vertical-align: middle;
 }
 
@@ -130,6 +156,16 @@
 
 .authorization-validation {
 	margin-top: 50px;
+}
+
+.authorization-validation input {
+	width: 2rem;
+    height: 2rem;
+    vertical-align: middle;
+}
+
+.authorization-validation label {
+    vertical-align: sub;
 }
 
 /* Payment Step */
@@ -151,8 +187,32 @@
 	text-align: center;
 }
 
+#paymentOptions .button-container {
+	display: flex;
+	margin-right: calc(-.5 * var(--bs-gutter-x));
+    margin-left: calc(-.5 * var(--bs-gutter-x));
+}
+
+#paymentOptions .button-container .button-item {
+	width: 100%;
+	padding-right: calc(var(--bs-gutter-x) * .5);
+    padding-left: calc(var(--bs-gutter-x) * .5);
+}
+
+#paymentOptions .button-container .button-item button {
+	width: 100%;
+}
+
+#paymentOptions .btn-snake {
+	background-color: #454545;
+}
+
+#paymentOptions .btn-snake.active {
+	background-color: #2f832f;
+}
+
 #paymentOptions,
-#selectDetails > div {
+#paymentDetails > div {
 	display: block;
     width: 100%;
 	padding: 1rem 1rem;
@@ -167,15 +227,7 @@
 	transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
-#selectOption .btn-snake {
-	background-color: #454545;
-}
-
-#selectOption .btn-snake.active {
-	background-color: #2f832f;
-}
-
-#paypal-button-container {
+#paypalButtonContainer {
 	width: 50%;
 	margin: 20px auto 0;
 }
@@ -191,12 +243,19 @@
 }
 
 /* Confirmation Step */
-#confirmBox {
-	font-size: 1.5rem;
-	margin: 50px;
+#confirmation .check i,
+#confirmation .check svg {
+	width: 5rem;
+	height: 5rem;
+	color: #2f832f;
 }
 
-@media (max-width: 768px) {
+#confirmBox {
+	font-size: 1.5rem;
+	margin: 35px 50px;
+}
+
+@media (max-width: 992px) {
 	#messageInscription div {
 		width: 100%;
 	}
@@ -205,17 +264,35 @@
 		margin: 20px 0;
 	}
 
-	#steps .step {
-		width: 100%;
-		float: none;
+	#steps .steps-line {
+		justify-content: center;
+		height: 100%;
+		padding: 20px 0;
 	}
 
-	#steps .step span {
-		display: none;
+	#steps .steps-line span {
+		width: auto;
+		border-left: solid 3px #bbbbbb;
+		border-bottom: none;
 	}
-	
-	#steps .step span.active {
-		display: block;
+
+	#steps .steps-blocks {
+		flex-direction: column;
+	}
+
+	#steps .steps-blocks .step {
+		width: 100%;
+	}
+
+	#steps .steps-blocks .step .step-content {
+		flex-direction: row;
+		width: 100%;
+		margin: 5px 0;
+    	padding: 7px;
+	}
+
+	#steps .steps-blocks .step .step-content span:first-child {
+		margin-right: 10px;
 	}
 
 	#adherentMenu button,
@@ -227,15 +304,15 @@
 		margin: 10px auto;
 	}
 
-	#selectOption button {
+	#paymentOptions button {
 		margin-bottom: 10px;
 	}
 
-	#selectOption div:last-child button {
+	#paymentOptions .col-sm-4:last-child button {
 		margin-bottom: 0;
 	}
 
-	#paypal-button-container {
+	#paypalButtonContainer {
 		width: 100%;
 	}
 

@@ -1,10 +1,10 @@
 <?php
-include_once(ABSPATH . "model/system/Session.php");
-include_once(ABSPATH . "model/snake/SnakeTools.php");
-include_once(ABSPATH . "model/snake/Inscription.php");
-include_once(ABSPATH . "model/SimplePayPal.php");
+use ApiCore\Api;
+use System\Session;
+use Snake\SimplePayPal;
 
-$app->Post("/create_order", function($args) {
+/*
+$app->Post("/create_paypal_order", function($args) {
 	global $router;
 	$session = Session::getInstance();
 
@@ -45,40 +45,51 @@ $app->Post("/create_order", function($args) {
 
 	API::SendJSON(json_decode($response));
 });
+*/
 
-$app->Post("/approve_order", function($args) {
+$app->post("/approve_paypal_order", function($args) {
 	$session = Session::getInstance();
+	$inscription = unserialize($session->inscription);
 	
-	$paypal = new SimplePayPal(array(
-		"url" => PAYPAL_URL,
-		"client_id" => PAYPAL_CLIENT_ID,
-		"secret" => PAYPAL_SECRET
-	));
+	$paypal = new SimplePayPal([
+		'url' => PAYPAL_URL,
+		'client_id' => PAYPAL_CLIENT_ID,
+		'secret' => PAYPAL_SECRET
+	]);
 	
-	$response = $paypal->ShowOrderDetails($args['orderID']);
+	$orderId = $args['orderID'];
+	$response = $paypal->showOrderDetails($orderId);
+	$purchaseUnit = $response->purchase_units[0];
 
-	$amount = $response->purchase_units[0]->payments->captures[0]->amount;
+	$currency = $purchaseUnit->payments->captures[0]->amount->currency_code;
+	$amount = $purchaseUnit->payments->captures[0]->amount->value;
+	$status = $purchaseUnit->payments->captures[0]->status;
+
+	$amountExpected = number_format($inscription->getPayment()->getFinalAmount(), 2);
 
 	$result = true;
-	$message = "";
+	$message = '';
+	
+	// Valide le paiement PayPal
+	$validPayment = true;
+	$validPayment = $validPayment && $currency === 'EUR';
+	$validPayment = $validPayment && $amount === $amountExpected;
+	$validPayment = $validPayment && $status === 'COMPLETED';
 
-	if ($amount->currency_code == "EUR" &&
-		intval($amount->value) == $session->inscription->GetPayment()->GetFinalAmount() &&
-		$response->status == "COMPLETED")
-	{
-		$session->inscription->GetPayment()->SetIsDone(true);
-		$message = "Le paiement à bien été effectué.";
-	}
-	else
-	{
+	if ($validPayment) {
+		$inscription->getPayment()->setIsDone(true);
+		$message = 'Le paiement à bien été effectué.';
+	} else {
 		$result = false;
-		$message = "Le paiement ne correspond pas à la cotisation.";
+		$message = 'Les informations de paiement ne correspondent pas aux information de la cotisation.<br />Le paiement à été annulé.';
 	}
 
-	API::SendJSON(array(
+	$session->inscription = serialize($inscription);
+
+	API::SendJSON([
 		'result' => $result,
 		'message' => $message,
 		'responsePayPal' => $response
-	));
+	]);
 });
 ?>

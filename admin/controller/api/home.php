@@ -1,18 +1,15 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "member")))
-{
-	$app->Post("/change_saison", function($args) {
-		include_once(ABSPATH . "model/snake/SnakeTools.php");
+use ApiCore\Api;
+use System\Session;
 
-		if(preg_match('/^\d{4}-\d{4}$/i', $args['saison']))
-		{
-			$session = Session::getInstance();
-			$session->selectedSaison = $args['saison'];
+$app->post('/change_saison', function($args) {
+	if (preg_match('/^\d{4}-\d{4}$/i', $args['saison'])) {
+		$session = Session::getInstance();
+		$session->selectedSaison = $args['saison'];
+
+		API::sendJSON(true);
+	}
 	
-			API::SendJSON(true);
-		}
-		
-		API::SendJSON(false);
-	});
-}
+	API::sendJSON(false);
+});
 ?>

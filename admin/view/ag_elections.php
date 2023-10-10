@@ -17,7 +17,12 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-md-12">
-					<h1>Candidats pour l'Assemblé Générale</h1>
+					<div id="mainTitle">
+						<h1>Candidats pour l'Assemblé Générale</h1>
+						<a class="btn btn-primary" href=<?= $router->url('home') ?>>
+							Retour
+						</a>
+					</div>
 				</div>
 				<section class="col-md-8">
 					<div class="card">

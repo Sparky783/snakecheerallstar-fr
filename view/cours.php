@@ -20,42 +20,14 @@
 				</p>
 			</section>
 			
-			<section id="horaires" class="row">
-				<div class="col-sm-12">
-					<h2>Horaires</h2>
-				</div>
-				<div class="col-sm-4">
-					<div class="card border-snake">
-						<div class="card-header bg-snake text-white text-center">
-							Green Stars (6 à 11 ans)
-						</div>
-						<div class="card-body" action="#" method="post">
-							<span class="plage">Mercredi de 18h à 19h30 (Salle A)</span>
-							<span class="plage">Samedi de 11h à 12h30 (Gymnase)</span>
-						</div>
+			<section id="horaires">
+				<div class="row">
+					<div class="col-sm-12">
+						<h2>Horaires</h2>
 					</div>
 				</div>
-				<div class="col-sm-4">
-					<div class="card border-snake">
-						<div class="card-header bg-snake text-white text-center">
-							White Stars (12 à 16 ans)
-						</div>
-						<div class="card-body" action="#" method="post">
-							<span class="plage">Lundi de 18h30 à 20h30 (Gymnase)</span>
-							<span class="plage">Jeudi de 18h à 19h30 (Gymnase)</span>
-						</div>
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="card border-snake">
-						<div class="card-header bg-snake text-white text-center">
-							Black Stars (17 ans et +)
-						</div>
-						<div class="card-body" action="#" method="post">
-							<span class="plage">Jeudi de 19h à 21h (Gymnase)</span>
-							<span class="plage">Samedi de 9h à 11h (Gymnase)</span>
-						</div>
-					</div>
+				<div class="row horaire-list">
+					<?= $htmlHoraires ?>
 				</div>
 			</section>
 			
@@ -75,16 +47,12 @@
 					<table>
 						<thead>
 							<tr>
-								<th class="text-center">Green Stars<br>(6 à 11 ans)</th>
-								<th class="text-center">White Stars<br>(12 à 16 ans)</th>
-								<th class="text-center">Black Stars<br>(17 ans et +)</th>
+								<?= $htmlPricesHeader ?>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
-								<td class="text-center">150,00 €</td>
-								<td class="text-center">180,00 €</td>
-								<td class="text-center">190,00 €</td>
+								<?= $htmlPricesBody ?>
 							</tr>
 						</tbody>
 					</table>

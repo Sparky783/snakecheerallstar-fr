@@ -1,11 +1,12 @@
 <?php
+use System\WebSite;
+use System\Database;
+
 WebSite::Redirect("accueil", true);
 
 // ================================
 // ==== Controleur Election AG ====
 // ================================
-
-include_once(ABSPATH . "model/system/Database.php");
 
 $database = new Database();
 $rech = $database->Query("SELECT * FROM ag_candidats");

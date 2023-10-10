@@ -1,0 +1,13 @@
+h1 {
+	margin: 20px 0;
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.card-header h2 {
+	margin-bottom: 0;
+}

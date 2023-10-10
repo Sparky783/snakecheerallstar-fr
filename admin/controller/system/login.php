@@ -1,111 +1,102 @@
 <?php
-include_once(ABSPATH . "model/system/Database.php");
-include_once(ABSPATH . "model/system/RememberMe.php");
-include_once(ABSPATH . "model/system/AdminToken.php");
-include_once(ABSPATH . "model/system/Admin.php");
+use System\Session;
+use System\WebSite;
+use System\RememberMe;
+use System\Admin;
+use System\AdminToken;
 
 $cookieName = "rememberme-admin";
 $errorHtml = "";
 
-$session = Session::GetInstance();
+$session = Session::getInstance();
 
-if($session->admin_isConnected)
-{
-	if(isset($_GET['logout']) && $_GET['logout'] == "true")
-	{
+if ($session->admin_isConnected) {
+	if (isset($_GET['logout']) && $_GET['logout'] === "true") {
 		$session->admin_isConnected = false;
 
-		// On supprime le cookie de connexion
-		RememberMe::RemoveCookie($cookieName);
+		// Supprimer le token de la BDD s'il existe.
+		if($session->admin_idToken > -1) {
+			AdminToken::removeFromDatabase($session->admin_idToken);
 
-		$admin = Admin::GetById($session->admin_id);
-		$admin->SaveToDatabase();
+			// On supprime le cookie de connexion
+			RememberMe::removeCookie($cookieName);
+		}
+
+		$session->destroy();
+	} else {
+		WebSite::redirect("home", true);
 	}
-	else
-	{
-		WebSite::Redirect("home", true);
-	}
-}
-else
-{
+} else {
 	// Vérifie si l'option Remember Me est active
 	$cookie = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : false;
 
-	if ($cookie)
-	{
-		list ($id_admin, $token, $mac) = explode('-', $cookie);
+	if ($cookie) {
+		list ($idToken, $tokenKey, $mac) = explode('-', $cookie);
 		
 		// Vérification de la correspondant avec le mac.
-        if (!hash_equals(hash_hmac('sha256', $id_admin . '-' . $token, AUTH_SALT), $mac))
+        if (!hash_equals(hash_hmac('sha256', $idToken . '-' . $tokenKey, AUTH_SALT), $mac)) {
             return false;
+		}
 		
-			$token = AdminToken::GetById($id_token);
-			
-		if($admin != null) // Remember Me opotion trouvé
-		{
-			if (hash_equals($admin->GetToken(), $tokenKey))
-			{
-				$admin = Admin::GetById($token->GetIdAdmin());
-				SaveAdminInSession($admin);
-				WebSite::Redirect("home", true);
+		$token = AdminToken::getById($idToken);
+
+		// Remember Me option trouvé
+		if ($token !== false) {
+			if (hash_equals($token->getValue(), $tokenKey)) {
+				$admin = Admin::getById($token->getIdAdmin());
+				saveAdminInSession($admin, $token->getId());
+				WebSite::redirect('home', true);
 			}
 		}
     }
 
 	// Sinon on tente de connecter la personne.
-	if(isset($_POST['email']) && isset($_POST['password']))
-	{
+	if (isset($_POST['email']) && isset($_POST['password'])) {
 		$email = strip_tags($_POST['email']);
 		$password = strip_tags($_POST['password']);
 		
-		if($email != "" && $password != "")
-		{
+		if ($email !== '' && $password !== '') {
 			$password = sha1(sha1(AUTH_SALT) . sha1($password));
-			$admin = Admin::Login($email, $password);
+			$admin = Admin::login($email, $password);
 			
-			if($admin != null) // Connexion réussi
-			{
-				SaveAdminInSession($admin);
+			if ($admin !== false) { // Connexion réussi
+				$idToken = -1;
 
 				// Ajoute le cookie si souhaité
-				if(isset($_POST[$cookieName]) && $_POST[$cookieName] == "on")
-				{
-					$tokenKey = AdminToken::GenerateRandomToken() . sha1("flyarts-admin");
+				if (isset($_POST[$cookieName]) && $_POST[$cookieName] === "on") {
+					$tokenKey = AdminToken::generateRandomToken();
 
 					$token = new AdminToken();
-					$token->SetIdAdmin($admin->GetId());
-					$token->SetToken($tokenKey);
-					$token->SaveToDatabase();
+					$token->setIdAdmin($admin->getId());
+					$token->setValue($tokenKey);
+					$token->saveToDatabase();
 
-					RememberMe::CreateCookie($cookieName, $token->GetId(), $tokenKey);
+					$idToken = $token->getId();
+
+					RememberMe::CreateCookie($cookieName, $token->getId(), $tokenKey);
 				}
-				
-				global $gmm;
-				$gmm->RemoveValue("logout");
-				
-				WebSite::Redirect("home", true);
-			}
-			else  // Connexion échoué
-			{
+
+				saveAdminInSession($admin, $idToken);
+				WebSite::redirect('login', true);
+			} else {  // Connexion échoué
 				$errorHtml = "L'E-mail ou le mot de passe est incorrect.";
 			}
-		}
-		else
-		{
+		} else {
 			$errorHtml = "L'un des champs est vide.";
 		}
 	}
 }
 
-function SaveAdminInSession($admin)
+function saveAdminInSession(Admin $admin, int $idToken = -1): void
 {
-	$session = Session::GetInstance();
+	$session = Session::getInstance();
 
 	$session->admin_isConnected = true;
-	$session->admin_id = $admin->GetId();
-	$session->admin_name = $admin->GetName();
-	$session->admin_email = $admin->GetEmail();
-	$session->admin_password = $admin->GetPassword();
-	$session->admin_roles = $admin->GetRoles();
+	$session->admin_id = $admin->getId();
+	$session->admin_name = $admin->getName();
+	$session->admin_email = $admin->getEmail();
+	$session->admin_password = $admin->getPassword();
+	$session->admin_roles = $admin->getRoles();
+	$session->admin_idToken = $idToken;
 }
 ?>

@@ -1,10 +1,10 @@
 <?php
-if(ToolBox::SearchInArray($session->admin_roles, array("admin", "tresorier")))
-{
+use ApiCore\Api;
+use System\ToolBox;
+
+if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster', 'tresorier'])) {
 	/*
 	$app->Post("/comptabilite_export_list", function($args) {
-		include_once(ABSPATH . "model/system/Database.php");
-
 		$session = Session::GetInstance();
 		$database = new Database();
 		$adherents = null;

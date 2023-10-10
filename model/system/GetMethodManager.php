@@ -1,75 +1,104 @@
 <?php
-/*
+namespace System;
+
+/**
  * Gestion de la variable $_GET[].
  */
-
-
 class GetMethodManager
 {
-	private $values;
-
+	// ==== ATTRIBUTS ====
+	/**
+	 * @var array $_values Admin's ID.
+	 */
+	private array $_values;
 	
+	// ==== CONSTRUCTOR ====
+	/**
+	 * Construct an object with current data present into GET method.
+	 */
 	public function __construct()
 	{
-		$this->Refresh();
+		$this->_values = [];
+
+		if (isset($_GET)) {
+			foreach ($_GET as $key => $value) {
+				$this->setValue($key, strip_tags($value));
+			}
+		}
 	}
 	
-	
-	// Get a value with its key. Return False if the value doesn't exist.
-	public function GetValue($key)
+	// ==== GETTERS ====
+	/**
+	 * Get a value with its key. Return False if the value doesn't exist.
+	 * 
+	 * @param string $name Name of the value that you want.
+     * @return string|false
+	 */
+	public function getValue(string $name): string|false
 	{
-		if(isset($this->values[$key]))
-			return $this->values[$key];
+		if (isset($this->_values[$name])) {
+			return $this->_values[$name];
+		}
 		
 		return false;
 	}
 	
-	// Add or modify an existing value.
-	public function ModifyValue($key, $value)
+	/**
+	 * Make the $_GET string.
+	 * 
+	 * @return string String to put into URL.
+	 */
+	public function getString(): string
 	{
-		$this->values[$key] = $value;
+		$string = "?";
+		foreach ($this->_values as $key => $value)
+			$string .= $key . "=" . $value . "&amp;";
+
+		return substr($string, 0, strlen($string) - 5);
+	}
+	
+	// ==== SETTERS ====
+	/**
+	 * Add or modify a value.
+	 * 
+	 * @param string $name Name of the value to add or modify.
+	 * @param mixed $value Value associated to this name.
+	 */
+	public function setValue(string $name, mixed $value): void 
+	{
+		$this->_values[$name] = $value;
 	}
 
-	// Remove the value from the list.
-	public function RemoveValue($key)
+	// ==== OTHER METHODS ====
+	/**
+	 * Remove the value from the list.
+	 * 
+	 * @param string $name Name of the value to remove.
+	 * @return bool Return True if the value has been removed, else False.
+	 */
+	public function removeValue(string $name): bool
 	{
-		if(isset($this->values[$key])) {
-			unset($this->values[$key]);
+		if (isset($this->_values[$name])) {
+			unset($this->_values[$name]);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	// Remove all values
-	public function Clear()
+	/**
+	 * Remove all values from this object.
+	 */
+	public function clear(): void
 	{
-		$this->values = array();
+		$this->_values = array();
 	}
 	
-	// Make the $_GET string.
-	public function GetString()
+	/**
+	 * Display the $_GET string.
+	 */
+	public function displayString(): void
 	{
-		$string = "?";
-		foreach ($this->values as $key => $value)
-			$string .= $key . "=" . $value . "&amp;";
-
-		return substr($string, 0, strlen($string) - 5);
-	}
-
-	// Display the $_GET string.
-	public function DisplayString()
-	{
-		echo $this->GetString();
-	}
-
-	private function Refresh()
-	{
-		$this->values = array();
-
-		if(isset($_GET)) {
-			foreach ($_GET as $key => $value)
-				$this->ModifyValue($key, strip_tags($value));
-		}
+		echo $this->getString();
 	}
 }

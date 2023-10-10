@@ -1,0 +1,48 @@
+name: Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+          npm install -g minifier
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Minify JS and CSS
+        run: |
+          find view/js -type f ! -name "*.min.js" -exec minify -o {} {} \;
+          find view/css -type f ! -name "*.min.css" -exec minify -o {} {} \;
+
+      #- name: Run tests
+      #  run: vendor/bin/phpunit --stop-on-failure
+
+      - name: Deploy to Server
+        if: ${{ success() }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /public_html/SNAKECHEER/
+          local-dir: ./
+          exclude: |
+            .git*/**
+            .idea/**
+            content/**
+            .git*
