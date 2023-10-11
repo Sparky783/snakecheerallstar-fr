@@ -9,9 +9,8 @@ $app->Post("/election_ag", function($args) {
 	global $router;
 
 	// ReCaptcha
-	$secret = "6LeNSLcUAAAAAKYgk_tGwoFD4sEwV2sRKZAKnxHL"; // A modifier
 	$responseCaptcha = null;
-	$reCaptcha = new ReCaptcha($secret);
+	$reCaptcha = new ReCaptcha(RECAPTCHA_PRIVATE_KEY);
 	if(ENV != "DEV" && $args["g-recaptcha-response"]) {
 		$responseCaptcha = $reCaptcha->verifyResponse(
 			$_SERVER["REMOTE_ADDR"],

@@ -4,13 +4,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Define environment.
-if ($_SERVER['SERVER_ADDR'] !== '109.234.165.163') {
-    define('ENV', 'DEV');
-} else {
-    define('ENV', 'PROD');
-}
-
 // Load website configuration file
 include_once('config.php');
 
