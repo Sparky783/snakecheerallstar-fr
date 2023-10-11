@@ -87,7 +87,7 @@
 							<?php if(ENV === 'DEV') { ?>
 								<button class="btn btn-snake" type="submit">Envoyer</button>
 							<?php } else { ?>
-								<button class="btn btn-snake g-recaptcha" type="submit" data-sitekey="6LeNSLcUAAAAAM7PeKkzChmiNANlzTdK6HxY7JP9" data-callback="sendFormCallback">Envoyer</button>
+								<button class="btn btn-snake g-recaptcha" type="submit" data-sitekey="<?= RECAPTCHA_PUBLIC_KEY ?>" data-callback="sendFormCallback">Envoyer</button>
 							<?php } ?>
 						</form>
 					</div>
