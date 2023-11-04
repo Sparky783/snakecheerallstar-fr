@@ -151,7 +151,7 @@ class SnakeMailer
 	 * @param Tuteur $tuteur Tuteur à qui envoyer le mail. Si le tuteur n'est pas précisé, le mail sera envoyé au bureau du club.
 	 * @return bool Retourne True si l'E-mail à été envoyé, sinon False.
 	 */
-	public static function sendBill(Payment $payment, Tuteur $tuteur = null): bool
+	public static function sendBill(Inscription $inscription, Tuteur $tuteur = null): bool
 	{
 		// Destinataire
 		if($tuteur === null) {
@@ -162,7 +162,7 @@ class SnakeMailer
 		}
 
 		// Concaténation des infos
-		$number = SnakeTools::formatBillNumber($payment->getId() + 100, 5);
+		$number = SnakeTools::formatBillNumber($inscription->getPayment()->getId() + 100, 5);
 
 		// E-mail Facture
 		$mail = new PHPMailer(true); // Passing `true` enables exceptions
@@ -186,7 +186,7 @@ class SnakeMailer
 			//Content
 			$mail->isHTML(true); // Set email format to HTML
 			$mail->Subject = "Facture d'inscription - " . TITLE;
-			$mail->Body    = EmailTemplates::billHtml($number, $payment, $tuteur);
+			$mail->Body    = EmailTemplates::billHtml($number, $inscription, $tuteur);
 			$mail->AltBody = EmailTemplates::standardText("Facture d'inscription - " . TITLE);
 
 			$mail->send();
@@ -237,6 +237,10 @@ class SnakeMailer
 
 						if ((int)date('d') > 15) {
 							$startMonthNumber = (int)date('m') + 1;
+
+							if ($startMonthNumber === 13) {
+								$startMonthNumber = 1;
+							}
 						} else {
 							$startMonthNumber = (int)date('m');
 						}
@@ -253,6 +257,10 @@ class SnakeMailer
 
 							$startMonthNumber ++;
 							$i ++;
+
+							if ($startMonthNumber === 13) {
+								$startMonthNumber = 1;
+							}
 						}
 	
 						$paymentContent .= "</ul>";

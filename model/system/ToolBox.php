@@ -609,7 +609,7 @@ class ToolBox
 			case 11: return 'Novembre';
 			case 12: return 'Décembre';
 			default:
-				throw new ErrorException('The month does not exist.');
+				throw new ErrorException("The month ({$monthNumber}) does not exist.");
 		}
 	}
 }

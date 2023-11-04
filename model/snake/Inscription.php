@@ -1,6 +1,9 @@
 <?php
 namespace Snake;
 
+use Exception;
+use ErrorException;
+use Datetime;
 use System\Database;
 use Snake\Adherent;
 use Snake\Tuteur;
@@ -15,6 +18,27 @@ class Inscription
 {
 	// ==== ATTRIBUTS ====
 	/**
+	 * @var int|null $_id ID de la réduction.
+	 */
+	private ?int $_id = null;
+
+	/**
+	 * Date et heure d'inscription de l'adhérent.
+	 * @var DateTime|null $_inscriptionDate
+	 */
+	private ?DateTime $_inscriptionDate = null;
+
+	/**
+	 * @var string $_saison Saison concernée par l'inscription.
+	 */
+	private $_saison = '';
+
+	/**
+	 * @var string $_accessKey Clé d'accès pour accéder au dossier d'inscription.
+	 */
+	private $_accessKey = '';
+
+	/**
 	 * @var array $_adherents Liste des adhérents à inscrire.
 	 */
 	private array $_adherents = [];
@@ -25,32 +49,22 @@ class Inscription
 	private array $_tuteurs = [];
 	
 	/**
-	 * @var Payment $_payment Paiement généré pour l'inscription.
+	 * @var Payment|null $_payment Paiement généré pour l'inscription.
 	 */
-	private Payment $_payment;
+	private ?Payment $_payment = null;
 
 	
 	// ==== CONSTRUCTOR ====
-	public function __construct(Payment $payment = null)
+	public function __construct(array $dbData = [])
 	{
-		// Si un paiement est définie c'est que l'inscription a déjà été faite, dans ce cas on charge les données.
-		if ($payment !== null) {
-			$this->_payment = $payment;
-
-			foreach ($payment->getAdherents() as $adherent) {
-				$this->addAdherent($adherent);
-			}
-
-			$tuteurs = $payment->getAdherents()[0]->getTuteurs();
-	
-			foreach ($tuteurs as $tuteur) {
-				$this->addTuteur($tuteur);
-			}
-		} else {
-			$this->_payment = new Payment();
+		if (count($dbData) !== 0) {
+			$this->_id = (int)$dbData['id_inscription'];
+			$this->_inscriptionDate = new Datetime($dbData['inscription_date']);
+			$this->_saison = $dbData['saison'];
+			$this->_accessKey = $dbData['access_key'];
 		}
 	}
-	
+
 	/**
 	 * Surcharge Serializable interface
 	 * 
@@ -59,6 +73,9 @@ class Inscription
 	public function __serialize(): array
 	{
 		$data = [
+			'inscription_date' => serialize($this->_inscriptionDate),
+			'saison' => $this->_saison,
+			'access_key' => $this->_accessKey,
 			'adherents' => [],
 			'tuteurs' => [],
 			'payment' => serialize($this->_payment),
@@ -83,6 +100,10 @@ class Inscription
 	 */
 	public function __unserialize(array $data): void
 	{
+		$this->_inscriptionDate = unserialize($data['inscription_date']);
+		$this->_saison = $data['saison'];
+		$this->_accessKey = $data['access_key'];
+
 		$this->_adherents = [];
 
 		foreach ($data['adherents'] as $adherent) {
@@ -100,12 +121,56 @@ class Inscription
 
 	// ==== GETTERS ====
 	/**
+	 * Retourne l'ID de l'adhérent.
+	 * 
+	 * @return int|null
+	 */
+	public function getId(): int|null
+	{
+		return $this->_id;
+	}
+
+	/**
+	 * Retourne la date d'inscription.
+	 * 
+	 * @return DateTime
+	 */
+	public function getInscriptionDate(): DateTime
+	{
+		return $this->_inscriptionDate;
+	}
+
+	/**
+	 * Retourne la saison associée à l'inscription.
+	 * 
+	 * @return string
+	 */
+	public function getSaison(): string
+	{
+		return $this->_saison;
+	}
+	
+	/**
+	 * Retourne la clé d'accès au dossier d'inscription.
+	 * 
+	 * @return string
+	 */
+	public function getAccessKey(): string
+	{
+		return $this->_accessKey;
+	}
+
+	/**
 	 * Retourne la liste des adhérents à inscrire
 	 * 
 	 * @return array
 	 */
 	public function getAdherents(): array
 	{
+		if (empty($this->_adherents) && $this->_id !== null) {
+			$this->_adherents = Adherent::getByIdInscription($this->_id);
+		}
+
 		return $this->_adherents;
 	}
 	
@@ -116,6 +181,10 @@ class Inscription
 	 */
 	public function getTuteurs(): array
 	{
+		if (empty($this->_tuteurs) && $this->_id !== null) {
+			$this->_tuteurs = Tuteur::getByIdInscription($this->_id);
+		}
+		
 		return $this->_tuteurs;
 	}
 
@@ -126,10 +195,100 @@ class Inscription
 	 */
 	public function getPayment(): Payment
 	{
+		if ($this->_payment === null && $this->_id !== null) {
+			$paiementList = Payment::getByIdInscription($this->_id);
+
+			if (count($paiementList) > 1) {
+				throw new Exception("Plusieurs paiements sont associés au dossier d'inscription ID: " . $this->_id);
+			}
+
+			$this->_payment = $paiementList[0];
+		}
+
 		return $this->_payment;
+	}
+
+	// ==== SETTERS ====
+	/**
+	 * Définie l'ID de l'adhérent.
+	 * 
+	 * @param int|null $id
+	 * @return void
+	 */
+	public function setId(int|null $id): void
+	{
+		if ($id === 0) {
+			$this->_id = null;
+		} else {
+			$this->_id = $id;
+		}
+	}
+
+	/**
+	 * Définie la date d'inscription.
+	 * 
+	 * @param string $inscriptionDate Si la date d'inscription est omise, la date du jour sera mise.
+	 * @return void
+	 */
+	public function setInscriptionDate(string $inscriptionDate = ''): void
+	{
+		if (!empty($inscriptionDate)) {
+			$this->_inscriptionDate = new DateTime($inscriptionDate);
+		} else {
+			$this->_inscriptionDate = new DateTime();
+		}
+	}
+
+	/**
+	 * Définie la saison associée à l'inscription.
+	 * 
+	 * @param string $saison
+	 * @return void
+	 */
+	public function setSaison(string $saison): void
+	{
+		$this->_saison = $saison;
+	}
+
+	/**
+	 * Définie la clé d'assès au dossier d'inscription.
+	 * 
+	 * @param string $accessKey
+	 * @return void
+	 */
+	public function setAccessKey(string $accessKey): void
+	{
+		$this->_accessKey = $accessKey;
+	}
+
+	/**
+	 * Définie le paiement du dossier d'inscription.
+	 * 
+	 * @param Payment $payment
+	 * @return void
+	 */
+	public function setPayment(Payment $payment): void
+	{
+		$this->_payment = $payment;
 	}
 	
 	// ==== OTHER METHODS ====
+	/**
+	 * Initialise l'objet pour une nouvelle inscription
+	 * 
+	 * @return void
+	 */
+	public function init(): void
+	{
+		$this->clearAdherents();
+		$this->clearTuteurs();
+		$this->_payment = new Payment();
+
+		$this->setInscriptionDate();
+		$this->setSaison(SnakeTools::getCurrentSaison());
+		$this->setAccessKey(SnakeTools::genarateAccessKey());
+	}
+
 	/**
 	 * Ajoute un nouvel adhérent à la liste des adhérents à inscrire.
 	 * 
@@ -138,10 +297,6 @@ class Inscription
 	 */
 	public function addAdherent(Adherent $adherent): void
 	{
-		if ($this->_payment !== null) {
-			$adherent->setPayment($this->_payment);
-		}
-
 		$this->_adherents[] = $adherent;
 
 		// Met à jour si c'est une fratrie ou non.
@@ -215,23 +370,16 @@ class Inscription
 	}
 
 	/**
-	 * Vide l'inscription des informations saisies.
-	 * 
-	 * @return void
-	 */
-	public function clear(): void
-	{
-		$this->clearAdherents();
-		$this->clearTuteurs();
-	}
-
-	/**
 	 * Calcule le montant total de à payer pour l'inscription.
 	 * 
 	 * @return float Montant de l'inscription.
 	 */
 	public function computeFinalPrice(): float
 	{
+		if ($this->_payment === null) {
+			throw new ErrorException('The payment object must be defined.');
+		}
+
 		$this->_payment->clearReductions();
 		$base_price = 0;
 		$fixed_price = 0;
@@ -263,9 +411,9 @@ class Inscription
 		
 		return $this->_payment->getFinalAmount();
 	}
-	
+
 	/**
-	 * Sauvegarde  toutes les informations de l'inscription dans la base de données.
+	 * Sauvegarde uniquement les informations du dossier d'inscription dans la base de données.
 	 * 
 	 * @return bool Retourne True en cas de succès, sinon False.
 	 */
@@ -273,78 +421,116 @@ class Inscription
 	{
 		$database = new Database();
 
-		$idAdherents = [];
-		$idTuteurs = [];
+		if ($this->_id == null) { // Insert
+			$id = $database->insert(
+				'inscriptions',
+				[
+					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+					'saison' => $this->_saison,
+					'access_key' => $this->_accessKey
+				]
+			);
 
-		// Save payment
-		$this->_payment->saveToDatabase();
+			if ($id !== false) {
+				$this->_id = (int)$id;
+				return true;
+			}
 
-		if ($this->_payment->getId() === null) {
+			return false;
+		}
+
+		// Update
+		return $database->update(
+			'inscriptions', 'id_inscription', $this->_id,
+			[
+				'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
+				'saison' => $this->_saison,
+				'access_key' => $this->_accessKey
+			]
+		);
+	}
+
+	/**
+	 * Sauvegarde toutes les informations du dossier d'inscription (Adhérents, Tuteurs, Paiement, etc...) dans la base de données.
+	 * 
+	 * @return bool Retourne True en cas de succès, sinon False.
+	 */
+	public function saveAllToDatabase(): bool
+	{
+		$result = $this->saveToDatabase();
+
+		if ($result === false) {
 			return false;
 		}
 
 		// Save adherents to database.
 		foreach ($this->_adherents as $adherent) {
-			$adherent->setInscriptionDate();
-			$adherent->setPayment($this->_payment);
-
-			if ($adherent->saveToDatabase()) {
-				$idAdherents[] = $adherent->getId();
-			} else {
-				return false;
-			}
+			$adherent->setIdInscription($this->_id);
+			$result = $result && $adherent->saveToDatabase();
 		}
 		
 		// Save tuteurs to database.
 		foreach ($this->_tuteurs as $tuteur) {
-			if ($tuteur->saveToDatabase()) {
-				$idTuteurs[] = $tuteur->getId();
-			} else {
-				return false;
-			}
+			$tuteur->setIdInscription($this->_id);
+			$result = $result && $tuteur->saveToDatabase();
 		}
 
-		// Make links between adherents and tuteurs.
-		if (count($idAdherents) > 0 && count($idTuteurs) > 0) {
-			foreach ($idAdherents as $idA) {
-				foreach ($idTuteurs as $idP) {
-					$result = $database->insert(
-						'adherent_tuteur',
-						[
-							'id_adherent' => $idA,
-							'id_tuteur' => $idP
-						]
-					);
+		// Save payment
+		$this->_payment->setIdInscription($this->_id);
+		$result = $result && $this->_payment->saveToDatabase();
 
-					if ($result === false) {
-						return false;
-					}
-				}
-			}
-		}
-
-		return true;
+		return $result;
 	}
+	
 
+	// ==============================================================================
+	// ==== Fonctions statiques =====================================================
+	// ==============================================================================
 	/**
-	 * Retourne une inscription en fonction du payment.
-	 *
-	 * @param int $idPayment
-	 * @return Inscription
+	 * Retourne un dossier d'inscription suivant son ID.
+	 * 
+	 * @param int $idInscription
+	 * @return Inscription|false Retourne l'instance du dossier d'inscription, sinon False si le dossier n'existe pas.
 	 */
-	public static function getByPaymentId(int $idPayment): Inscription
+	public static function getById(int $idInscription): Inscription|false
 	{
-		return new Inscription(Payment::getById($idPayment));
+		$database = new Database();
+
+		$rech = $database->query(
+			"SELECT * FROM inscriptions WHERE id_inscription=:id_inscription",
+			['id_inscription' => (int)$idInscription]
+		);
+
+		if ($rech != null) {
+			$data = $rech->fetch();
+
+			return new Inscription($data);
+		}
+		
+		return false;
 	}
 
 	/**
-	 * Retourne une inscription en fonction de la clé (fournis au tuteurs).
+	 * Retourne une inscription en fonction de la clé d'accès (fournis au tuteurs).
 	 *
 	 * @param string $key
-	 * @return Inscription
+	 * @return Inscription|false Retourne l'instance du dossier d'inscription, sinon False si le dossier n'existe pas.
 	 */
-	public static function getByKey(string $key): Inscription
+	public static function getByKey(string $accessKey): Inscription|false
 	{
-		return new Inscription(Payment::getByKey($key));
+		$database = new Database();
+
+		$rech = $database->query(
+			"SELECT * FROM inscriptions WHERE access_key=:access_key",
+			['access_key' => $accessKey]
+		);
+
+		if ($rech != null) {
+			$data = $rech->fetch();
+
+			return new Inscription($data);
+		}
+		
+		return false;
 	}
 }

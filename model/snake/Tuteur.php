@@ -15,6 +15,11 @@ class Tuteur
 	 * @var int|null $_id ID du tuteur.
 	 */
 	private ?int $_id = null;
+
+	/**
+	 * @var int|null $_idInscription ID de l'inscription associée au paiement.
+	 */
+	private ?int $_idInscription = null;
 	
 	/**
 	 * @var string $_firstname Prénom du tuteur.
@@ -42,9 +47,10 @@ class Tuteur
 	private string $_phone = '';
 
 	/**
-	 * @var array $_adherents Liste des adhérents associés au tuteur.
+	 * Section de l'adhérent.
+	 * @var Inscription|null $_inscription
 	 */
-	private array $_adherents = [];
+	private ?Inscription $_inscription = null;
 	
 
 	// ==== CONSTRUCTOR ==== 
@@ -52,6 +58,7 @@ class Tuteur
 	{
 		if (count($dbData) !== 0) {
 			$this->_id = (int)$dbData['id_tuteur'];
+			$this->_idInscription = (int)$dbData['id_inscription'];
 			$this->_firstname = $dbData['firstname'];
 			$this->_lastname = $dbData['lastname'];
 			$this->_status = $dbData['status'];
@@ -69,6 +76,7 @@ class Tuteur
 	{
 		return [
 			'id_tuteur' => $this->_id,
+			'id_inscription' => $this->_idInscription,
 			'firstname' => $this->_firstname,
 			'lastname' => $this->_lastname,
 			'status' => $this->_status,
@@ -86,6 +94,7 @@ class Tuteur
 	public function __unserialize(array $data): void
 	{
         $this->_id = $data['id_tuteur'];
+        $this->_idInscription = $data['id_inscription'];
 		$this->_firstname = $data['firstname'];
 		$this->_lastname = $data['lastname'];
 		$this->_status = $data['status'];
@@ -102,6 +111,16 @@ class Tuteur
 	public function getId(): int|null
 	{
 		return $this->_id;
+	}
+	
+	/**
+	 * Retourne l'ID de l'inscription associée au paiement.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdInscription(): int|null
+	{
+		return $this->_idInscription;
 	}
 
 	/**
@@ -153,6 +172,24 @@ class Tuteur
 	{
 		return $this->_phone;
 	}
+	
+	/**
+	 * Retourne la Section lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
+	 * @return Inscription
+	 */
+	public function getInscription(): Inscription
+	{
+		if ($this->_inscription === null && $this->_idInscription !== null) {
+			$inscription = Inscription::getById($this->_idInscription);
+
+			if ($inscription !== false) {
+				$this->_inscription = $inscription;
+			}
+		}
+
+		return $this->_inscription;
+	}
 
 	/**
 	 * Retourne la liste des adhérents liés au tuteur. Si besoin, charge les données depuis la BDD.
@@ -161,36 +198,37 @@ class Tuteur
 	 */
 	public function getAdherents(): array
 	{
-		if ($this->_id !== null && count($this->_adherents) === 0) {
-			$database = new Database();
-			$adherents = $database->query(
-				"SELECT * FROM adherent_tuteur JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent WHERE id_tuteur=:id_tuteur",
-				['id_tuteur' => $this->_id]
-			);
-
-			if ($adherents != null) {
-				while($adherent = $adherents->fetch()) {
-					$this->_adherents[] = new Adherent($adherent);
-				}
-			}
-		}
-
-		return $this->_adherents;
+		return $this->getInscription()->getAdherents();
 	}
 	
-	// == METHODES SETTERS ==
+	// ==== SETTERS ====
 	/**
 	 * Définie l'ID du tuteur
 	 * 
-	 * @param int $id
+	 * @param int|null $id
 	 * @return void
 	 */
-	public function setId(int $id): void
+	public function setId(int|null $id): void
 	{
-		if ($id === 0) {
+		if ($id <= 0) {
 			$this->_id = null;
 		} else {
 			$this->_id = $id;
+		}
+	}
+	
+	/**
+	 * Définie l'ID de l'inscription associée au paiement.
+	 * 
+	 * @param int|null $id
+	 * @return void
+	 */
+	public function setIdInscription(int|null $id): void
+	{
+		if ($id <= 0) {
+			$this->_idInscription = null;
+		} else {
+			$this->_idInscription = $id;
 		}
 	}
 
@@ -323,17 +361,6 @@ class Tuteur
 	}
 
 	/**
-	 * Ajoute un adhérent à ceux géré par ce tuteur.
-	 * 
-	 * @param Adherent $adherent Adhérent à associer.
-	 * @return void
-	 */
-	public function addAdherent(Adherent $adherent): void
-	{
-		$this->_adherents[] = $adherent;
-	}
-
-	/**
 	 * Sauvegarde les informations du tuteur dans la base de données.
 	 * 
 	 * @return bool Retourne True en cas de succès, sinon false.
@@ -341,12 +368,12 @@ class Tuteur
 	public function saveToDatabase(): bool
 	{
 		$database = new Database();
-		$result = false;
 
 		if ($this->_id == null) { // Insert
 			$id = $database->insert(
 				'tuteurs',
 				[
+					'id_inscription' => $this->_idInscription,
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'status' => $this->_status,
@@ -355,42 +382,26 @@ class Tuteur
 				]
 			);
 
-			if($id !== false) {
+			if ($id !== false) {
 				$this->_id = (int)$id;
-				$result = true;
+				return true;
 			}
-		} else { // Update
-			$result = $database->update(
-				'tuteurs', 'id_tuteur', $this->_id,
-				[
-					'firstname' => $this->_firstname,
-					'lastname' => $this->_lastname,
-					'status' => $this->_status,
-					'email' => $this->_email,
-					'phone' => $this->_phone
-				]
-			);
-		}
 
-		// Met à jour les liens avec les adhérents.
-		if ($this->_id !== null && count($this->_adherents) !== 0) {
-			foreach ($this->_adherents as $adherent) {
-				if ($adherent->getId() !== null) {
-					$database->insert(
-						'adherent_tuteur',
-						[
-							'id_adherent' => $adherent->getId(),
-							'id_tuteur' => $this->_id
-						]
-					);
-				} else {
-					$result = false;
-					break;
-				}
-			}
+			return false;
 		}
-
-		return $result;
+		
+		// Update
+		return $database->update(
+			'tuteurs', 'id_tuteur', $this->_id,
+			[
+				'id_inscription' => $this->_idInscription,
+				'firstname' => $this->_firstname,
+				'lastname' => $this->_lastname,
+				'status' => $this->_status,
+				'email' => $this->_email,
+				'phone' => $this->_phone
+			]
+		);
 	}
 
 
@@ -402,13 +413,13 @@ class Tuteur
 	 * 
 	 * @return Tuteur|false Retourne False en cas d'échec.
 	 */
-	public static function getById(int $id_tuteur): Tuteur|false
+	public static function getById(int $idTuteur): Tuteur|false
 	{
 		$database = new Database();
 
 		$rech = $database->query(
 			"SELECT * FROM tuteurs WHERE id_tuteur=:id_tuteur",
-			['id_tuteur' => $id_tuteur]
+			['id_tuteur' => $idTuteur]
 		);
 
 		if($rech !== null) {
@@ -421,9 +432,38 @@ class Tuteur
 	}
 
 	/**
-	 * Retourne la liste de tous les tuteurs du club. Par défaut ceux de la saison en cours.
+	 * Retourne la liste des tuteurs associés à un dossier d'inscription
 	 * 
-	 * @return array|false Retourne False en cas d'échec.
+	 * @param int $idInscription
+	 * @return array|false Retourne la liste des tuteurs, sinon False en cas d'échec.
+	 */
+	public static function getByIdInscription(int $idInscription): array|false
+	{
+		$database = new Database();
+
+		$tuteurs = $database->query(
+			"SELECT tuteurs.* FROM tuteurs WHERE id_inscription=:id_inscription",
+			['id_inscription' => $idInscription]
+		);
+		
+		if ($tuteurs !== null) {
+			$list = [];
+
+			while($tuteur = $tuteurs->fetch()) {
+				$list[] = new Tuteur($tuteur);
+			}
+			
+			return $list;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Retourne la liste de tous les tuteurs du club pour une saison donnée. Par défaut ceux de la saison en cours.
+	 * 
+	 * @param string $saison Saison des tuteurs à retourner.
+	 * @return array|false Retourne la liste des tuteurs, sinon False en cas d'échec.
 	 */
 	public static function getList($saison = null): array|false
 	{
@@ -434,9 +474,9 @@ class Tuteur
 		$database = new Database();
 
 		$tuteurs = $database->query(
-			"SELECT tuteurs.* FROM adherent_tuteur
-			JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent
-			JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur
+			"SELECT tuteurs.* FROM tuteurs
+			JOIN inscriptions ON tuteurs.id_inscription = inscriptions.id_inscription
+			JOIN adherents ON inscriptions.id_inscription = adherents.id_inscription
 			JOIN sections ON sections.id_section = adherents.id_section
 			WHERE sections.saison=:saison",
 			[
@@ -468,9 +508,10 @@ class Tuteur
 		$database = new Database();
 
 		$tuteurs = $database->query(
-			"SELECT tuteurs.* FROM adherent_tuteur
-			JOIN adherents ON adherent_tuteur.id_adherent = adherents.id_adherent
-			JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur
+			"SELECT tuteurs.* FROM tuteurs
+			JOIN inscriptions ON tuteurs.id_inscription = inscriptions.id_inscription
+			JOIN adherents ON inscriptions.id_inscription = adherents.id_inscription
+			JOIN sections ON sections.id_section = adherents.id_section
 			WHERE id_section=:id_section",
 			['id_section' => $id_section]
 		);

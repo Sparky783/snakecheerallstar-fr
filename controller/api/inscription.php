@@ -4,6 +4,7 @@ use System\Session;
 use Snake\Inscription;
 use Snake\Adherent;
 use Snake\Tuteur;
+use Snake\Payment;
 use Snake\EInscriptionStep;
 use Snake\EPaymentType;
 use Snake\EUniformOption;
@@ -17,7 +18,7 @@ $app->post('/inscription-set-informations', function($args) {
 	$session->inscriptionState = EInscriptionStep::Information;
 
 	$inscription = unserialize($session->inscription);
-	$inscription->clear();
+	$inscription->init();
 
 	if (!isset($args['adherents'])) {
 		Api::sendJSON([
@@ -103,6 +104,7 @@ $app->post('/inscription-set-informations', function($args) {
 	// Prépare les données à afficher
 	$amountToPay = $inscription->computeFinalPrice();
 	$reductions = [];
+
 	foreach ($inscription->getPayment()->getReductions() as $resduction) {
 		$reductions[] = $resduction->toArray();
 	}
@@ -178,7 +180,9 @@ $app->post('/inscription-validate-payment', function($args) {
 	}
 
 	// Sauvegarde en base de donnée de l'inscription
-	if (!$inscription->saveToDatabase()) {
+	$inscription->setInscriptionDate();
+	
+	if (!$inscription->saveAllToDatabase()) {
 		Api::sendJSON([
 			'result' => false,
 			'message' => "Une erreur est survenue lors de l'enregistrement de votre inscription. Veuillez réessayer."
@@ -193,7 +197,7 @@ $app->post('/inscription-validate-payment', function($args) {
 
 	foreach ($inscription->getTuteurs() as $tuteur) {
 		SnakeMailer::sendRecap($inscription, $tuteur);
-		SnakeMailer::sendBill($payment, $tuteur);
+		SnakeMailer::sendBill($inscription, $tuteur);
 		$emails[] = $tuteur->getEmail();
 	}
 
@@ -213,8 +217,11 @@ $app->post('/inscription-validate-payment', function($args) {
 // ==== Step 3 - Confirmation ====
 // ===============================
 $app->post('/close_inscription', function($args) {
+	$inscription = new Inscription();
+	$inscription->setPayment(new Payment());
+
 	$session = Session::getInstance();
-	$session->inscription = serialize(new Inscription());
+	$session->inscription = serialize($inscription);
 	$session->inscriptionState = EInscriptionStep::Information;
 });
 ?>

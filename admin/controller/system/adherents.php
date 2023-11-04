@@ -16,6 +16,7 @@ $sections = Section::getList($session->selectedSaison);
 $idSelectedSection = (int)$gmm->getValue('section');
 
 $sectionsHtml = '';
+
 foreach ($sections as $section) {
 	$isSelected = $section->getId() === $idSelectedSection ? ' selected' : '';
 	$sectionsHtml .= "<option value='{$section->getId()}' {$isSelected}>{$section->getName()}</option>";

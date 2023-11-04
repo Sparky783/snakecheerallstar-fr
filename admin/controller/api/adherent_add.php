@@ -9,6 +9,7 @@ use Snake\EPaymentType;
 if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 	$app->post('/adherents_add', function($args) {
 		$inscription = new Inscription();
+		$inscription->init();
 		
 		//==== Adhérents ====
 		if (!isset($args['adherents'])) {
@@ -142,7 +143,7 @@ if (ToolBox::searchInArray($session->admin_roles, ['admin', 'webmaster'])) {
 		}
 		
 		// Sauvegarde en base de donnée de l'inscription
-		$result = $inscription->saveToDatabase();
+		$result = $inscription->saveAllToDatabase();
 
 		API::sendJSON([
 			'result' => $result,
