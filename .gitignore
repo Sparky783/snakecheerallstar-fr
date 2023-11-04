@@ -4,3 +4,4 @@ content
 config.php
 test*.php
 ToDoList.txt
+patch*.php

@@ -26,7 +26,7 @@
 					<div id="addAdherent" class="card">
 						<div class="card-header clearfix">
 							<div id="payment">
-								<div class="form-group">
+								<div class="form-group mb-2">
 									<label for="paymentInput">Mode de paiement</label>
 									<select id="paymentInput" class="form-control" name="paymentInput">
 										<option value="cheque">Cheque</option>
@@ -34,7 +34,7 @@
 										<option value="virement">Virement</option>
 									</select>
 								</div>
-								<div class="form-group">
+								<div class="form-group mb-2">
 									<label for="amountInput">Deadlines (pour les chèques uniquement)</label>
 									<div class="form-group">
 										<div class="form-check form-check-inline">
@@ -57,7 +57,7 @@
 								</div>
 								<div class="form-group">
 									<label for="remiseInput">Remise hors tarif fratrie (optionnel)</label>
-									<div class="input-group mb-3">
+									<div class="input-group mb-1">
 										<input id="remiseInput" class="form-control" name="remiseInput" type="text" aria-label="Remise">
 										<div class="input-group-append">
 											<select id="remiseTypeInput" class="custom-select input-group-text" name="remiseTypeInput">
@@ -70,9 +70,9 @@
 							</div>
 						</div>
 						<div class="card-body">
-							<div class="row">
+							<div class="row mb-3">
 								<div class="col-md-6">
-									<div class="modal-header">
+									<div class="modal-header mb-2">
 										<h5 class="modal-title">Adhérents d'une famille</h5>
 										<button id="btnAddAdherent" class="btn btn-primary" type="button">
 											<i class="fas fa-plus"></i>
@@ -84,13 +84,13 @@
 									</div>
 								</div>
 								<div class="col-md-6">
-									<div class="modal-header">
+									<div class="modal-header mb-2">
 										<h5 class="modal-title">Tuteurs associés</h5>
 										<button id="btnAddTuteur" class="btn btn-primary" type="button">
 											<i class="fas fa-plus"></i>
 										</button>
 									</div>
-										<div class="modal-body">
+									<div class="modal-body">
 										<div id="tuteurs">
 										</div>
 									</div>
@@ -111,15 +111,15 @@
 				<div id="templateAdherent" class="adherent card">
 					<div class="card-body">
 						<button class='remove-button btn btn-danger'><i class='fas fa-trash'></i></button>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="nomInput">Nom</label>
 							<input id="nomInput" class="form-control" name="nomInput" type="text">
 						</div>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="prenomInput">Prénom</label>
 							<input id="prenomInput" class="form-control" name="prenomInput" type="text">
 						</div>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="birthdayInput">Date de naissance</label>
 							<input class="form-control" name="birthdayInput" type="date">
 						</div>
@@ -155,15 +155,15 @@
 								<option value="tutor">Tuteur</option>
 							</select>
 						</div>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="nomInput">Nom</label>
 							<input id="nomInput" class="form-control" name="nomInput" type="text">
 						</div>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="prenomInput">Prénom</label>
 							<input id="prenomInput" class="form-control" name="prenomInput" type="text">
 						</div>
-						<div class="form-group">
+						<div class="form-group mb-2">
 							<label for="emailInput">E-mail</label>
 							<input id="emailInput" class="form-control" name="emailInput" type="email">
 						</div>
