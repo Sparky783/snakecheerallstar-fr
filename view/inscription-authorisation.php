@@ -24,7 +24,7 @@
 		</div>
 	</div>
 
-	<form id="authorisationForm" class="col-md-8">
+	<form id="authorisationForm" class="col-md-8 needs-validation">
 		<div class="card">
 			<div class="card-body">
 				<h3>Droit à l'image</h3>
@@ -43,7 +43,7 @@
 				</p>
 				
 				<div class="authorization-validation text-center">
-					<input class="form-check-input" name="acceptTermes" type="checkbox">
+					<input class="form-check-input" name="acceptTermes" type="checkbox" required>
 					<label for="validInput">En cochant cette case, j"accèpte les termes ci-dessus.</label>
 				</div>
 			</div>

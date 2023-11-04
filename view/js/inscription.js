@@ -73,28 +73,58 @@ let InscriptionManager = {
 			InscriptionManager.addAdherentDom();
 		});
 
-		$('#adherents .next-button').click(function(){
-			InscriptionManager.changeStep('tuteurs');
+		$('#adherents .next-button').click(function() {
+			let forms = document.querySelectorAll('#adherents .needs-validation');
+			let result = true;
+
+			forms.forEach(form => {
+				result = result && form.checkValidity();
+				form.classList.add('was-validated');
+			});
+
+			if (result) {
+				InscriptionManager.changeStep('tuteurs');
+			}
 		});
 		
 		InscriptionManager.addAdherentDom();
 	},
 
 	initTuteurs: function () {
-		$('.tuteursAddBtn').click(function(){
+		$('.tuteursAddBtn').click(function() {
 			InscriptionManager.addTuteurDom();
 		});
 
-		$('#tuteurs .next-button').click(function(){
-			InscriptionManager.changeStep('authorisation');
+		$('#tuteurs .next-button').click(function() {
+			let forms = document.querySelectorAll('#tuteurs .needs-validation');
+			let result = true;
+
+			forms.forEach(form => {
+				result = result && form.checkValidity();
+				form.classList.add('was-validated');
+			});
+
+			if (result) {
+				InscriptionManager.changeStep('authorisation');
+			}
 		});
 		
 		InscriptionManager.addTuteurDom();
 	},
 
 	initAuthorisation: function () {
-		$('#authorisation .next-button').click(function(){
-			InscriptionManager.validInformation();
+		$('#authorisation .next-button').click(function() {
+			let forms = document.querySelectorAll('#authorisation .needs-validation');
+			let result = true;
+
+			forms.forEach(form => {
+				result = result && form.checkValidity();
+				form.classList.add('was-validated');
+			});
+
+			if (result) {
+				InscriptionManager.validInformation();
+			}
 		});
 	},
 
@@ -126,23 +156,23 @@ let InscriptionManager = {
 
 	addAdherentDom: function () {
 		let dom = `
-			<form class='adherent card'>
+			<form class='adherent card needs-validation'>
 				<div class='card-header'>
 					<span class='adherent-title'>Adhérent</span>
 					<button class='remove-button btn btn-danger' type='button'><i class='fas fa-trash'></i></button>
 				</div>
 				<div class='row card-body'>
 					<div class='col-sm-6 mb-3'>
-						<label for='nomInput'>Nom</label>
-						<input class='form-control' name='lastname' type='text'>
+						<label for='nomInput'><span class='required'>*</span> Nom</label>
+						<input class='form-control' name='lastname' type='text' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='prenomInput'>Prénom</label>
-						<input class='form-control' name='firstname' type='text'>
+						<label for='prenomInput'><span class='required'>*</span> Prénom</label>
+						<input class='form-control' name='firstname' type='text' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='birthdayInput'>Date de naissance</label>
-						<input class='form-control' name='birthday' type='date'>
+						<label for='birthdayInput'><span class='required'>*</span> Date de naissance</label>
+						<input class='form-control' name='birthday' type='date' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
 						<label for='medicineInfoInput'>Traitement médical</label>
@@ -233,7 +263,7 @@ let InscriptionManager = {
 
 	addTuteurDom: function () {
 		let dom = `
-			<form class='tuteur card'>
+			<form class='tuteur card needs-validation'>
 				<div class='card-header'>
 					<span class='tuteur-header'>
 						Statut :
@@ -248,20 +278,20 @@ let InscriptionManager = {
 				</div>
 				<div class='row card-body'>
 					<div class='col-sm-6  mb-3'>
-						<label for='nomInput'>Nom</label>
-						<input class='form-control' name='lastname' type='text'>
+						<label for='nomInput'><span class='required'>*</span> Nom</label>
+						<input class='form-control' name='lastname' type='text' required>
 					</div>
 					<div class='col-sm-6  mb-3'>
-						<label for='prenomInput'>Prénom</label>
-						<input class='form-control' name='firstname' type='text'>
+						<label for='prenomInput'><span class='required'>*</span> Prénom</label>
+						<input class='form-control' name='firstname' type='text' required>
 					</div>
 					<div class='col-sm-6  mb-3'>
-						<label for='emailInput'>E-mail</label>
-						<input class='form-control' name='email' type='email' placeholder='Ex: monemail@gmail.fr'>
+						<label for='emailInput'><span class='required'>*</span> E-mail</label>
+						<input class='form-control' name='email' type='email' placeholder='Ex: monemail@gmail.fr' required>
 					</div>
 					<div class='col-sm-6  mb-3'>
-						<label for='phoneInput'>Téléphone</label>
-						<input class='form-control' name='phone' type='text' placeholder='Ex: 0123456789'>
+						<label for='phoneInput'><span class='required'>*</span> Téléphone</label>
+						<input class='form-control' name='phone' type='text' placeholder='Ex: 0123456789' required>
 					</div>
 					<div class='col-sm-12'>
 						<small class='form-text text-muted'>

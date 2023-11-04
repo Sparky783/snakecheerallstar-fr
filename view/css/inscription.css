@@ -20,6 +20,10 @@
 	text-decoration: none;
 }
 
+.required {
+	color: red;
+}
+
 
 /* ==== Steps ==== */
 #steps {
@@ -76,7 +80,6 @@
 #inscription {
 	width: 100%;
 }
-
 
 .inscription-menu {
 	align-items: center;
