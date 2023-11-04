@@ -2,7 +2,7 @@
 namespace Snake;
 
 use System\ToolBox;
-use Snake\Payment;
+use Snake\Inscription;
 use Snake\Tuteur;
 use Snake\EReductionType;
 
@@ -109,13 +109,14 @@ class EmailTemplates
 	 * Template des E-mail de facture.
 	 * 
 	 * @param string $number Numéro de la facture.
-	 * @param Payment $payment Objet de paiement contenant les montants à transmettres.
+	 * @param Inscription $inscription Objet de paiement contenant les montants à transmettres.
 	 * @param Tuteur $tuteur Personne à qui envoyer le mail.
 	 * @return string
 	 */
-	public static function billHtml(int $number, Payment $payment, Tuteur $tuteur): string
+	public static function billHtml(int $number, Inscription $inscription, Tuteur $tuteur): string
 	{
-		$adherents = $payment->getAdherents();
+		$adherents = $inscription->getAdherents();
+		$payment = $inscription->getPayment();
 
 		$html = "
 			<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>

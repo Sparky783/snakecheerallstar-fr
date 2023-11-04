@@ -123,9 +123,9 @@ class Api
      * Send a JSON response to the client.
      *
      * @param mixed $data Data to send.
-     * @return void
+     * @return never
      */
-    public static function sendJSON(mixed $data): void
+    public static function sendJSON(mixed $data): never
     {
         header('Access-Control-Allow-Origin: *');
 		header('Content-Type: application/json');

@@ -14,6 +14,10 @@ h1 {
 	margin-bottom: 20px;
 }
 
+#inscription input {
+    margin-top: 3px;
+}
+
 #applyBlock {
 	margin-top: 20px;
 }
@@ -31,4 +35,8 @@ h1 {
 #sectionList {
 	padding: 0;
 	overflow: auto;
+}
+
+#sectionList table {
+	margin-bottom: 0;
 }

@@ -209,34 +209,39 @@ class Reduction
 	{
 		$database = new Database();
 
-		if ($this->_idPayment != null) {
-			if ($this->_id == null) { // Insert
-				$id = $database->insert(
-					'reductions',
-					[
-						'id_payment' => $this->_idPayment,
-						'type' => $this->_type->value,
-						'value' => $this->_value,
-						'sujet' => $this->_sujet
-					]
-				);
-
-				if ($id !== false) {
-					$this->_id = (int)$id;
-					return true;
-				}
-			} else { // Update
-				return $database->update(
-					'reductions', 'id_reduction', $this->_id,
-					[
-						'id_payment' => $this->_idPayment,
-						'type' => $this->_type->value,
-						'value' => $this->_value,
-						'sujet' => $this->_sujet
-					]
-				);
-			}
+		if ($this->_idPayment == null) {
+			return;
 		}
+
+		if ($this->_id == null) { // Insert
+			$id = $database->insert(
+				'reductions',
+				[
+					'id_payment' => $this->_idPayment,
+					'type' => $this->_type->value,
+					'value' => $this->_value,
+					'sujet' => $this->_sujet
+				]
+			);
+
+			if ($id !== false) {
+				$this->_id = (int)$id;
+				return true;
+			}
+
+			return false;
+		}
+		
+		// Update
+		return $database->update(
+			'reductions', 'id_reduction', $this->_id,
+			[
+				'id_payment' => $this->_idPayment,
+				'type' => $this->_type->value,
+				'value' => $this->_value,
+				'sujet' => $this->_sujet
+			]
+		);
 	}
 
 

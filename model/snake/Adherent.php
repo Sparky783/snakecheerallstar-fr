@@ -5,6 +5,7 @@ use Datetime;
 use System\Database;
 use Snake\SnakeTools;
 use Snake\Section;
+use Snake\Inscription;
 use Snake\Payment;
 use Snake\EUniformOption;
 
@@ -21,16 +22,15 @@ class Adherent
 	private ?int $_id = null;
 
 	/**
+	 * @var int|null $_idInscription ID de l'inscription associée au paiement.
+	 */
+	private ?int $_idInscription = null;
+
+	/**
 	 * ID de la section dans laquelle est l'adhérent.
 	 * @var int|null $_idSection
 	 */
 	private ?int $_idSection = null;
-
-	/**
-	 * ID du paiement fait par l'adhérent pour la saison en cours.
-	 * @var int|null $_idPayment
-	 */
-	private ?int $_idPayment = null;
 
 	/**
 	 * Prénom de l'adhérent.
@@ -120,12 +120,6 @@ class Adherent
 	 * @var string $_passSport
 	 */
 	private string $_passSport = '';
-	
-	/**
-	 * Date et heure d'inscription de l'adhérent.
-	 * @var DateTime|null $_inscriptionDate
-	 */
-	private ?DateTime $_inscriptionDate = null;
 
 	/**
 	 * Numéro de sécurité sociale de l'adhérent.
@@ -150,6 +144,12 @@ class Adherent
 	 * @var string $_doctorName
 	 */
 	private string $_doctorName = '';
+	
+	/**
+	 * Section de l'adhérent.
+	 * @var Inscription|null $_inscription
+	 */
+	private ?Inscription $_inscription = null;
 
 	/**
 	 * Section de l'adhérent.
@@ -157,25 +157,14 @@ class Adherent
 	 */
 	private ?Section $_section = null;
 	
-	/**
-	 * Paiement fait par l'adhérent.
-	 * @var Payment|null $_payment
-	 */
-	private ?Payment $_payment = null;
-	
-	/**
-	 * Liste de tuteurs associés à l'adhérent.
-	 * @var array $_tuteurs
-	 */
-	private array $_tuteurs = [];
 	
 	// ==== CONSTRUCTOR ====
 	public function __construct(array $dbData = [])
 	{
 		if (count($dbData) > 0) {	
 			$this->_id = (int)$dbData['id_adherent'];
+			$this->_idInscription = (int)$dbData['id_inscription'];
 			$this->_idSection = (int)$dbData['id_section'];
-			$this->_idPayment = (int)$dbData['id_payment'];
 			$this->_firstname = $dbData['firstname'];
 			$this->_lastname = $dbData['lastname'];
 			$this->_birthday = new Datetime($dbData['birthday']);
@@ -195,7 +184,6 @@ class Adherent
 			$this->_nameEmergencyContact = $dbData['name_emergency_contact'];
 			$this->_phoneEmergencyContact = $dbData['phone_emergency_contact'];
 			$this->_doctorName = $dbData['doctor_name'];
-			$this->_inscriptionDate = new DateTime($dbData['inscription_date']);
 		}
 	}
 
@@ -208,8 +196,8 @@ class Adherent
 	{
 		return [
 			'id_adherent' => $this->_id,
+			'id_inscription' => $this->_idInscription,
 			'id_section' => $this->_idSection,
-			'id_payment' => $this->_idPayment,
 			'firstname' => $this->_firstname,
 			'lastname' => $this->_lastname,
 			'birthday' => serialize($this->_birthday),
@@ -225,7 +213,6 @@ class Adherent
 			'doc_sportmut' => $this->_docSportmut,
 			'doc_medic_auth' => $this->_docMedicAuth,
 			'pass_sport' => $this->_passSport,
-			'inscription_date' => serialize($this->_inscriptionDate),
 			'social_security_number' => $this->_socialSecurityNumber,
 			'name_emergency_contact' => $this->_nameEmergencyContact,
 			'phone_emergency_contact' => $this->_phoneEmergencyContact,
@@ -242,8 +229,8 @@ class Adherent
 	public function __unserialize(array $data): void
 	{
         $this->_id = $data['id_adherent'];
+		$this->_idInscription = $data['id_inscription'];
 		$this->_idSection = $data['id_section'];
-		$this->_idPayment = $data['id_payment'];
 		$this->_firstname = $data['firstname'];
 		$this->_lastname = $data['lastname'];
 		$this->_birthday = unserialize($data['birthday']);
@@ -259,7 +246,6 @@ class Adherent
 		$this->_docSportmut = $data['doc_sportmut'];
 		$this->_docMedicAuth = $data['doc_medic_auth'];
 		$this->_passSport = $data['pass_sport'];
-		$this->_inscriptionDate = unserialize($data['inscription_date']);
 		$this->_socialSecurityNumber = $data['social_security_number'];
 		$this->_nameEmergencyContact = $data['name_emergency_contact'];
 		$this->_phoneEmergencyContact = $data['phone_emergency_contact'];
@@ -276,6 +262,16 @@ class Adherent
 	{
 		return $this->_id;
 	}
+	
+	/**
+	 * Retourne l'ID de l'inscription associée au paiement.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdInscription(): int|null
+	{
+		return $this->_idInscription;
+	}
 
 	/**
 	 * Retourne l'ID de la section de l'adhérent.
@@ -290,24 +286,6 @@ class Adherent
 
 		if ($this->_idSection !== null) {
 			return $this->_idSection;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Retourne l'ID du paiement fait par l'adhérent.
-	 * 
-	 * @return int|null
-	 */
-	public function getIdPayment(): int|null
-	{
-		if ($this->_payment !== null) {
-			return $this->_payment->getId();
-		}
-
-		if ($this->_idPayment !== null) {
-			return $this->_idPayment;
 		}
 
 		return null;
@@ -454,16 +432,6 @@ class Adherent
 	}
 
 	/**
-	 * Retourne la date d'inscription.
-	 * 
-	 * @return DateTime
-	 */
-	public function getInscriptionDate(): DateTime
-	{
-		return $this->_inscriptionDate;
-	}
-
-	/**
 	 * Retourne le numéro de sécurité sociale de l'adhérent.
 	 * 
 	 * @return string
@@ -506,6 +474,24 @@ class Adherent
 	/**
 	 * Retourne la Section lié à l'adhérent. Si besoin, charge les données de la BDD.
 	 * 
+	 * @return Inscription
+	 */
+	public function getInscription(): Inscription
+	{
+		if ($this->_inscription === null && $this->_idInscription !== null) {
+			$inscription = Inscription::getById($this->_idInscription);
+
+			if ($inscription !== false) {
+				$this->_inscription = $inscription;
+			}
+		}
+
+		return $this->_inscription;
+	}
+
+	/**
+	 * Retourne la Section lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
 	 * @return Section|null
 	 */
 	public function getSection(): Section|null
@@ -522,61 +508,55 @@ class Adherent
 	}
 
 	/**
-	 * Retourne l'objet Payment lié à l'adhérent. Si besoin, charge les données de la BDD.
-	 * 
-	 * @return Payment|null
-	 */
-	public function getPayment(): Payment|null
-	{
-		if ($this->_payment === null && $this->_idPayment !== null) {
-			$payment = Payment::getById($this->_idPayment);
-
-			if ($payment !== false) {
-				$this->_payment = $payment;
-			}
-		}
-
-		return $this->_payment;
-	}
-
-	/**
-	 * Retourne la liste des tuteurs lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * Retourne la liste des tuteurs lié à l'adhérent.
 	 * 
 	 * @return Tuteur[]
 	 */
 
 	public function getTuteurs(): array
 	{
-		if ($this->_id !== null && count($this->_tuteurs) === 0) {
-			$database = new Database();
-			$tuteurs = $database->query(
-				"SELECT * FROM adherent_tuteur JOIN tuteurs ON adherent_tuteur.id_tuteur = tuteurs.id_tuteur WHERE id_adherent=:id_adherent",
-				['id_adherent' => $this->_id]
-			);
+		return $this->getInscription()->getTuteurs();
+	}
 
-			if ($tuteurs !== null) {
-				while($tuteur = $tuteurs->fetch()) {
-					$this->_tuteurs[] = new Tuteur($tuteur);
-				}
-			}
-		}
+	/**
+	 * Retourne le payment associé à l'inscription de l'adhérent.
+	 * 
+	 * @return Payment
+	 */
 
-		return $this->_tuteurs;
+	public function getPayment(): Payment
+	{
+		return $this->getInscription()->getPayment();
 	}
 	
 	// ==== SETTERS ====
 	/**
 	 * Définie l'ID de l'adhérent.
 	 * 
-	 * @param int $id
+	 * @param int|null $id
 	 * @return void
 	 */
-	public function setId(int $id): void
+	public function setId(int|null $id): void
 	{
-		if ($id === 0) {
+		if ($id <= 0) {
 			$this->_id = null;
 		} else {
 			$this->_id = $id;
+		}
+	}
+	
+	/**
+	 * Définie l'ID de l'inscription associée au paiement.
+	 * 
+	 * @param int|null $id
+	 * @return void
+	 */
+	public function setIdInscription(int|null $id): void
+	{
+		if ($id <= 0) {
+			$this->_idInscription = null;
+		} else {
+			$this->_idInscription = $id;
 		}
 	}
 
@@ -588,25 +568,10 @@ class Adherent
 	 */
 	public function setIdSection(int $id): void
 	{
-		if ($id === 0) {
+		if ($id <= 0) {
 			$this->_idSection = null;
 		} else {
 			$this->_idSection = $id;
-		}
-	}
-
-	/**
-	 * Définie l'ID du paiment de l'adhérent.
-	 * 
-	 * @param int $id
-	 * @return void
-	 */
-	public function setIdPayment(int $id): void
-	{
-		if ($id === 0) {
-			$this->_idPayment = null;
-		} else {
-			$this->_idPayment = $id;
 		}
 	}
 
@@ -732,21 +697,6 @@ class Adherent
 	}
 
 	/**
-	 * Définie la date d'inscription de l'adhérent.
-	 * 
-	 * @param string $inscriptionDate Si la date d'inscription est ommise, la date du jour sera mise.
-	 * @return void
-	 */
-	public function setInscriptionDate(string $inscriptionDate = ''): void
-	{
-		if (!empty($inscriptionDate)) {
-			$this->_inscriptionDate = new DateTime($inscriptionDate);
-		} else {
-			$this->_inscriptionDate = new DateTime();
-		}
-	}
-
-	/**
 	 * Définie le numéro de sécurité sociale de l'adhérent.
 	 * 
 	 * @param string $socialSecurityNumber
@@ -820,18 +770,6 @@ class Adherent
 	{
 		$this->_section = $section;
 		$this->_idSection = $section->getId();
-	}
-
-	/**
-	 * Définie la section de l'adhérent.
-	 * 
-	 * @param Payment $payment
-	 * @return void
-	 */
-	public function setPayment(Payment $payment): void
-	{
-		$this->_payment = $payment;
-		$this->_idPayment = $payment->getId();
 	}
 
 	/**
@@ -950,8 +888,8 @@ class Adherent
 	{
 		return [
 			'id_adherent' => $this->_id,
+			'id_inscription' => $this->_idInscription,
 			'id_section' => $this->_idSection,
-			'id_payment' => $this->_idPayment,
 			'firstname' => $this->_firstname,
 			'lastname' => $this->_lastname,
 			'birthday' => $this->_birthday->format('Y-m-d'),
@@ -967,7 +905,6 @@ class Adherent
 			'doc_sportmut' => $this->_docSportmut,
 			'doc_medic_auth' => $this->_docMedicAuth,
 			'pass_sport' => $this->_passSport,
-			'inscription_date' => $this->_inscriptionDate->format('Y-m-d'),
 			'social_security_number' => $this->_socialSecurityNumber,
 			'name_emergency_contact' => $this->_nameEmergencyContact,
 			'phone_emergency_contact' => $this->_phoneEmergencyContact,
@@ -988,8 +925,8 @@ class Adherent
 			$id = $database->insert(
 				"adherents",
 				[
+					'id_inscription' => $this->_idInscription,
 					'id_section' => $this->_idSection,
-					'id_payment' => $this->_idPayment,
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
@@ -1005,7 +942,6 @@ class Adherent
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
 					'pass_sport' => $this->_passSport,
-					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
 					'social_security_number' => $this->_socialSecurityNumber,
 					'name_emergency_contact' => $this->_nameEmergencyContact,
 					'phone_emergency_contact' => $this->_phoneEmergencyContact,
@@ -1023,8 +959,8 @@ class Adherent
 			$result = $database->update(
 				'adherents', 'id_adherent', $this->_id,
 				[
+					'id_inscription' => $this->_idInscription,
 					'id_section' => $this->_idSection,
-					'id_payment' => $this->_idPayment,
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
@@ -1040,7 +976,6 @@ class Adherent
 					'doc_sportmut' => $this->_docSportmut,
 					'doc_medic_auth' => $this->_docMedicAuth,
 					'pass_sport' => $this->_passSport,
-					'inscription_date' => $this->_inscriptionDate->format('Y-m-d H:i:s'),
 					'social_security_number' => $this->_socialSecurityNumber,
 					'name_emergency_contact' => $this->_nameEmergencyContact,
 					'phone_emergency_contact' => $this->_phoneEmergencyContact,
@@ -1062,37 +997,7 @@ class Adherent
 		if ($this->_id != null) {
 			$database = new Database();
 
-			// Recherche l'adhérent dans la table de liaison.
-			$tuteurs = $this->getTuteurs();
-			$payment = $this->getPayment();
-
-			// Suppression de l'adhérent
-			$result = true;
-			$result &= $database->delete('adherent_tuteur', 'id_adherent', $this->_id);
-			$result &= $database->delete('adherents', 'id_adherent', $this->_id);
-
-			// Verification du reste de la BDD (Payments et tuteurs)
-			if ($result) {
-				// Pour chaque tuteurs, on cherche si ils ont des adhérents. Si non, on supprime.
-				foreach ($tuteurs as $tuteur) {
-					if (count($tuteur->getAdherents()) === 0) {
-						Tuteur::removeFromDatabase($tuteur->getId());
-					}
-				}
-
-				// Idem pour le payment, on regarde si le paiement est utilisé par un autre adhérent.
-				$rech = $database->query(
-					"SELECT COUNT(*) AS count FROM adherents WHERE id_payment=:id_payment",
-					['id_payment' => $this->_idPayment]
-				);
-				$donnees = $rech->fetch();
-
-				if ($donnees !== false && $donnees['count'] === 0) {
-					Payment::removeFromDatabase($payment->getId());
-				}
-
-				return true;
-			}
+			return $database->delete('adherents', 'id_adherent', $this->_id);
 		}
 		
 		return false;
@@ -1127,10 +1032,39 @@ class Adherent
 	}
 
 	/**
-	 * Retourne la liste de tous les adhérents du club.Par défaut ceux de la saison en cours.
+	 * Retourne la liste des adhérents associés à un dossier d'inscription.
+	 * 
+	 * @param int $idInscription
+	 * @return array|false Retourne la liste des adhérents, sinon False en cas d'échec.
+	 */
+	public static function getByIdInscription(int $idInscription): array|false
+	{
+		$database = new Database();
+
+		$adherents = $database->query(
+			"SELECT * FROM adherents WHERE id_inscription=:id_inscription",
+			['id_inscription' => $idInscription]
+		);
+
+		if ($adherents != null) {
+			$list = [];
+
+			while ($data = $adherents->fetch()) {
+				$adherent = new Adherent($data);
+				$list[] = $adherent;
+			}
+
+			return $list;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Retourne la liste de tous les adhérents du club pour une saison donnée. Par défaut ceux de la saison en cours.
 	 * 
 	 * @param string $saison Saison des adhérents à retourner.
-	 * @return array|false Retourne la liste d'adhérents, sinon False en cas d'échec.
+	 * @return array|false Retourne la liste des adhérents, sinon False en cas d'échec.
 	 */
 	public static function getList(string $saison = null): array|false
 	{
@@ -1141,7 +1075,7 @@ class Adherent
 		$database = new Database();
 
 		$adherents = $database->query(
-			"SELECT * FROM adherents JOIN sections ON adherents.id_section = sections.id_section JOIN payments ON adherents.id_payment = payments.id_payment WHERE saison=:saison",
+			"SELECT * FROM adherents JOIN 'inscriptions' ON adherents.id_inscription = inscriptions.id_inscription WHERE saison=:saison",
 			['saison' => $saison]
 		);
 
@@ -1150,8 +1084,6 @@ class Adherent
 
 			while ($data = $adherents->fetch()) {
 				$adherent = new Adherent($data);
-				$adherent->setSection(new Section($data));
-				$adherent->setPayment(new Payment($data));
 				$list[] = $adherent;
 			}
 
@@ -1172,7 +1104,7 @@ class Adherent
 		$database = new Database();
 
 		$adherents = $database->query(
-			"SELECT * FROM adherents JOIN sections ON adherents.id_section = sections.id_section JOIN payments ON adherents.id_payment = payments.id_payment WHERE adherents.id_section=:id_section",
+			"SELECT * FROM adherents JOIN sections ON adherents.id_section = sections.id_section WHERE adherents.id_section=:id_section",
 			['id_section' => $idSection]
 		);
 
@@ -1182,40 +1114,12 @@ class Adherent
 			while ($data = $adherents->fetch()) {
 				$adherent = new Adherent($data);
 				$adherent->setSection(new Section($data));
-				$adherent->setPayment(new Payment($data));
 				$list[] = $adherent;
 			}
 
 			return $list;
 		}
 		
-		return false;
-	}
-
-	/**
-	 * Retourne la liste de tous les adhérents associé au paiement souhaité.
-	 * 
-	 * @param int $idPayment ID du paiement souhaité
-	 * @return array|false Retourne la liste d'adhérents, sinon False en cas d'échec.
-	 */
-	public static function getListByIdPayment(int $idPayment)
-	{
-		$database = new Database();
-		$adherents = $database->query(
-			"SELECT * FROM adherents WHERE id_payment=:id_payment",
-			['id_payment' => $idPayment]
-		);
-
-		if ($adherents != null) {
-			$list = [];
-
-			while ($adherent = $adherents->fetch()) {
-				$list[] = new Adherent($adherent);
-			}
-
-			return $list;
-		}
-
 		return false;
 	}
 }

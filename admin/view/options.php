@@ -33,7 +33,7 @@
 								<input id="cbOpenInscription" class="form-check-input" type="checkbox" role="switch" <?php echo $cbOpenInscriptionValue; ?> />
 								<label class="form-check-label" for="cbOpenInscription">Ouvrir les inscriptions</label>
 							</div>
-							<div class="form-group">
+							<div class="form-group mb-3">
 								<label for="tbMinDateInscription">Ouvert à partir du (inclus) :</label>
 								<input id="tbMinDateInscription" class="form-control" type="date" value="<?php echo $tbMinDateIscriptionValue; ?>" />
 							</div>

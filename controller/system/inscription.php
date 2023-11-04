@@ -3,15 +3,20 @@
 // ==== Controleur Inscription ====
 // ================================
 
+use Snake\Payment;
 use System\Session;
 use Snake\Inscription;
 use Snake\EInscriptionStep;
 
 global $gmm;
 
+$inscription = new Inscription();
+$inscription->init();
+
 $session = Session::getInstance();
-$session->inscription = serialize(new Inscription());
+$session->inscription = serialize($inscription);
 $session->inscriptionState = EInscriptionStep::Information;
+
 
 // ==============================================
 // ==== Gestion des accés pour l'inscription ====

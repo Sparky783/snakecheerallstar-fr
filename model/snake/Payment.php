@@ -20,6 +20,11 @@ class Payment
 	private ?int $_id = null;
 
 	/**
+	 * @var int|null $_idInscription ID de l'inscription associée au paiement.
+	 */
+	private ?int $_idInscription = null;
+
+	/**
 	 * @var float $_basePrice Prix de base du paiement. Ce montant peux évoluer avec les réductions.
 	 */
 	private float $_basePrice = 0;
@@ -53,6 +58,12 @@ class Payment
 	 * @var Reduction[] $_reductions Liste des réductions à appliquer pour ce paiement.
 	 */
 	private array $_reductions = [];
+
+	/**
+	 * Section de l'adhérent.
+	 * @var Inscription|null $_inscription
+	 */
+	private ?Inscription $_inscription = null;
 	
 	/**
 	 * @var Adherent[] $_adherents Liste des adhérents lié au paiement.
@@ -67,6 +78,7 @@ class Payment
 
 		if (count($dbData) !== 0) {
 			$this->_id = (int)$dbData['id_payment'];
+			$this->_idInscription = (int)$dbData['id_inscription'];
 			$this->_basePrice = (int)$dbData['base_price'];
 			$this->_fixedPrice = (int)$dbData['fixed_price'];
 			$this->_paymentDate = new DateTime($dbData['date_payment']);
@@ -85,6 +97,7 @@ class Payment
 	{
 		$data = [
 			'id_payment' => $this->_id,
+			'id_inscription' => $this->_idInscription,
 			'base_price' => $this->_basePrice,
 			'fixed_price' => $this->_fixedPrice,
 			'method' => $this->_method,
@@ -110,6 +123,7 @@ class Payment
 	public function __unserialize(array $data): void
 	{
         $this->_id = $data['id_payment'];
+        $this->_idInscription = $data['id_inscription'];
 		$this->_basePrice = $data['base_price'];
 		$this->_fixedPrice = $data['fixed_price'];
 		$this->_method = $data['method'];
@@ -132,6 +146,16 @@ class Payment
 	public function getId(): int|null
 	{
 		return $this->_id;
+	}
+	
+	/**
+	 * Retourne l'ID de l'inscription associée au paiement.
+	 * 
+	 * @return int|null
+	 */
+	public function getIdInscription(): int|null
+	{
+		return $this->_idInscription;
 	}
 
 	/**
@@ -232,21 +256,31 @@ class Payment
 	}
 
 	/**
-	 * Retourne la liste des adhérents liés au paiement. Si besoin, charge les données depuis la BDD.
+	 * Retourne la Section lié à l'adhérent. Si besoin, charge les données de la BDD.
+	 * 
+	 * @return Inscription
+	 */
+	public function getInscription(): Inscription
+	{
+		if ($this->_inscription === null && $this->_idInscription !== null) {
+			$inscription = Inscription::getById($this->_idInscription);
+
+			if ($inscription !== false) {
+				$this->_inscription = $inscription;
+			}
+		}
+
+		return $this->_inscription;
+	}
+
+	/**
+	 * Retourne la liste des adhérents liés au paiement.
 	 * 
 	 * @return Adherent[]
 	 */
 	public function getAdherents(): array
 	{
-		if ($this->_id !== null && count($this->_adherents) === 0) {
-			$list = Adherent::getListByIdPayment($this->_id);
-			
-			if ($list !== false) {
-				$this->_adherents = $list;
-			}
-		}
-
-		return $this->_adherents;
+		return $this->getInscription()->getAdherents();
 	}
 
 	/**
@@ -287,18 +321,34 @@ class Payment
 		return $this->getBasePriceWithReductions() + $this->_fixedPrice;
 	}
 
+	// ==== SETTERS ====
 	/**
 	 * Définie l'ID du paiement.
 	 * 
-	 * @param int $id
+	 * @param int|null $id
 	 * @return void
 	 */
-	public function setId(int $id): void
+	public function setId(int|null $id): void
 	{
-		if ($id === 0) {
+		if ($id <= 0) {
 			$this->_id = null;
 		} else {
 			$this->_id = $id;
+		}
+	}
+	
+	/**
+	 * Définie l'ID de l'inscription associée au paiement.
+	 * 
+	 * @param int|null $id
+	 * @return void
+	 */
+	public function setIdInscription(int|null $id): void
+	{
+		if ($id <= 0) {
+			$this->_idInscription = null;
+		} else {
+			$this->_idInscription = $id;
 		}
 	}
 	
@@ -410,6 +460,7 @@ class Payment
 			$id = $database->insert(
 				'payments',
 				[
+					'id_inscription' => $this->_idInscription,
 					'base_price' => $this->_basePrice,
 					'fixed_price' => $this->_fixedPrice,
 					'method' => $this->_method->value,
@@ -427,6 +478,7 @@ class Payment
 			$result = $database->update(
 				'payments', 'id_payment', $this->_id,
 				[
+					'id_inscription' => $this->_idInscription,
 					'base_price' => $this->_basePrice,
 					'fixed_price' => $this->_fixedPrice,
 					'method' => $this->_method->value,
@@ -477,24 +529,28 @@ class Payment
 	}
 
 	/**
-	 * Retourne un paiement à l'aide de sa clé.
+	 * Retourne la liste des paiements associée à un dossier d'inscription.
 	 * 
-	 * @param string $key
-	 * @return Payment|false Retourne false en cas d'échec
+	 * @param int $idInscription
+	 * @return array|false Retourne false en cas d'échec
 	 */
-	public static function getBykey(string $key): Payment|false
+	public static function getByIdInscription(int $idInscription): array|false
 	{
 		$database = new Database();
 
 		$rech = $database->query(
-			"SELECT * FROM payments WHERE uniqueKey=:uniqueKey",
-			['uniqueKey' => $key]
+			"SELECT * FROM payments WHERE id_inscription=:id_inscription",
+			['id_inscription' => $idInscription]
 		);
 
-		if ($rech !== null) {
-			$data = $rech->fetch();
+		if($rech !== null) {
+			$list = [];
 
-			return new Payment($data);
+			while ($data = $rech->fetch()) {
+				$list[] = new Payment($data);
+			}
+
+			return $list;
 		}
 		
 		return false;
@@ -515,9 +571,8 @@ class Payment
 		$database = new Database();
 
 		$rech = $database->query(
-			"SELECT payments.* FROM payments
-			JOIN adherents ON payments.id_payment = adherents.id_payment
-			JOIN sections ON sections.id_section = adherents.id_section
+			"SELECT payments.* FROM inscriptions
+			JOIN payments ON payments.id_inscription = inscriptions.id_inscription
 			WHERE saison=:saison",
 			['saison' => $saison]
 		);

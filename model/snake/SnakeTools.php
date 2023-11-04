@@ -2,6 +2,7 @@
 namespace Snake;
 
 use DateTime;
+use InvalidArgumentException;
 use System\ToolBox;
 use Snake\Section;
 
@@ -170,5 +171,34 @@ class SnakeTools
 
 		$adherent->setSection($section);
 		$adherent->saveToDatabase();
+	}
+
+	/**
+	 * Generate an new access key.
+	 * 
+	 * @param int $nbChar Length of the password.
+	 * @return string Generated password.
+	 */
+	public static function genarateAccessKey(int $nbChar = 16): string
+	{
+		return sha1('access' . time() . 'key');
+		/*
+		if ($nbChar <= 0) {
+			throw new InvalidArgumentException("The access key's length must be positive.");
+		}
+
+		$chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+						'0','1','2','3','4','5','6','7','8','9',
+						'!','?','#','-','_'];
+
+		$nbChars = count($chars) - 1;
+		$pass = '';
+
+		for ($i = 0; $i < $nbChar; $i ++) {
+			$pass .= $chars[random_int(0, $nbChars)];
+		}
+
+		return $pass;*/
 	}
 }
