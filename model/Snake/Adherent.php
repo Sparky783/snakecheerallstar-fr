@@ -51,6 +51,30 @@ class Adherent
 	private ?DateTime $_birthday = null;
 
 	/**
+	 * Sexe de l'adhérent. False = Fille, True = Garçon
+	 * @var bool $_sex
+	 */
+	private bool $_sex = false;
+
+	/**
+	 * Numéro et rue ou vie l'adhérent
+	 * @var string $_addressStreet
+	 */
+	private string $_addressStreet = '';
+
+	/**
+	 * Code poste de l'adresse de l'adhérent
+	 * @var string $_addressCode
+	 */
+	private string $_addressCode = '';
+
+	/**
+	 * Ville de résidence de l'adhérent
+	 * @var string $_addressCity
+	 */
+	private string $_addressCity = '';
+
+	/**
 	 * Informe si l'adhérent fait partie d'une fratrie ou non.
 	 * @var bool $_isSiblings
 	 */
@@ -168,6 +192,10 @@ class Adherent
 			$this->_firstname = $dbData['firstname'];
 			$this->_lastname = $dbData['lastname'];
 			$this->_birthday = new Datetime($dbData['birthday']);
+			$this->_sex = (bool)$dbData['sex'];
+			$this->_addressStreet = $dbData['address_street'];
+			$this->_addressCode = $dbData['address_code'];
+			$this->_addressCity = $dbData['address_city'];
 			$this->_isSiblings = (bool)$dbData['is_sibling'];
 			$this->_medicineInfo = $dbData['medicine_info'];
 			$this->_uniformOption = EUniformOption::tryFrom($dbData['uniform_option']) ?? EUniformOption::None;
@@ -201,6 +229,10 @@ class Adherent
 			'firstname' => $this->_firstname,
 			'lastname' => $this->_lastname,
 			'birthday' => serialize($this->_birthday),
+			'sex' => $this->_sex,
+			'address_street' => $this->_addressStreet,
+			'address_code' => $this->_addressCode,
+			'address_city' => $this->_addressCity,
 			'is_sibling' => $this->_isSiblings,
 			'medicine_info' => $this->_medicineInfo,
 			'uniform_option' => $this->_uniformOption,
@@ -234,6 +266,10 @@ class Adherent
 		$this->_firstname = $data['firstname'];
 		$this->_lastname = $data['lastname'];
 		$this->_birthday = unserialize($data['birthday']);
+		$this->_sex = $data['sex'];
+		$this->_addressStreet = $data['address_street'];
+		$this->_addressCode = $data['address_code'];
+		$this->_addressCity = $data['address_city'];
 		$this->_isSiblings = $data['is_sibling'];
 		$this->_medicineInfo = $data['medicine_info'];
 		$this->_uniformOption = $data['uniform_option'];
@@ -319,6 +355,42 @@ class Adherent
 	public function getBirthday(): DateTime|null
 	{
 		return $this->_birthday;
+	}
+
+	/**
+	 * Retourne le sexe de l'adhérent. False = Fille, True = Garçon
+	 * @return bool
+	 */
+	public function getSex(): bool
+	{
+		return $this->_sex;
+	}
+
+	/**
+	 * Retourne le numéro et rue ou vie l'adhérent
+	 * @return string
+	 */
+	public function getAddressStreet(): string
+	{
+		return $this->_addressStreet;
+	}
+
+	/**
+	 * Retourne le code poste de l'adresse de l'adhérent
+	 * @return string
+	 */
+	public function getAddressCode(): string
+	{
+		return $this->_addressCode;
+	}
+
+	/**
+	 * Retourne la ville de résidence de l'adhérent
+	 * @return string
+	 */
+	public function getAddressCity(): string
+	{
+		return $this->_addressCity;
 	}
 
 	/**
@@ -636,6 +708,64 @@ class Adherent
 	}
 
 	/**
+	 * Définie le sexe de l'adhérent. False = Fille, True = Garçon
+	 * @param bool $sex
+	 * @return void
+	 */
+	public function setSex(bool $sex): void
+	{
+		$this->_sex = $sex;
+	}
+	
+	/**
+	 * Définie le numéro et rue ou vie l'adhérent
+	 * @param string $addressStreet
+	 * @return bool
+	 */
+	public function setAddressStreet(string $addressStreet): bool
+	{
+		if (preg_match('/^[0-9]*[A-Za-zÀ-ÖØ-öø-ÿ0-9\s\'-]*$/', $addressStreet)) {
+			$this->_addressStreet = $addressStreet;
+
+			return true;
+		}
+
+		return false;
+	}
+	
+	/**
+	 * Définie le code poste de l'adresse de l'adhérent
+	 * @param string $addressCode
+	 * @return bool
+	 */
+	public function setAddressCode(string $addressCode): bool
+	{
+		if (preg_match('/^\d{5}$/i', $addressCode)) {
+			$this->_addressCode = $addressCode;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Définie la ville de résidence de l'adhérent
+	 * @param string $addressCity
+	 * @return bool
+	 */
+	public function setAddressCity(string $addressCity): bool
+	{
+		if (preg_match('/^[A-Za-zÀ-ÖØ-öø-ÿ\s-]+$/', $addressCity)) {
+			$this->_addressCity = $addressCity;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Définie la date de naissance de l'adhérent.
 	 * 
 	 * @param bool $isSiblings
@@ -850,6 +980,29 @@ class Adherent
 			$messages[] = "La date de naissance de l'adhérent n'est pas au bon format.";
 		}
 		
+		if (isset($infos['sex']) && ($infos['sex'] === 'boy' || $infos['sex'] === 'girl')) {
+			$this->setSex($infos['sex'] === 'boy' ? true : false);
+		} else {
+			$messages[] = "Veuillez sélectionner le sexe de l'adhérent.";
+		}
+		
+		if (isset($infos['addressStreet']) && isset($infos['addressCode']) && isset($infos['addressCity'])) {
+			if (!$this->setAddressStreet($infos['addressStreet'])) {
+				$messages[] = "L'adresse n'est pas au bon format.";
+			}
+
+			if (!$this->setAddressCode($infos['addressCode'])) {
+				$messages[] = "Le code postal est incorrect.";
+			}
+
+			if (!$this->setAddressCity($infos['addressCity'])) {
+				$messages[] = "Le nom de la ville n'est pas au bon format.";
+			}
+		} else {
+			$messages[] = "L'adresse est incomplète.";
+		}
+
+		
 		if (isset($infos['medicineInfo'])) {
 			$this->setMedicineInfo($infos['medicineInfo']);
 		}
@@ -893,6 +1046,10 @@ class Adherent
 			'firstname' => $this->_firstname,
 			'lastname' => $this->_lastname,
 			'birthday' => $this->_birthday->format('Y-m-d'),
+			'sex' => $this->_sex,
+			'address_street' => $this->_addressStreet,
+			'address_code' => $this->_addressCode,
+			'address_city' => $this->_addressCity,
 			'is_sibling' => $this->_isSiblings,
 			'medicine_info' => $this->_medicineInfo,
 			'uniform_option' => $this->_uniformOption,
@@ -930,6 +1087,10 @@ class Adherent
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
+					'sex' => $this->_sex,
+					'address_street' => $this->_addressStreet,
+					'address_code' => $this->_addressCode,
+					'address_city' => $this->_addressCity,
 					'is_sibling' => $this->_isSiblings,
 					'medicine_info' => $this->_medicineInfo,
 					'uniform_option' => $this->_uniformOption->value,
@@ -964,6 +1125,10 @@ class Adherent
 					'firstname' => $this->_firstname,
 					'lastname' => $this->_lastname,
 					'birthday' => $this->_birthday->format('Y-m-d'),
+					'sex' => $this->_sex,
+					'address_street' => $this->_addressStreet,
+					'address_code' => $this->_addressCode,
+					'address_city' => $this->_addressCity,
 					'is_sibling' => $this->_isSiblings,
 					'medicine_info' => $this->_medicineInfo,
 					'uniform_option' => $this->_uniformOption->value,

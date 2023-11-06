@@ -163,19 +163,44 @@ let InscriptionManager = {
 				</div>
 				<div class='row card-body'>
 					<div class='col-sm-6 mb-3'>
-						<label for='nomInput'><span class='required'>*</span> Nom</label>
+						<label class='form-label' for='nomInput'><span class='required'>*</span> Nom</label>
 						<input class='form-control' name='lastname' type='text' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='prenomInput'><span class='required'>*</span> Prénom</label>
+						<label class='form-label' for='prenomInput'><span class='required'>*</span> Prénom</label>
 						<input class='form-control' name='firstname' type='text' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='birthdayInput'><span class='required'>*</span> Date de naissance</label>
+						<label class='form-label' for='birthdayInput'><span class='required'>*</span> Date de naissance</label>
 						<input class='form-control' name='birthday' type='date' required>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='medicineInfoInput'>Traitement médical</label>
+						<label class='form-label' for='sexInput'><span class='required'>*</span>Sexe</label>
+						<div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="sex" value="boy" required>
+								<label class="form-check-label" for="sexBoyInput">Homme</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="sex" value="girl" required>
+								<label class="form-check-label" for="sexGirlInput">Femme</label>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 mb-3">
+						<label class='form-label' for='addressStreetInput'>N° et Rue</label>
+						<input class="form-control" name='addressStreet' type="text" required>
+					</div>
+					<div class="col-md-3 mb-3">
+						<label class='form-label' for="addressCodeInput">Code postal</label>
+						<input class="form-control" name='addressCode' type="text" required>
+					</div>
+						<div class="col-md-3 mb-3">
+						<label class='form-label' for="addressCicyInput">Ville</label>
+						<input class="form-control" name='addressCity' type="text" required>
+					</div>
+					<div class='col-sm-6 mb-3'>
+						<label class='form-label' for='medicineInfoInput'>Traitement médical</label>
 						<input class='form-control' name='medicineInfo' type='text' placeolder="si nécessaire">
 					</div>
 					<div class='col-sm-12 mb-3'>
@@ -188,19 +213,19 @@ let InscriptionManager = {
 						</small>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='socialSecurityNumberInput'>Numéro de sécurité sociale</label>
+						<label class='form-label' for='socialSecurityNumberInput'>Numéro de sécurité sociale</label>
 						<input class='form-control' name='socialSecurityNumber' type='text' placeholder='Ex: 1 85 05 78 006 084 36'>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='doctorNameInput'>Nom du édecine traitant</label>
+						<label class='form-label' for='doctorNameInput'>Nom du édecine traitant</label>
 						<input class='form-control' name='doctorName' type='text'>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='nameEmergencyContactInput'>Nom de la personne à contacter en cas d'urgence</label>
+						<label class='form-label' for='nameEmergencyContactInput'>Nom de la personne à contacter en cas d'urgence</label>
 						<input class='form-control' name='nameEmergencyContact' type='text'>
 					</div>
 					<div class='col-sm-6 mb-3'>
-						<label for='phoneEmergencyContactInput'>Numéro de la personne à contacter en cas d'urgence</label>
+						<label class='form-label' for='phoneEmergencyContactInput'>Numéro de la personne à contacter en cas d'urgence</label>
 						<input class='form-control' name='phoneEmergencyContact' type='text' placeholder='Ex: 0123456789'>
 					</div>
 
